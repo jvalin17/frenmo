@@ -1,0 +1,4 @@
+/* Custom styles for Rup-Split */
+.balance-positive { color: #22c55e; }
+.balance-negative { color: #ef4444; }
+.balance-zero { color: #6b7280; }

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Register — Rup-Split{% endblock %}
+{% block content %}
+<div class="card bg-base-100 shadow-md">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-4">Create Account</h2>
+        {% if error %}
+        <div class="alert alert-error mb-4">{{ error }}</div>
+        {% endif %}
+        <form method="POST" action="/auth/register">
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Name</span></label>
+                <input type="text" name="name" class="input input-bordered" required>
+            </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Email</span></label>
+                <input type="email" name="email" class="input input-bordered" required>
+            </div>
+            <div class="form-control mb-4">
+                <label class="label"><span class="label-text">Password</span></label>
+                <input type="password" name="password" class="input input-bordered" minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
+        </form>
+        <p class="text-center mt-4 text-sm">
+            Already have an account? <a href="/auth/login" class="link link-primary">Login</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

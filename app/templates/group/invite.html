@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Invite — {{ group.name }}{% endblock %}
+{% block content %}
+<div class="card bg-base-100 shadow-md">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-4">Invite to {{ group.name }}</h2>
+        <p class="text-sm text-gray-500 mb-4">Share this link with friends to join the group:</p>
+        <div class="flex gap-2">
+            <input type="text" value="{{ invite_url }}" class="input input-bordered flex-1 text-sm" readonly id="invite-link">
+            <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('invite-link').value); this.textContent='Copied!'">Copy</button>
+        </div>
+        <a href="/groups/{{ group.id }}" class="btn btn-ghost btn-block mt-4">Back to Group</a>
+    </div>
+</div>
+{% endblock %}
