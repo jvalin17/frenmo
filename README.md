@@ -48,7 +48,7 @@ Adding a new bank requires only a regex pattern + detection keywords — no stru
 - **Database:** SQLite (dev) / PostgreSQL (prod, Neon)
 - **Auth:** Session-based (bcrypt + HTTP-only cookies + signed reset tokens)
 - **Email:** Resend API
-- **Exchange Rates:** open.er-api.com (free, no key)
+- **Exchange Rates:** open.er-api.com
 - **PDF Parsing:** pdfplumber (server-side, memory-only)
 - **Hosting:** Render + Neon PostgreSQL (both free tier)
 - **Theme:** Apple-inspired light with color-faded cards, per-member colors, USA flag gradient logo
