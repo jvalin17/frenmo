@@ -88,3 +88,36 @@ async def change_password(request: Request, db: AsyncSession = Depends(get_db)):
         request, "account/settings.html",
         {"user": user, "success": "Password changed.", "error": None},
     )
+
+
+@router.post("/delete")
+@login_required
+async def delete_account(request: Request, db: AsyncSession = Depends(get_db)):
+    from sqlalchemy import delete
+
+    from app.middleware.auth import clear_session_cookie
+    from app.models.comment import Comment
+    from app.models.expense import Expense, ExpenseSplit
+    from app.models.friendship import Friendship
+    from app.models.group import GroupMember
+
+    user_id = request.state.user_id
+
+    # Delete user's comments, expense splits, friendships, group memberships
+    await db.execute(delete(Comment).where(Comment.user_id == user_id))
+    await db.execute(delete(ExpenseSplit).where(ExpenseSplit.user_id == user_id))
+    await db.execute(delete(Friendship).where(
+        (Friendship.user_id == user_id) | (Friendship.friend_id == user_id)
+    ))
+    await db.execute(delete(GroupMember).where(GroupMember.user_id == user_id))
+
+    user = await db.get(User, user_id)
+    if user:
+        await db.delete(user)
+
+    await db.commit()
+    logger.info("Account deleted: user=%d", user_id)
+
+    response = RedirectResponse(url="/auth/login", status_code=303)
+    clear_session_cookie(response)
+    return response
