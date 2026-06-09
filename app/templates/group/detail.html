@@ -203,9 +203,30 @@
             <h3 class="font-semibold text-sm text-gray-500 uppercase">Expenses</h3>
             <button type="submit" id="bulk-delete-btn" class="text-xs font-medium px-2 py-1 rounded-lg" style="background: #FEF2F2; color: #DC2626; border: none; display: none; cursor: pointer;" onclick="return confirm('Delete selected expenses?')">Delete selected</button>
         </div>
+        <!-- Member filter tabs -->
         {% if expenses %}
+        <div class="flex gap-1 mb-3 overflow-x-auto pb-1">
+            <button onclick="filterExpenses('all')" class="member-tab text-xs font-medium px-3 py-1 rounded-full" style="background: #007AFF; color: #FFFFFF; border: none; cursor: pointer; white-space: nowrap;" data-filter="all">All</button>
+            {% for member in members %}
+            <button onclick="filterExpenses('{{ member.id }}')" class="member-tab text-xs font-medium px-3 py-1 rounded-full" style="background: #F2F2F7; color: #1D1D1F; border: none; cursor: pointer; white-space: nowrap;" data-filter="{{ member.id }}">{{ member.name }}</button>
+            {% endfor %}
+        </div>
+        <script>
+        function filterExpenses(memberId) {
+            document.querySelectorAll('.expense-row').forEach(function(row) {
+                row.style.display = (memberId === 'all' || row.dataset.paidBy === memberId) ? '' : 'none';
+            });
+            document.querySelectorAll('.member-tab').forEach(function(tab) {
+                if (tab.dataset.filter === memberId) {
+                    tab.style.background = '#007AFF'; tab.style.color = '#FFFFFF';
+                } else {
+                    tab.style.background = '#F2F2F7'; tab.style.color = '#1D1D1F';
+                }
+            });
+        }
+        </script>
         {% for expense in expenses %}
-        <div class="py-3 border-b last:border-b-0">
+        <div class="py-3 border-b last:border-b-0 expense-row" data-paid-by="{{ expense.paid_by }}">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     {% if expense.created_by == user.id %}
