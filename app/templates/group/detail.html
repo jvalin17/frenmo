@@ -184,6 +184,14 @@
 </div>
 {% endif %}
 
+<!-- Total Spent -->
+{% set total_spent = expenses|map(attribute='amount')|sum %}
+<div class="rounded-xl p-4 mb-4 text-center" style="background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%); border: 1px solid #BBF7D0;">
+    <p class="text-xs font-medium uppercase" style="color: #86868B;">Total Spent</p>
+    <p class="text-2xl font-bold" style="color: #1D1D1F;">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(total_spent / 100) }}</p>
+    <p class="text-xs" style="color: #AEAEB2;">{{ expenses|length }} expense{{ 's' if expenses|length != 1 }}</p>
+</div>
+
 <!-- Add Expense Button -->
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 

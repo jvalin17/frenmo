@@ -123,6 +123,7 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             index = key.replace("tx_", "")
             description = form_data.get(f"desc_{index}", "").strip()
             amount_str = form_data.get(f"amount_{index}", "0")
+            category = form_data.get(f"cat_{index}", "").strip() or None
 
             try:
                 amount_cents = int(amount_str)
@@ -142,6 +143,7 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
                 paid_by=request.state.user_id,
                 created_by=request.state.user_id,
                 member_ids=member_ids,
+                category=category,
                 idempotency_key=str(uuid.uuid4()),
             )
             imported_count += 1

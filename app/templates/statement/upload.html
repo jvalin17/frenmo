@@ -41,7 +41,8 @@
             <input type="file" id="file-input" name="file" accept=".pdf" style="display: none;"
                    onchange="document.getElementById('file-name').textContent = this.files[0]?.name || ''; if(this.files[0]) { document.getElementById('drop-zone').style.borderColor='#34C759'; document.getElementById('drop-zone').style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)'; }">
 
-            <button type="submit" class="btn btn-primary btn-block mt-4">Extract Transactions</button>
+            <button type="submit" id="extract-btn" class="btn btn-primary btn-block mt-4" onclick="this.textContent='Processing...'; this.disabled=true; this.form.submit();">Extract Transactions</button>
+            <p class="text-xs text-center mt-2" style="color: #AEAEB2;">🔒 Your statement is private — only you can see it. Only expenses you select will be added to the group.</p>
         </form>
     </div>
 </div>
@@ -75,13 +76,19 @@
                     <input type="checkbox" name="tx_{{ loop.index0 }}" class="checkbox checkbox-sm" checked>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium truncate" style="color: #1D1D1F;">{{ tx.description }}</p>
-                        <p class="text-xs" style="color: #AEAEB2;">{{ tx.date }}</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs" style="color: #AEAEB2;">{{ tx.date }}</span>
+                            {% if tx.category %}
+                            <span class="text-xs px-1.5 py-0.5 rounded-md" style="background: #EEF2FF; color: #3B82F6;">{{ tx.category }}</span>
+                            {% endif %}
+                        </div>
                     </div>
                     <span class="text-sm font-bold" style="color: #1D1D1F;">
                         {% if tx.amount > 0 %}${{ "%.2f"|format(tx.amount / 100) }}{% else %}-${{ "%.2f"|format((-tx.amount) / 100) }}{% endif %}
                     </span>
                     <input type="hidden" name="desc_{{ loop.index0 }}" value="{{ tx.description }}">
                     <input type="hidden" name="amount_{{ loop.index0 }}" value="{{ tx.amount }}">
+                    <input type="hidden" name="cat_{{ loop.index0 }}" value="{{ tx.category or '' }}">
                 </label>
                 {% endfor %}
             </div>

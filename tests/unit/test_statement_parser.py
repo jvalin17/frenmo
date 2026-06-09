@@ -47,6 +47,7 @@ class TestParseTransactions:
         transactions = parse_transactions(text, "discover")
         assert len(transactions) == 3
         assert transactions[0]["date"] == "01/15"
+        assert transactions[0]["category"] == "shopping"  # AMAZON
         assert transactions[0]["description"] == "AMAZON.COM PURCHASE"
         assert transactions[0]["amount"] == 4599
 
