@@ -133,6 +133,19 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             if amount_cents <= 0 or not description:
                 continue
 
+            # Dedup: skip if same description + amount already exists in group
+            from app.models.expense import Expense as ExpenseModel
+            existing = await db.execute(
+                select(ExpenseModel).where(
+                    ExpenseModel.group_id == group_id,
+                    ExpenseModel.description == description,
+                    ExpenseModel.amount == amount_cents,
+                    ExpenseModel.deleted_at.is_(None),
+                )
+            )
+            if existing.scalar_one_or_none() is not None:
+                continue  # skip duplicate
+
             await create_expense_with_splits(
                 db=db,
                 group_id=group_id,

@@ -213,6 +213,24 @@ async def edit_expense(request: Request, expense_id: int, db: AsyncSession = Dep
     return RedirectResponse(url=f"/groups/{expense.group_id}", status_code=303)
 
 
+@router.post("/bulk-delete/{group_id}")
+@login_required
+async def bulk_delete_expenses(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
+    from datetime import datetime
+
+    form_data = await request.form()
+    expense_ids = [int(v) for k, v in form_data.multi_items() if k == "expense_ids"]
+
+    for expense_id in expense_ids:
+        expense = await db.get(Expense, expense_id)
+        if expense and expense.created_by == request.state.user_id and expense.deleted_at is None:
+            expense.deleted_at = datetime.utcnow()
+
+    await db.commit()
+    logger.info("Bulk deleted %d expenses in group %d by user %d", len(expense_ids), group_id, request.state.user_id)
+    return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
+
+
 @router.post("/{expense_id}/delete")
 @login_required
 async def delete_expense(request: Request, expense_id: int, db: AsyncSession = Depends(get_db)):

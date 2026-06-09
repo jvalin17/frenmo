@@ -195,15 +195,22 @@
 <!-- Add Expense Button -->
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
-<!-- Activity -->
+<!-- Expenses -->
+<form id="bulk-delete-form" method="POST" action="/expenses/bulk-delete/{{ group.id }}">
 <div class="card card-blue mb-4">
     <div class="card-body py-3">
-        <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Activity</h3>
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="font-semibold text-sm text-gray-500 uppercase">Expenses</h3>
+            <button type="submit" id="bulk-delete-btn" class="text-xs font-medium px-2 py-1 rounded-lg" style="background: #FEF2F2; color: #DC2626; border: none; display: none; cursor: pointer;" onclick="return confirm('Delete selected expenses?')">Delete selected</button>
+        </div>
         {% if expenses %}
         {% for expense in expenses %}
         <div class="py-3 border-b last:border-b-0">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-3">
+                    {% if expense.created_by == user.id %}
+                    <input type="checkbox" name="expense_ids" value="{{ expense.id }}" class="checkbox checkbox-sm bulk-check" onchange="document.getElementById('bulk-delete-btn').style.display = document.querySelectorAll('.bulk-check:checked').length ? 'block' : 'none';">
+                    {% endif %}
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base" style="background: #F2F2F7;">
                         {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
                     </div>
@@ -226,10 +233,6 @@
                     {% endif %}
                     {% if expense.created_by == user.id %}
                     <a href="/expenses/{{ expense.id }}/edit" class="btn btn-ghost btn-xs" style="color: #007AFF;">✎</a>
-                    <form method="POST" action="/expenses/{{ expense.id }}/delete" class="inline">
-                        <button type="submit" class="btn btn-ghost btn-xs text-error"
-                                onclick="return confirm('Delete this expense?')">✕</button>
-                    </form>
                     {% endif %}
                 </div>
             </div>
@@ -266,6 +269,7 @@
         {% endif %}
     </div>
 </div>
+</form><!-- end bulk-delete-form -->
 
 </div><!-- end main-content -->
 </div><!-- end group-layout -->
