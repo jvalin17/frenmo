@@ -2,6 +2,8 @@
   "gate_mode": "legacy",
   "enforcement": "block",
   "profile": "minimal",
+  "test_command": ".venv/bin/python -m pytest -q",
+  "lint_command": "true",
   "mode": "normal",
   "eval_threshold": 95,
   "compact_at_minutes": 70,

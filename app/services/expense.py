@@ -67,6 +67,7 @@ async def create_expense_with_splits(
     category: str | None = None,
     idempotency_key: str | None = None,
     expense_type: str = "expense",
+    currency: str = "INR",
 ) -> Expense:
     """Create expense + splits atomically."""
     # Check idempotency
@@ -93,6 +94,7 @@ async def create_expense_with_splits(
         group_id=group_id,
         description=description,
         amount=amount_paise,
+        currency=currency,
         split_type=split_type,
         expense_type=expense_type,
         category=category,

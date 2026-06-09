@@ -89,6 +89,13 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     # Map user IDs to names
     member_names = {m.id: m.name for m in members}
 
+    # Get friends not already in this group (for "add from friends")
+    from app.services.friendship import get_friend_list
+
+    all_friends = await get_friend_list(db, user_id)
+    member_ids = {m.id for m in members}
+    available_friends = [f for f in all_friends if f.id not in member_ids]
+
     return templates.TemplateResponse(
         request,
         "group/detail.html",
@@ -100,6 +107,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "balances": balances,
             "simplified": simplified,
             "member_names": member_names,
+            "available_friends": available_friends,
         },
     )
 

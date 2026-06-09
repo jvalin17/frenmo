@@ -6,19 +6,43 @@
     <title>{% block title %}Rup-Split{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwindcss.config = {
+        daisyui: {
+            themes: ["light"],
+        },
+        theme: {
+            extend: {
+                colors: {
+                    'money': {
+                        50: '#f0faf0',
+                        100: '#d4f0d4',
+                        200: '#a8dba8',
+                        600: '#2d6a2d',
+                        700: '#1b5e20',
+                        800: '#14451a',
+                        900: '#0d2e11',
+                    }
+                }
+            }
+        }
+    }
+    </script>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="min-h-screen bg-base-200">
-    <div class="navbar bg-base-100 shadow-sm">
+<body class="min-h-screen bg-money-50">
+    <div class="navbar shadow-md" style="background-color: #1b5e20;">
         <div class="flex-1">
-            <a href="/" class="btn btn-ghost text-xl">Rup-Split</a>
+            <a href="/" class="btn btn-ghost text-xl text-white hover:text-money-100">💰 Rup-Split</a>
         </div>
         <div class="flex-none">
             {% if user %}
-                <span class="mr-4 text-sm">{{ user.name }}</span>
-                <a href="/auth/logout" class="btn btn-ghost btn-sm">Logout</a>
+                <a href="/friends" class="btn btn-ghost btn-sm text-white hover:text-money-100">Friends</a>
+                <span class="mr-4 text-sm text-money-100">{{ user.name }}</span>
+                <a href="/auth/logout" class="btn btn-ghost btn-sm text-white hover:text-money-100">Logout</a>
             {% else %}
-                <a href="/auth/login" class="btn btn-ghost btn-sm">Login</a>
+                <a href="/auth/login" class="btn btn-ghost btn-sm text-white hover:text-money-100">Login</a>
             {% endif %}
         </div>
     </div>

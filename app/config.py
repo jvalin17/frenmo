@@ -1,10 +1,12 @@
+import secrets
+
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./rupsplit.db"
-    secret_key: str = "change-me-in-production"
-    csrf_secret: str = "change-me-in-production"
+    secret_key: str = secrets.token_urlsafe(32)
+    csrf_secret: str = secrets.token_urlsafe(32)
     debug: bool = False
     app_port: int = 8040
 

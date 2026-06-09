@@ -52,8 +52,9 @@ async def create_expense(
     split_type = form_data.get("split_type", "equal")
     paid_by = int(form_data.get("paid_by", request.state.user_id))
     category = form_data.get("category", "")
+    currency = form_data.get("currency", "INR")
 
-    # Convert amount to paise (cents) — input is in rupees
+    # Convert amount to smallest unit (cents/paise) — input is in main unit
     try:
         amount_float = float(amount_str)
         amount_paise = round(amount_float * 100)
@@ -89,6 +90,7 @@ async def create_expense(
         group_id=group_id,
         description=description,
         amount_paise=amount_paise,
+        currency=currency,
         split_type=split_type,
         paid_by=paid_by,
         created_by=request.state.user_id,

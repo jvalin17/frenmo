@@ -1,4 +1,49 @@
-/* Custom styles for Rup-Split */
-.balance-positive { color: #22c55e; }
-.balance-negative { color: #ef4444; }
+/* Rup-Split — Money Green Theme */
+.balance-positive { color: #1b5e20; font-weight: 600; }
+.balance-negative { color: #c62828; }
 .balance-zero { color: #6b7280; }
+
+/* Money-note styled cards */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #d4f0d4;
+}
+
+/* Primary buttons — deep money green */
+.btn-primary {
+    background-color: #1b5e20 !important;
+    border-color: #1b5e20 !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover {
+    background-color: #2d6a2d !important;
+    border-color: #2d6a2d !important;
+}
+
+/* Success button keeps its own green */
+.btn-success {
+    background-color: #2e7d32 !important;
+    border-color: #2e7d32 !important;
+}
+
+/* Badge and form accents */
+.badge-outline {
+    border-color: #1b5e20 !important;
+    color: #1b5e20 !important;
+}
+
+.input:focus, .select:focus {
+    border-color: #2d6a2d !important;
+    outline-color: #2d6a2d !important;
+}
+
+.checkbox:checked {
+    background-color: #1b5e20 !important;
+    border-color: #1b5e20 !important;
+}
+
+/* Currency symbol styling */
+.currency-symbol {
+    font-weight: 600;
+    color: #1b5e20;
+}

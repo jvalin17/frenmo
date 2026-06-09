@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ group.name }} — Rup-Split{% endblock %}
 {% block content %}
+{% set sym = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£", "AED": "د.إ", "JPY": "¥", "CAD": "C$", "AUD": "A$"} %}
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">{{ group.name }}</h2>
     <a href="/groups/{{ group.id }}/invite" class="btn btn-ghost btn-sm">Invite</a>
@@ -77,7 +78,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <span class="font-bold">₹{{ "%.2f"|format(expense.amount / 100) }}</span>
+                <span class="font-bold">{{ sym.get(expense.currency, "₹") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
                 {% if expense.created_by == user.id %}
                 <form method="POST" action="/expenses/{{ expense.id }}/delete" class="inline">
                     <button type="submit" class="btn btn-ghost btn-xs text-error"
@@ -100,6 +101,20 @@
         {% for member in members %}
         <span class="badge badge-outline mr-1 mb-1">{{ member.name }}</span>
         {% endfor %}
+
+        {% if available_friends %}
+        <div class="mt-3 pt-3 border-t">
+            <h4 class="text-xs text-gray-400 uppercase mb-2">Add from friends</h4>
+            {% for friend in available_friends %}
+            <div class="flex justify-between items-center py-1">
+                <span class="text-sm">{{ friend.name }}</span>
+                <form method="POST" action="/friends/add-to-group/{{ group.id }}/{{ friend.id }}">
+                    <button type="submit" class="btn btn-primary btn-xs">Add</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

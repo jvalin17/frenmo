@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Rup-Split{% endblock %}
 {% block content %}
+
+<!-- Overall Balances -->
+{% if overall_balances %}
+<div class="card bg-base-100 shadow-sm mb-4">
+    <div class="card-body py-3">
+        <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Overall Balance</h3>
+        {% for other_id, net in overall_balances.items() %}
+        <div class="flex justify-between items-center py-1">
+            <span class="text-sm">{{ balance_names.get(other_id, '?') }}</span>
+            <span class="font-semibold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                {% if net > 0 %}owes you ₹{{ "%.2f"|format(net / 100) }}
+                {% elif net < 0 %}you owe ₹{{ "%.2f"|format((-net) / 100) }}
+                {% endif %}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <h2 class="text-2xl font-bold mb-4">Your Groups</h2>
 
 {% if groups %}
