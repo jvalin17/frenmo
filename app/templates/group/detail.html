@@ -92,30 +92,30 @@
                     {% endif %}
                 </div>
             </div>
-            <!-- Comments — white→yellow tint -->
+            <!-- Comments — soft blue tint -->
             {% set comments = expense_comments.get(expense.id, []) %}
-            <div class="mt-2 ml-12 rounded-xl p-3" style="background: linear-gradient(135deg, #FFFFFF 0%, #FFFEF5 40%, #FEF9E7 100%); border: 1px solid #FEF3C7;">
+            <div class="mt-2 ml-12 rounded-xl p-3" style="background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%); border: 1px solid #BFDBFE;">
                 {% if comments %}
                 {% for comment in comments %}
                 <div class="flex justify-between items-start mb-2 last:mb-0">
                     <div class="flex gap-2">
                         <span class="text-xs">💬</span>
                         <div>
-                            <span class="text-xs font-semibold" style="color: #92400E;">{{ member_names.get(comment.user_id, '?') }}</span>
-                            <p class="text-xs" style="color: #78716C;">{{ comment.text }}</p>
+                            <span class="text-xs font-semibold" style="color: #1E40AF;">{{ member_names.get(comment.user_id, '?') }}</span>
+                            <p class="text-xs" style="color: #6B7280;">{{ comment.text }}</p>
                         </div>
                     </div>
                     {% if comment.user_id == user.id %}
                     <form method="POST" action="/comments/delete/{{ comment.id }}">
-                        <button type="submit" class="text-xs" style="color: #D97706; opacity: 0.6;" onclick="return confirm('Delete comment?')">✕</button>
+                        <button type="submit" class="text-xs" style="color: #93C5FD; opacity: 0.8;" onclick="return confirm('Delete comment?')">✕</button>
                     </form>
                     {% endif %}
                 </div>
                 {% endfor %}
                 {% endif %}
-                <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-2 pt-2{% endif %}" {% if comments %}style="border-top: 1px solid #FEF3C7;"{% endif %}>
-                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-3 py-1.5 rounded-lg" style="background: #FFFDF7; border: 1px solid #FDE68A; color: #1D1D1F;" required>
-                    <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background: #FEF3C7; color: #92400E;">Post</button>
+                <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-2 pt-2{% endif %}" {% if comments %}style="border-top: 1px solid #BFDBFE;"{% endif %}>
+                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-3 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F;" required>
+                    <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background: #DBEAFE; color: #1E40AF;">Post</button>
                 </form>
             </div>
         </div>
