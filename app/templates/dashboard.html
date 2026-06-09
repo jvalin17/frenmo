@@ -7,12 +7,12 @@
 {% set total_you_owe = overall_balances.values()|select("lt", 0)|sum %}
 {% set net_total = total_owed_to_you + total_you_owe %}
 
-<!-- Hero Card -->
-<div class="hero-card mb-6">
-    <p class="text-sm" style="opacity: 0.8;">Total Balance</p>
+<!-- Hero Card — color changes based on balance -->
+<div class="hero-card mb-6" style="background: linear-gradient(135deg, {% if net_total > 0 %}#059669 0%, #34D399 100%); box-shadow: 0 8px 30px rgba(5,150,105,0.2){% elif net_total < 0 %}#EA580C 0%, #FB923C 100%); box-shadow: 0 8px 30px rgba(234,88,12,0.2){% else %}#007AFF 0%, #5856D6 100%); box-shadow: 0 8px 30px rgba(0,122,255,0.2){% endif %};">
+    <p class="text-sm" style="opacity: 0.85;">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}Total Balance{% endif %}</p>
     <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: #FFFFFF; margin: 0.25rem 0;">
-        {% if net_total > 0 %}+${{ "%.2f"|format(net_total / 100) }}
-        {% elif net_total < 0 %}-${{ "%.2f"|format((-net_total) / 100) }}
+        {% if net_total > 0 %}${{ "%.2f"|format(net_total / 100) }}
+        {% elif net_total < 0 %}${{ "%.2f"|format((-net_total) / 100) }}
         {% else %}$0.00{% endif %}
     </div>
     <div class="flex gap-6 mt-2" style="opacity: 0.85;">
@@ -34,10 +34,6 @@
     <a href="/friends?q=" class="quick-action">
         <div class="icon-circle">🔍</div>
         <span class="icon-label">Search</span>
-    </a>
-    <a href="/account" class="quick-action">
-        <div class="icon-circle">⚙️</div>
-        <span class="icon-label">Settings</span>
     </a>
 </div>
 
