@@ -127,6 +127,35 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
 
 
+@router.post("/{group_id}/settings")
+@login_required
+async def update_group_settings(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
+    user_id = request.state.user_id
+    # Verify membership
+    membership = await db.execute(
+        select(GroupMember).where(
+            GroupMember.group_id == group_id, GroupMember.user_id == user_id
+        )
+    )
+    if membership.scalar_one_or_none() is None:
+        return RedirectResponse(url="/", status_code=303)
+
+    group = await db.get(Group, group_id)
+    if group is None:
+        return RedirectResponse(url="/", status_code=303)
+
+    form_data = await request.form()
+    new_name = form_data.get("name", "").strip()
+    new_currency = form_data.get("currency", group.currency)
+
+    if new_name:
+        group.name = new_name
+    group.currency = new_currency
+    await db.commit()
+    logger.info("Group settings updated: group=%d by user=%d", group_id, user_id)
+    return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
+
+
 @router.get("/{group_id}/charts", response_class=HTMLResponse)
 @login_required
 async def group_charts(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
