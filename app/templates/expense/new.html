@@ -10,6 +10,10 @@
                 <input type="text" name="description" class="input input-bordered" placeholder="e.g., Dinner" required>
             </div>
             <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Date</span></label>
+                <input type="date" name="expense_date" class="input input-bordered" value="{{ today }}">
+            </div>
+            <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Amount</span></label>
                 <div class="flex gap-2">
                     <select name="currency" class="select select-bordered w-28" id="currency-select">

@@ -32,10 +32,12 @@ async def new_expense_page(request: Request, group_id: int, db: AsyncSession = D
     )
     members = members_result.scalars().all()
 
+    from datetime import date
+
     return templates.TemplateResponse(
         request,
         "expense/new.html",
-        {"user": user, "group": group, "members": members},
+        {"user": user, "group": group, "members": members, "today": date.today().isoformat()},
     )
 
 
@@ -52,7 +54,8 @@ async def create_expense(
     split_type = form_data.get("split_type", "equal")
     paid_by = int(form_data.get("paid_by", request.state.user_id))
     category = form_data.get("category", "")
-    currency = form_data.get("currency", "INR")
+    currency = form_data.get("currency", "USD")
+    expense_date = form_data.get("expense_date", "")
 
     # Convert amount to smallest unit (cents/paise) — input is in main unit
     try:
@@ -103,7 +106,16 @@ async def create_expense(
     if split_type == "full":
         member_values = {"full_owes": full_owes}
 
-    await create_expense_with_splits(
+    # Parse expense date
+    from datetime import datetime
+    created_at = None
+    if expense_date:
+        try:
+            created_at = datetime.strptime(expense_date, "%Y-%m-%d")
+        except ValueError:
+            pass
+
+    expense = await create_expense_with_splits(
         db=db,
         group_id=group_id,
         description=description,
@@ -117,6 +129,10 @@ async def create_expense(
         category=category or None,
         idempotency_key=idempotency_key,
     )
+
+    if created_at and expense:
+        expense.created_at = created_at
+        await db.commit()
 
     logger.info("Expense created: group=%d amount=%d", group_id, amount_paise)
     return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
