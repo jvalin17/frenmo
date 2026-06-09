@@ -149,12 +149,34 @@
     border: 1px solid #FECDD3 !important;
 }
 
+/* Typography — Magic Leap precision */
+h2, h3, .card-title, .hero-balance {
+    letter-spacing: -0.02em;
+}
+
 /* Smooth transitions */
 .card, .btn, .input, .select {
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
 }
 
 /* Hover cards */
 .card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+    transform: translateY(-1px);
+}
+
+/* Navbar link hover */
+.navbar .btn-ghost:hover {
+    color: #635BFF !important;
+    background: #F6F5FF !important;
+}
+
+/* Better card padding */
+.card-body {
+    padding: 1.25rem !important;
+}
+
+/* Professional section dividers */
+.border-b {
+    border-color: #E3E8EE !important;
 }

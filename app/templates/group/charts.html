@@ -24,7 +24,7 @@
             {% for cat, amount in category_data.items() %}
             <div class="flex justify-between items-center py-1">
                 <span class="text-sm capitalize">{{ cat }}</span>
-                <span class="font-semibold text-sm">₹{{ "%.2f"|format(amount / 100) }}</span>
+                <span class="font-semibold text-sm">${{ "%.2f"|format(amount / 100) }}</span>
             </div>
             {% endfor %}
         </div>
@@ -73,7 +73,7 @@ new Chart(document.getElementById('categoryChart'), {
         responsive: true,
         plugins: {
             legend: { position: 'bottom', labels: { padding: 12 } },
-            tooltip: { callbacks: { label: ctx => ctx.label + ': ₹' + ctx.parsed.toFixed(2) } }
+            tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.parsed.toFixed(2) } }
         }
     }
 });
@@ -85,7 +85,7 @@ new Chart(document.getElementById('monthlyChart'), {
     data: {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
-            label: 'Spending (₹)',
+            label: 'Spending ($)',
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
             backgroundColor: '#2e7d32',
             borderColor: '#1b5e20',
@@ -97,7 +97,7 @@ new Chart(document.getElementById('monthlyChart'), {
         responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-            y: { beginAtZero: true, ticks: { callback: v => '₹' + v } },
+            y: { beginAtZero: true, ticks: { callback: v => '$' + v } },
             x: { grid: { display: false } }
         }
     }
@@ -110,7 +110,7 @@ new Chart(document.getElementById('memberChart'), {
     data: {
         labels: [{% for uid in member_data %}"{{ member_names.get(uid, '?') }}"{% if not loop.last %},{% endif %}{% endfor %}],
         datasets: [{
-            label: 'Paid (₹)',
+            label: 'Paid ($)',
             data: {{ member_data.values()|list|tojson }}.map(v => v / 100),
             backgroundColor: colors.slice(0, {{ member_data|length }}),
             borderColor: borderColors.slice(0, {{ member_data|length }}),
@@ -123,7 +123,7 @@ new Chart(document.getElementById('memberChart'), {
         responsive: true,
         plugins: { legend: { display: false } },
         scales: {
-            x: { beginAtZero: true, ticks: { callback: v => '₹' + v } },
+            x: { beginAtZero: true, ticks: { callback: v => '$' + v } },
             y: { grid: { display: false } }
         }
     }

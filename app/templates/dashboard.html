@@ -10,13 +10,13 @@
 <div class="text-center py-6">
     <p class="text-sm" style="color: #697386;">Your net balance</p>
     <div class="hero-balance {% if net_total > 0 %}hero-positive{% elif net_total < 0 %}hero-negative{% else %}hero-zero{% endif %}">
-        {% if net_total > 0 %}+₹{{ "%.2f"|format(net_total / 100) }}
-        {% elif net_total < 0 %}-₹{{ "%.2f"|format((-net_total) / 100) }}
-        {% else %}₹0.00{% endif %}
+        {% if net_total > 0 %}+${{ "%.2f"|format(net_total / 100) }}
+        {% elif net_total < 0 %}-${{ "%.2f"|format((-net_total) / 100) }}
+        {% else %}$0.00{% endif %}
     </div>
     <div class="flex justify-center gap-6 mt-2">
-        <span class="text-sm"><span class="balance-positive">▲</span> Owed to you: ₹{{ "%.2f"|format(total_owed_to_you / 100) }}</span>
-        <span class="text-sm"><span class="balance-negative">▼</span> You owe: ₹{{ "%.2f"|format((-total_you_owe) / 100) }}</span>
+        <span class="text-sm"><span class="balance-positive">▲</span> Owed to you: ${{ "%.2f"|format(total_owed_to_you / 100) }}</span>
+        <span class="text-sm"><span class="balance-negative">▼</span> You owe: ${{ "%.2f"|format((-total_you_owe) / 100) }}</span>
     </div>
 </div>
 
@@ -40,8 +40,8 @@
                 <span class="text-sm font-medium">{{ balance_names.get(other_id, '?') }}</span>
             </div>
             <span class="font-semibold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% endif %}">
-                {% if net > 0 %}owes you ₹{{ "%.2f"|format(net / 100) }}
-                {% elif net < 0 %}you owe ₹{{ "%.2f"|format((-net) / 100) }}
+                {% if net > 0 %}owes you ${{ "%.2f"|format(net / 100) }}
+                {% elif net < 0 %}you owe ${{ "%.2f"|format((-net) / 100) }}
                 {% endif %}
             </span>
         </div>
@@ -68,8 +68,8 @@
                 </div>
             </div>
             <span class="font-bold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
-                {% if net > 0 %}+₹{{ "%.2f"|format(net / 100) }}
-                {% elif net < 0 %}-₹{{ "%.2f"|format((-net) / 100) }}
+                {% if net > 0 %}+${{ "%.2f"|format(net / 100) }}
+                {% elif net < 0 %}-${{ "%.2f"|format((-net) / 100) }}
                 {% else %}settled{% endif %}
             </span>
         </a>
