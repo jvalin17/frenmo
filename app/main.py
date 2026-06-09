@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.database import create_tables, engine
-from app.routes import account, auth, comment, dashboard, expense, friend, group, password_reset, settlement
+from app.routes import account, auth, comment, dashboard, expense, friend, group, password_reset, settlement, statement
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +31,7 @@ app.include_router(expense.router)
 app.include_router(password_reset.router)
 app.include_router(friend.router)
 app.include_router(settlement.router)
+app.include_router(statement.router)
 
 
 @app.get("/health")

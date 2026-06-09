@@ -19,6 +19,7 @@ Free Splitwise alternative. Split expenses with friends, simplify debts, settle 
 - **Password Reset** — Forgot password sends a signed reset link via email (Resend API). Expires in 30 minutes. Doesn't reveal whether email exists (security).
 - **Account Settings** — Edit nickname, email, default currency, change password, delete account
 - **Dashboard** — Hero balance card (green when owed, orange when owing, blue when settled), quick actions, per-group balances with emoji icons
+- **Bank Statement Import** — Upload PDF bank statement, auto-detect bank (Discover, Chase, BoA, Amex, Apple Card, HDFC, SBI), extract transactions, review and select which to add. PDF never stored — processed in memory and wiped.
 - **Sidebar Layout** — Members panel with balances on left, converter widget, content on right (responsive — stacks on mobile)
 
 ## Tech Stack
@@ -54,16 +55,29 @@ tests/unit/         72 unit tests
 - **Data usage:** Only for expense splitting and charts. No analytics, no tracking, no third-party sharing.
 - **Password reset:** Doesn't reveal whether an email is registered (prevents enumeration).
 - **Account deletion:** Users can permanently delete their account and all associated data.
+- **Bank statements:** PDF processed in memory (server-side on mobile) or client-side in browser (desktop). Never stored to disk. Bytes wiped immediately after extraction.
 
-## Built With Claude Code + Agent Toolkit
+## Built With Agent Toolkit
 
-This entire app was built using [Claude Code](https://claude.ai/claude-code) with the Agent Toolkit harness:
+This app was built from scratch to production in a single day using the [Agent Toolkit](https://github.com/jvalin17/agent-toolkit) — an open-source harness for structured AI-assisted development.
 
-- **TDD workflow** — Every feature starts with failing tests, then implementation. 72 tests covering all business logic.
-- **Skill-based development** — `/requirements` for scoping, `/implementation` for TDD slabs, `/precommit` quality gates before every commit, `/debug` for hypothesis-driven bug fixing.
-- **Structured slabs** — Features built one at a time, committed independently, never rushing multiple features into one untested commit.
-- **Quality gates** — Pre-commit checks run tests + code review before every `git commit`. No skipping.
-- **Multi-session continuity** — HANDOFF.md tracks progress across sessions so context is never lost.
+**How it worked:**
+
+1. **`/requirements`** — Gathered scope, user stories, and priorities. Researched Splitwise, Tricount, Settle Up, and Splid to identify feature gaps and opportunities.
+2. **`/architecture`** — Designed the system: FastAPI + Jinja2 + HTMX monolith, PostgreSQL with integer cents, derived balances, greedy debt simplification. 11 architecture decisions logged with evidence.
+3. **`/implementation`** — Built feature-by-feature in TDD slabs. Each slab: write failing tests → implement → verify → commit. No slab started until the previous one was committed and working.
+4. **`/precommit`** — Quality gate ran before every commit: tests must pass, code must be clean, app must be verified running. 72 tests, zero skipped gates.
+5. **`/debug`** — Hypothesis-driven debugging when production broke (asyncpg timezone mismatch, SSL connection issues). Root cause identified, test written, then fixed.
+
+**What the toolkit provides:**
+- **Skill workflows** — Structured prompts that enforce TDD, prevent shortcuts, and catch regressions before they ship
+- **Quality gates** — Pre-commit hooks that block commits until tests pass and code is reviewed
+- **Session continuity** — HANDOFF.md preserves context across sessions so nothing is forgotten
+- **Auto mode** — Skills chain together: requirements → architecture → implementation → deploy, with evidence at every step
+
+The entire app — auth, groups, 5 split types, friends, charts, comments, password reset, currency converter, bank statement import, Apple-inspired theme — was built in ~4 hours of active development across 3 sessions.
+
+**Repo:** [github.com/jvalin17/agent-toolkit](https://github.com/jvalin17/agent-toolkit)
 
 ## License
 

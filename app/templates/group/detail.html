@@ -33,6 +33,7 @@
                 </div>
             </div>
             <div class="flex gap-2">
+                <a href="/statement/{{ group.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Import</a>
                 <a href="/groups/{{ group.id }}/charts" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Charts</a>
                 <a href="/groups/{{ group.id }}/invite" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Invite</a>
                 <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="text-sm px-2 py-1.5 rounded-lg" style="background: #F2F2F7; color: #007AFF; border: none; cursor: pointer;">✎</button>
