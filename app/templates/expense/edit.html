@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Edit Expense — {{ group.name }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title text-2xl mb-4">Edit Expense</h2>
+        <form method="POST" action="/expenses/{{ expense.id }}/edit">
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Description</span></label>
+                <input type="text" name="description" class="input input-bordered" value="{{ expense.description }}" required>
+            </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Amount</span></label>
+                <div class="flex gap-2">
+                    <select name="currency" class="select select-bordered w-28">
+                        <option value="USD" {% if expense.currency == 'USD' %}selected{% endif %}>$ USD</option>
+                        <option value="INR" {% if expense.currency == 'INR' %}selected{% endif %}>₹ INR</option>
+                        <option value="EUR" {% if expense.currency == 'EUR' %}selected{% endif %}>€ EUR</option>
+                        <option value="GBP" {% if expense.currency == 'GBP' %}selected{% endif %}>£ GBP</option>
+                        <option value="AED" {% if expense.currency == 'AED' %}selected{% endif %}>د.إ AED</option>
+                        <option value="JPY" {% if expense.currency == 'JPY' %}selected{% endif %}>¥ JPY</option>
+                        <option value="CAD" {% if expense.currency == 'CAD' %}selected{% endif %}>$ CAD</option>
+                        <option value="AUD" {% if expense.currency == 'AUD' %}selected{% endif %}>$ AUD</option>
+                    </select>
+                    <input type="number" name="amount" step="0.01" min="0.01" class="input input-bordered flex-1" value="{{ '%.2f'|format(expense.amount / 100) }}" required>
+                </div>
+            </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Paid by</span></label>
+                <select name="paid_by" class="select select-bordered">
+                    {% for m in members %}
+                    <option value="{{ m.id }}" {% if m.id == expense.paid_by %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Split type</span></label>
+                <select name="split_type" class="select select-bordered" id="split-type"
+                        onchange="document.getElementById('exact-fields').style.display = this.value !== 'equal' ? 'block' : 'none'">
+                    <option value="equal" {% if expense.split_type == 'equal' %}selected{% endif %}>Equal</option>
+                    <option value="exact" {% if expense.split_type == 'exact' %}selected{% endif %}>Exact amounts</option>
+                    <option value="percent" {% if expense.split_type == 'percent' %}selected{% endif %}>Percentage</option>
+                </select>
+            </div>
+            <div class="form-control mb-3">
+                <label class="label"><span class="label-text">Split with</span></label>
+                {% for m in members %}
+                <label class="flex items-center gap-2 py-1">
+                    <input type="checkbox" name="split_with" value="{{ m.id }}" class="checkbox checkbox-sm" checked>
+                    <span class="text-sm">{{ m.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <div id="exact-fields" style="display:{% if expense.split_type != 'equal' %}block{% else %}none{% endif %}" class="mb-3">
+                <label class="label"><span class="label-text">Per-person amounts</span></label>
+                {% for m in members %}
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-sm w-24">{{ m.name }}</span>
+                    <input type="number" name="amount_{{ m.id }}" step="0.01" min="0" class="input input-bordered input-sm flex-1" placeholder="0">
+                </div>
+                {% endfor %}
+            </div>
+            <div class="form-control mb-4">
+                <label class="label"><span class="label-text">Category</span></label>
+                <select name="category" class="select select-bordered select-sm">
+                    <option value="" {% if not expense.category %}selected{% endif %}>None</option>
+                    <option value="food" {% if expense.category == 'food' %}selected{% endif %}>Food</option>
+                    <option value="transport" {% if expense.category == 'transport' %}selected{% endif %}>Transport</option>
+                    <option value="accommodation" {% if expense.category == 'accommodation' %}selected{% endif %}>Accommodation</option>
+                    <option value="shopping" {% if expense.category == 'shopping' %}selected{% endif %}>Shopping</option>
+                    <option value="entertainment" {% if expense.category == 'entertainment' %}selected{% endif %}>Entertainment</option>
+                    <option value="utilities" {% if expense.category == 'utilities' %}selected{% endif %}>Utilities</option>
+                    <option value="rent" {% if expense.category == 'rent' %}selected{% endif %}>Rent</option>
+                    <option value="other" {% if expense.category == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+        </form>
+        <a href="/groups/{{ group.id }}" class="btn btn-ghost btn-block mt-2">Cancel</a>
+    </div>
+</div>
+{% endblock %}

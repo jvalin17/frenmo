@@ -29,7 +29,11 @@
             {% if user %}
                 <a href="/" class="btn btn-ghost btn-sm font-medium" style="color: #697386;">Home</a>
                 <a href="/friends" class="btn btn-ghost btn-sm font-medium" style="color: #697386;">Friends</a>
-                <span class="mx-3 text-sm font-semibold" style="color: #1A1F36;">{{ user.name }}</span>
+                <a href="/account" class="flex items-center gap-2 mx-2" style="text-decoration: none;">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #635BFF; cursor: pointer;">
+                        {{ user.name[0]|upper }}
+                    </div>
+                </a>
                 <a href="/auth/logout" class="btn btn-ghost btn-sm" style="color: #8792A2;">Logout</a>
             {% else %}
                 <a href="/auth/login" class="btn btn-ghost btn-sm font-medium" style="color: #697386;">Login</a>
