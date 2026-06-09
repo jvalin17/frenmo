@@ -31,15 +31,17 @@ async def update_profile(request: Request, db: AsyncSession = Depends(get_db)):
     form_data = await request.form()
     name = form_data.get("name", "").strip()
     email = form_data.get("email", "").strip()
+    default_currency = form_data.get("default_currency", "USD")
 
     if not name or not email:
         return templates.TemplateResponse(
             request, "account/settings.html",
-            {"user": user, "success": None, "error": "Name and email are required."},
+            {"user": user, "success": None, "error": "Nickname and email are required."},
         )
 
     user.name = name
     user.email = email
+    user.default_currency = default_currency
     await db.commit()
     await db.refresh(user)
     logger.info("Profile updated: user=%d", user.id)

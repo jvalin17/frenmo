@@ -63,6 +63,55 @@
         </div>
         {% endif %}
     </div>
+
+    <!-- Currency Converter -->
+    <div class="rounded-2xl p-4 mt-3" style="background: linear-gradient(180deg, #EEF2FF 0%, #FFFFFF 100%); border: 1px solid #DBEAFE; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <h3 class="font-semibold text-xs uppercase mb-3" style="color: #86868B; letter-spacing: 0.05em;">💱 Convert</h3>
+        <div class="space-y-2">
+            <div class="flex gap-1">
+                <input type="number" id="conv-amount" value="100" min="0" step="0.01" class="text-sm px-2 py-1.5 rounded-lg flex-1" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F; width: 70px;">
+                <select id="conv-from" class="text-xs px-1 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F;">
+                    <option value="USD" selected>USD</option>
+                    <option value="INR">INR</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="AED">AED</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                </select>
+            </div>
+            <div class="text-center text-xs" style="color: #AEAEB2;">↓</div>
+            <div class="text-center">
+                <span id="conv-result" class="text-lg font-bold" style="color: #1D1D1F;">—</span>
+                <span id="conv-to-label" class="text-xs" style="color: #86868B;">{{ group.currency }}</span>
+                <span class="text-xs" style="color: #AEAEB2;">*</span>
+            </div>
+            <p class="text-xs text-center" style="color: #AEAEB2;">* approximate rate</p>
+        </div>
+        <script>
+        (function() {
+            const rates = {{ rates|tojson }};
+            const groupCurrency = "{{ group.currency }}";
+            const syms = {"USD":"$","INR":"₹","EUR":"€","GBP":"£","AED":"د.إ","JPY":"¥","CAD":"C$","AUD":"A$"};
+            function calc() {
+                const amt = parseFloat(document.getElementById('conv-amount').value) || 0;
+                const from = document.getElementById('conv-from').value;
+                if (from === groupCurrency) {
+                    document.getElementById('conv-result').textContent = (syms[groupCurrency]||'') + amt.toFixed(2);
+                    return;
+                }
+                const fromRate = rates[from], toRate = rates[groupCurrency];
+                if (!fromRate || !toRate) { document.getElementById('conv-result').textContent = '—'; return; }
+                const converted = (amt / fromRate) * toRate;
+                document.getElementById('conv-result').textContent = (syms[groupCurrency]||'') + converted.toFixed(2);
+            }
+            document.getElementById('conv-amount').addEventListener('input', calc);
+            document.getElementById('conv-from').addEventListener('change', calc);
+            calc();
+        })();
+        </script>
+    </div>
 </div>
 
 <!-- RIGHT MAIN CONTENT -->

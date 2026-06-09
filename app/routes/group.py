@@ -29,9 +29,10 @@ async def create_group(
     request: Request,
     name: str = Form(...),
     group_type: str = Form("other"),
+    group_currency: str = Form("USD"),
     db: AsyncSession = Depends(get_db),
 ):
-    group = Group(name=name.strip(), type=group_type, created_by=request.state.user_id)
+    group = Group(name=name.strip(), type=group_type, currency=group_currency, created_by=request.state.user_id)
     db.add(group)
     await db.flush()
 
@@ -103,6 +104,11 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     for expense in expenses:
         expense_comments[expense.id] = await get_comments(db, expense.id)
 
+    # Get exchange rates for converter widget
+    from app.services.currency import get_exchange_rates
+
+    rates = await get_exchange_rates()
+
     return templates.TemplateResponse(
         request,
         "group/detail.html",
@@ -116,6 +122,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "member_names": member_names,
             "available_friends": available_friends,
             "expense_comments": expense_comments,
+            "rates": rates,
         },
     )
 

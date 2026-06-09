@@ -114,6 +114,15 @@ Dockerfile               # Production container
 render.yaml              # Render deployment config
 ```
 
+## Privacy & Security
+
+- **Minimal data:** Only nickname + email. No real name, phone, or address collected.
+- **Passwords:** Bcrypt hashed (never stored in plain text)
+- **Sessions:** HTTP-only signed cookies
+- **In transit:** HTTPS enforced by Render
+- **At rest:** Neon PostgreSQL encrypts data at rest
+- **Data usage:** Only for expense splitting and charts. No analytics, no tracking, no third-party sharing.
+
 ## License
 
 MIT

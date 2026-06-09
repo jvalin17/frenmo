@@ -17,6 +17,7 @@ class Group(Base):
     invite_token: Mapped[str] = mapped_column(
         String(64), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(32)
     )
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 

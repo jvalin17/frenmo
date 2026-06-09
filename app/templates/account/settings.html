@@ -31,12 +31,25 @@
         <h3 class="font-semibold text-sm uppercase mb-3" style="color: #697386;">Profile</h3>
         <form method="POST" action="/account/profile">
             <div class="form-control mb-3">
-                <label class="label"><span class="label-text">Name</span></label>
+                <label class="label"><span class="label-text">Nickname</span></label>
                 <input type="text" name="name" class="input input-bordered" value="{{ user.name }}" required>
             </div>
-            <div class="form-control mb-4">
+            <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Email</span></label>
                 <input type="email" name="email" class="input input-bordered" value="{{ user.email }}" required>
+            </div>
+            <div class="form-control mb-4">
+                <label class="label"><span class="label-text">Default Currency</span></label>
+                <select name="default_currency" class="select select-bordered">
+                    <option value="USD" {% if user.default_currency == 'USD' %}selected{% endif %}>$ USD</option>
+                    <option value="INR" {% if user.default_currency == 'INR' %}selected{% endif %}>₹ INR</option>
+                    <option value="EUR" {% if user.default_currency == 'EUR' %}selected{% endif %}>€ EUR</option>
+                    <option value="GBP" {% if user.default_currency == 'GBP' %}selected{% endif %}>£ GBP</option>
+                    <option value="AED" {% if user.default_currency == 'AED' %}selected{% endif %}>د.إ AED</option>
+                    <option value="JPY" {% if user.default_currency == 'JPY' %}selected{% endif %}>¥ JPY</option>
+                    <option value="CAD" {% if user.default_currency == 'CAD' %}selected{% endif %}>$ CAD</option>
+                    <option value="AUD" {% if user.default_currency == 'AUD' %}selected{% endif %}>$ AUD</option>
+                </select>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
         </form>
