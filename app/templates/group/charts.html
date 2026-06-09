@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Charts — {{ group.name }}{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">{{ group.name }} — Charts</h2>
+    <a href="/groups/{{ group.id }}" class="btn btn-ghost btn-sm">Back</a>
+</div>
+
+{% if not category_data and not monthly_data %}
+<div class="text-center py-12">
+    <p class="text-gray-400">No expenses yet. Add some to see charts.</p>
+</div>
+{% else %}
+
+<!-- Category Breakdown -->
+{% if category_data %}
+<div class="card bg-base-100 shadow-sm mb-4">
+    <div class="card-body py-4">
+        <h3 class="font-semibold text-sm uppercase mb-3">Spending by Category</h3>
+        <div style="max-width: 280px; margin: 0 auto;">
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="mt-3">
+            {% for cat, amount in category_data.items() %}
+            <div class="flex justify-between items-center py-1">
+                <span class="text-sm capitalize">{{ cat }}</span>
+                <span class="font-semibold text-sm">₹{{ "%.2f"|format(amount / 100) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Monthly Spending -->
+{% if monthly_data %}
+<div class="card bg-base-100 shadow-sm mb-4">
+    <div class="card-body py-4">
+        <h3 class="font-semibold text-sm uppercase mb-3">Monthly Spending</h3>
+        <canvas id="monthlyChart" height="200"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- Per-Member Spending -->
+{% if member_data %}
+<div class="card bg-base-100 shadow-sm mb-4">
+    <div class="card-body py-4">
+        <h3 class="font-semibold text-sm uppercase mb-3">Who Paid What</h3>
+        <canvas id="memberChart" height="200"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+const colors = ['#1b5e20','#2e7d32','#43a047','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#e8f5e9'];
+const borderColors = ['#14451a','#1b5e20','#2e7d32','#388e3c','#43a047','#4caf50','#66bb6a','#81c784'];
+
+{% if category_data %}
+new Chart(document.getElementById('categoryChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_data.keys()|list|tojson }},
+        datasets: [{
+            data: {{ category_data.values()|list|tojson }}.map(v => v / 100),
+            backgroundColor: colors.slice(0, {{ category_data|length }}),
+            borderColor: borderColors.slice(0, {{ category_data|length }}),
+            borderWidth: 2,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { padding: 12 } },
+            tooltip: { callbacks: { label: ctx => ctx.label + ': ₹' + ctx.parsed.toFixed(2) } }
+        }
+    }
+});
+{% endif %}
+
+{% if monthly_data %}
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ monthly_data.keys()|list|tojson }},
+        datasets: [{
+            label: 'Spending (₹)',
+            data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
+            backgroundColor: '#2e7d32',
+            borderColor: '#1b5e20',
+            borderWidth: 1,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { callback: v => '₹' + v } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+{% endif %}
+
+{% if member_data %}
+new Chart(document.getElementById('memberChart'), {
+    type: 'bar',
+    data: {
+        labels: [{% for uid in member_data %}"{{ member_names.get(uid, '?') }}"{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Paid (₹)',
+            data: {{ member_data.values()|list|tojson }}.map(v => v / 100),
+            backgroundColor: colors.slice(0, {{ member_data|length }}),
+            borderColor: borderColors.slice(0, {{ member_data|length }}),
+            borderWidth: 1,
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, ticks: { callback: v => '₹' + v } },
+            y: { grid: { display: false } }
+        }
+    }
+});
+{% endif %}
+</script>
+
+{% endif %}
+{% endblock %}

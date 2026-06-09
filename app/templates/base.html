@@ -31,23 +31,23 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="min-h-screen bg-money-50">
-    <div class="navbar shadow-md" style="background-color: #1b5e20;">
+<body class="min-h-screen" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+    <div class="navbar shadow-lg" style="background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1);">
         <div class="flex-1">
-            <a href="/" class="btn btn-ghost text-xl text-white hover:text-money-100">💰 Rup-Split</a>
+            <a href="/" class="btn btn-ghost text-xl text-emerald-400 hover:text-emerald-300">💰 Rup-Split</a>
         </div>
         <div class="flex-none">
             {% if user %}
-                <a href="/" class="btn btn-ghost btn-sm text-white hover:text-money-100">Home</a>
-                <a href="/friends" class="btn btn-ghost btn-sm text-white hover:text-money-100">Friends</a>
-                <span class="mr-4 text-sm text-money-100">{{ user.name }}</span>
-                <a href="/auth/logout" class="btn btn-ghost btn-sm text-white hover:text-money-100">Logout</a>
+                <a href="/" class="btn btn-ghost btn-sm text-gray-300 hover:text-emerald-400">Home</a>
+                <a href="/friends" class="btn btn-ghost btn-sm text-gray-300 hover:text-emerald-400">Friends</a>
+                <span class="mr-4 text-sm text-emerald-400">{{ user.name }}</span>
+                <a href="/auth/logout" class="btn btn-ghost btn-sm text-gray-400 hover:text-gray-200">Logout</a>
             {% else %}
-                <a href="/auth/login" class="btn btn-ghost btn-sm text-white hover:text-money-100">Login</a>
+                <a href="/auth/login" class="btn btn-ghost btn-sm text-gray-300 hover:text-emerald-400">Login</a>
             {% endif %}
         </div>
     </div>
-    <main class="container mx-auto px-4 py-6 max-w-lg">
+    <main class="container mx-auto px-4 py-6 max-w-lg text-gray-200">
         {% block content %}{% endblock %}
     </main>
 </body>

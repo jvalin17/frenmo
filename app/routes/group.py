@@ -112,6 +112,54 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
 
 
+@router.get("/{group_id}/charts", response_class=HTMLResponse)
+@login_required
+async def group_charts(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
+    user_id = request.state.user_id
+    user = await db.get(User, user_id)
+
+    # Verify membership
+    membership = await db.execute(
+        select(GroupMember).where(
+            GroupMember.group_id == group_id, GroupMember.user_id == user_id
+        )
+    )
+    if membership.scalar_one_or_none() is None:
+        return RedirectResponse(url="/", status_code=303)
+
+    group = await db.get(Group, group_id)
+    if group is None:
+        return RedirectResponse(url="/", status_code=303)
+
+    from app.services.charts import get_category_breakdown, get_member_spending, get_monthly_spending
+
+    category_data = await get_category_breakdown(db, group_id)
+    monthly_data = await get_monthly_spending(db, group_id)
+    member_data = await get_member_spending(db, group_id)
+
+    # Resolve member names
+    members_result = await db.execute(
+        select(User)
+        .join(GroupMember, User.id == GroupMember.user_id)
+        .where(GroupMember.group_id == group_id)
+    )
+    members = members_result.scalars().all()
+    member_names = {m.id: m.name for m in members}
+
+    return templates.TemplateResponse(
+        request,
+        "group/charts.html",
+        {
+            "user": user,
+            "group": group,
+            "category_data": category_data,
+            "monthly_data": monthly_data,
+            "member_data": member_data,
+            "member_names": member_names,
+        },
+    )
+
+
 @router.get("/{group_id}/invite", response_class=HTMLResponse)
 @login_required
 async def invite_page(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):

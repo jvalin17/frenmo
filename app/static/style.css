@@ -1,49 +1,73 @@
-/* Rup-Split — Money Green Theme */
-.balance-positive { color: #1b5e20; font-weight: 600; }
-.balance-negative { color: #c62828; }
-.balance-zero { color: #6b7280; }
+/* Rup-Split — Modern Dark Theme */
 
-/* Money-note styled cards */
+/* Balance colors */
+.balance-positive { color: #4ade80; font-weight: 600; }
+.balance-negative { color: #f87171; }
+.balance-zero { color: #9ca3af; }
+
+/* Cards — glass effect */
 .card {
-    background-color: #ffffff;
-    border: 1px solid #d4f0d4;
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px !important;
 }
 
-/* Primary buttons — deep money green */
+/* Primary buttons — gradient */
 .btn-primary {
-    background-color: #1b5e20 !important;
-    border-color: #1b5e20 !important;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border: none !important;
     color: #ffffff !important;
+    border-radius: 12px !important;
+    font-weight: 600;
 }
 .btn-primary:hover {
-    background-color: #2d6a2d !important;
-    border-color: #2d6a2d !important;
+    background: linear-gradient(135deg, #34d399, #10b981) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
-/* Success button keeps its own green */
+/* Success button */
 .btn-success {
-    background-color: #2e7d32 !important;
-    border-color: #2e7d32 !important;
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    border: none !important;
+    border-radius: 12px !important;
 }
 
-/* Badge and form accents */
+/* Ghost buttons */
+.btn-ghost {
+    border-radius: 12px !important;
+}
+
+/* Badge */
 .badge-outline {
-    border-color: #1b5e20 !important;
-    color: #1b5e20 !important;
+    border-color: #10b981 !important;
+    color: #10b981 !important;
+    border-radius: 8px !important;
 }
 
+/* Form inputs */
+.input, .select {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px !important;
+}
 .input:focus, .select:focus {
-    border-color: #2d6a2d !important;
-    outline-color: #2d6a2d !important;
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
 
 .checkbox:checked {
-    background-color: #1b5e20 !important;
-    border-color: #1b5e20 !important;
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
 }
 
-/* Currency symbol styling */
-.currency-symbol {
-    font-weight: 600;
-    color: #1b5e20;
+/* Smooth transitions */
+.card, .btn, .input, .select {
+    transition: all 0.2s ease;
+}
+
+/* Section headers */
+.card-body h3 {
+    letter-spacing: 0.05em;
 }

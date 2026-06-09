@@ -4,7 +4,10 @@
 {% set sym = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£", "AED": "د.إ", "JPY": "¥", "CAD": "C$", "AUD": "A$"} %}
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">{{ group.name }}</h2>
-    <a href="/groups/{{ group.id }}/invite" class="btn btn-ghost btn-sm">Invite</a>
+    <div class="flex gap-1">
+        <a href="/groups/{{ group.id }}/charts" class="btn btn-ghost btn-sm">Charts</a>
+        <a href="/groups/{{ group.id }}/invite" class="btn btn-ghost btn-sm">Invite</a>
+    </div>
 </div>
 
 <!-- Simplified Debts -->
