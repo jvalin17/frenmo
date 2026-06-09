@@ -35,7 +35,7 @@
                         <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                     </div>
                     <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
-                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: linear-gradient(90deg, #007AFF, #5856D6);"></div>
+                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: linear-gradient(90deg, #3C3B6E, #5C5B8E);"></div>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
 
 <!-- Monthly Spending -->
 {% if monthly_data %}
-<div class="card card-green mb-4">
+<div class="card card-blue mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-2">Monthly Spending</h3>
         <p class="text-xs mb-4" style="color: #AEAEB2;">Total: ${{ "%.2f"|format(monthly_data.values()|sum / 100) }}</p>
@@ -59,12 +59,12 @@
 <!-- Per-Member Spending -->
 {% if member_data %}
 {% set total_member = member_data.values()|sum %}
-<div class="card card-orange mb-4">
+<div class="card card-blue mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-4">Who Paid What</h3>
         {% for uid, amount in member_data.items() %}
         <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #007AFF, #5856D6);">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #3C3B6E, #B22234);">
                 {{ member_names.get(uid, '?')[0]|upper }}
             </div>
             <div class="flex-1">
@@ -73,7 +73,7 @@
                     <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                 </div>
                 <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
-                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: linear-gradient(90deg, #34C759, #30D158);"></div>
+                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: linear-gradient(90deg, #B22234, #D44A5C);"></div>
                 </div>
             </div>
         </div>
@@ -84,8 +84,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-/* Apple-inspired pastel palette */
-const colors = ['#007AFF','#5856D6','#FF9500','#FF2D55','#34C759','#AF52DE','#FF3B30','#5AC8FA'];
+/* USA flag palette — navy, red, white variations */
+const colors = ['#3C3B6E','#B22234','#FFFFFF','#5C5B8E','#D44A5C','#8B8AAE','#E07380','#A3A2C6'];
 
 {% if category_data %}
 new Chart(document.getElementById('categoryChart'), {
@@ -102,7 +102,7 @@ new Chart(document.getElementById('categoryChart'), {
     },
     options: {
         responsive: true,
-        cutout: '70%',
+        cutout: '0%',
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -125,8 +125,8 @@ new Chart(document.getElementById('monthlyChart'), {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: 'rgba(0, 122, 255, 0.15)',
-            hoverBackgroundColor: 'rgba(0, 122, 255, 0.3)',
+            backgroundColor: 'rgba(60, 59, 110, 0.15)',
+            hoverBackgroundColor: 'rgba(60, 59, 110, 0.3)',
             borderRadius: 8,
             borderSkipped: false,
         }]
