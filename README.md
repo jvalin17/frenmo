@@ -1,23 +1,24 @@
 # Rup-Split
 
-Free, self-hosted Splitwise alternative. Split expenses with friends, simplify debts, settle up — no paywalls.
+Free Splitwise alternative. Split expenses with friends, simplify debts, settle up — no paywalls.
 
 **Live:** [rup-split.onrender.com](https://rup-split.onrender.com)
 
 ## Features
 
-- **5 Split Types** — Equal, exact amounts, percentage, shares (for groups like "me + 2 parents"), and full (one person owes all)
-- **Multi-currency** — USD, INR, EUR, GBP, AED, JPY, CAD, AUD per expense
-- **Groups** — Create groups (trip, home, couple), invite via shareable link
+- **5 Split Types** — Equal, exact amounts, percentage, shares (e.g., 3 shares for you + parents), and full (one person owes all)
+- **Multi-currency** — USD, INR, EUR, GBP, AED, JPY, CAD, AUD. Each group has its own currency. Expenses can be in any currency — auto-converted to group currency.
+- **Currency Converter** — Live exchange rates (cached 12h) with converter widget in every group. Converted values marked with `*` (approximate).
+- **Groups** — Create groups (trip, home, couple) with their own currency, invite via shareable link
 - **Friends** — Search by email, send/accept/reject requests, add friends to groups directly
-- **Debt Simplification** — Minimizes transactions needed to settle up
-- **Spending Charts** — Category breakdown (pie), monthly trends (bar), per-member spending
+- **Debt Simplification** — Greedy algorithm minimizes transactions needed to settle up
+- **Spending Charts** — Category pie chart, monthly bar chart, per-member spending bars
 - **Comments** — Threaded comments on each expense
 - **Edit Expenses** — Update description, amount, split type, category after creation
-- **Account Settings** — Edit profile, change password
-- **Password Reset** — Email-based via Resend API
-- **Dashboard** — Hero balance card (color changes: green when owed, orange when owing), quick actions, per-group balances
-- **Sidebar Layout** — Members panel on left, content on right (responsive)
+- **Password Reset** — Forgot password flow sends a signed reset link via email (Resend API). Link expires in 30 minutes.
+- **Account Settings** — Edit nickname, email, default currency, change password
+- **Dashboard** — Hero balance card (green when owed, orange when owing, blue when settled), quick actions, per-group balances
+- **Sidebar Layout** — Members panel with balances on left, content on right (responsive — stacks on mobile)
 
 ## Tech Stack
 
@@ -25,93 +26,21 @@ Free, self-hosted Splitwise alternative. Split expenses with friends, simplify d
 - **Frontend:** Jinja2 + HTMX + Tailwind CSS + DaisyUI + Chart.js
 - **Database:** SQLite (dev) / PostgreSQL (prod, Neon)
 - **Auth:** Session-based (bcrypt + HTTP-only cookies + signed reset tokens)
-- **Email:** Resend API for password reset
-- **Hosting:** Render (free tier) + Neon PostgreSQL (free tier)
-- **Theme:** Apple-inspired light theme with color-faded cards
-
-## Quick Start
-
-```bash
-git clone https://github.com/jvalin17/rup-split.git
-cd rup-split
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-cp .env.example .env
-uvicorn app.main:app --port 8041 --reload
-```
-
-Open http://localhost:8041
-
-## Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | No | `sqlite+aiosqlite:///./rupsplit.db` | Database connection string |
-| `SECRET_KEY` | Yes (prod) | Auto-generated | Session signing key |
-| `CSRF_SECRET` | Yes (prod) | Auto-generated | CSRF token secret |
-| `RESEND_API_KEY` | No | — | Resend API key for password reset emails |
-| `RESET_FROM_EMAIL` | No | `onboarding@resend.dev` | From address for reset emails |
-
-## Running Tests
-
-```bash
-python -m pytest -q          # 63 tests
-python -m pytest -v          # verbose
-python -m pytest tests/unit/test_splits.py  # single file
-```
-
-63 tests covering: splits (equal/exact/percent/shares/full), debt simplification, friendship service, edit expense, comments, password reset.
-
-## Deploy to Render
-
-1. Push to GitHub
-2. Render → New → Web Service → connect repo
-3. Set env vars: `DATABASE_URL`, `SECRET_KEY`, `CSRF_SECRET`, `RESEND_API_KEY`
-4. Deploy (auto-detects `Dockerfile` + `render.yaml`)
-
-PostgreSQL (Neon free tier):
-```
-DATABASE_URL=postgresql+asyncpg://user:pass@host/dbname
-```
+- **Email:** Resend API
+- **Exchange Rates:** open.er-api.com (free, no key)
+- **Hosting:** Render + Neon PostgreSQL (both free tier)
+- **Theme:** Apple-inspired light with color-faded cards (blue, green, orange)
 
 ## Project Structure
 
 ```
 app/
-  config.py              # Settings (env vars)
-  database.py            # SQLAlchemy async engine + SSL handling
-  main.py                # FastAPI app + router registration
-  models/
-    user.py              # User
-    group.py             # Group + GroupMember
-    expense.py           # Expense + ExpenseSplit
-    friendship.py        # Friendship (pending/accepted)
-    comment.py           # Comments on expenses
-  routes/
-    auth.py              # Login, register, logout
-    password_reset.py    # Forgot/reset password (Resend email)
-    account.py           # Profile edit, password change
-    dashboard.py         # Home with hero balance + groups
-    expense.py           # Add/edit/delete expenses
-    friend.py            # Search, request, accept, remove, add-to-group
-    group.py             # Create, detail (sidebar), invite, join, charts
-    comment.py           # Add/delete comments
-    settlement.py        # Record settlements
-  services/
-    balance.py           # Derived balance computation
-    expense.py           # Split calculations (5 types)
-    friendship.py        # Friend request logic
-    charts.py            # Chart data aggregation
-    comments.py          # Comment CRUD
-    password_reset.py    # Token generation/validation
-    email.py             # Resend API integration
-  templates/             # Jinja2 (base, auth, dashboard, group, expense, friends, account)
-  static/style.css       # Apple-inspired theme with color-faded cards
-tests/
-  unit/                  # 63 unit tests
-Dockerfile               # Production container
-render.yaml              # Render deployment config
+  models/           user, group, expense, friendship, comment
+  routes/           auth, password_reset, account, dashboard, expense, friend, group, comment, settlement
+  services/         balance, expense (5 split types), friendship, charts, comments, password_reset, email, currency
+  templates/        Jinja2 templates (base, auth, dashboard, group, expense, friends, account)
+  static/           Apple-inspired CSS theme
+tests/unit/         72 unit tests
 ```
 
 ## Privacy & Security
@@ -122,6 +51,16 @@ render.yaml              # Render deployment config
 - **In transit:** HTTPS enforced by Render
 - **At rest:** Neon PostgreSQL encrypts data at rest
 - **Data usage:** Only for expense splitting and charts. No analytics, no tracking, no third-party sharing.
+
+## Built With Claude Code + Agent Toolkit
+
+This entire app was built using [Claude Code](https://claude.ai/claude-code) with the [Agent Toolkit](https://github.com/anthropics/claude-code) harness:
+
+- **TDD workflow** — Every feature starts with failing tests, then implementation. 72 tests covering all business logic.
+- **Skill-based development** — `/requirements` for scoping, `/implementation` for TDD slabs, `/precommit` quality gates before every commit, `/debug` for hypothesis-driven bug fixing.
+- **Structured slabs** — Features built one at a time, committed independently, never rushing multiple features into one untested commit.
+- **Quality gates** — Pre-commit checks run tests + code review before every `git commit`. No skipping.
+- **Multi-session continuity** — HANDOFF.md tracks progress across sessions so context is never lost.
 
 ## License
 
