@@ -38,6 +38,7 @@
         </div>
         <div class="flex-none">
             {% if user %}
+                <a href="/" class="btn btn-ghost btn-sm text-white hover:text-money-100">Home</a>
                 <a href="/friends" class="btn btn-ghost btn-sm text-white hover:text-money-100">Friends</a>
                 <span class="mr-4 text-sm text-money-100">{{ user.name }}</span>
                 <a href="/auth/logout" class="btn btn-ghost btn-sm text-white hover:text-money-100">Logout</a>

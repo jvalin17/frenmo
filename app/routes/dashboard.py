@@ -8,7 +8,7 @@ from app.database import get_db
 from app.middleware.auth import login_required
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.balance import get_overall_balances
+from app.services.balance import get_group_balances, get_overall_balances
 
 router = APIRouter(tags=["dashboard"])
 templates = Jinja2Templates(directory="app/templates")
@@ -38,6 +38,13 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         if other_user:
             balance_names[other_id] = other_user.name
 
+    # Per-group balances for current user
+    group_balances = {}
+    for group in groups:
+        balances = await get_group_balances(db, group.id)
+        user_net = balances.get(user_id, 0)
+        group_balances[group.id] = user_net
+
     return templates.TemplateResponse(
         request,
         "dashboard.html",
@@ -46,5 +53,6 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "groups": groups,
             "overall_balances": overall,
             "balance_names": balance_names,
+            "group_balances": group_balances,
         },
     )

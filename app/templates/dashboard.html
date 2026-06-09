@@ -26,10 +26,20 @@
 {% if groups %}
 <div class="space-y-3">
     {% for group in groups %}
+    {% set net = group_balances.get(group.id, 0) %}
     <a href="/groups/{{ group.id }}" class="card bg-base-100 shadow-sm block hover:shadow-md transition-shadow">
         <div class="card-body py-4">
-            <h3 class="card-title text-lg">{{ group.name }}</h3>
-            <p class="text-sm text-gray-500">{{ group.type }}</p>
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="card-title text-lg">{{ group.name }}</h3>
+                    <p class="text-sm text-gray-500">{{ group.type }}</p>
+                </div>
+                <span class="font-semibold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                    {% if net > 0 %}+₹{{ "%.2f"|format(net / 100) }}
+                    {% elif net < 0 %}-₹{{ "%.2f"|format((-net) / 100) }}
+                    {% else %}settled{% endif %}
+                </span>
+            </div>
         </div>
     </a>
     {% endfor %}
