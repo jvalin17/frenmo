@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: rup-split
+    name: frenmo
     runtime: docker
     plan: free
     envVars:

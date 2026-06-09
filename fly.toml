@@ -1,11 +1,11 @@
-app = "rup-split"
+app = "frenmo"
 primary_region = "bom"
 
 [build]
   dockerfile = "Dockerfile"
 
 [env]
-  DATABASE_URL = "sqlite+aiosqlite:///./data/rupsplit.db"
+  DATABASE_URL = "sqlite+aiosqlite:///./data/frenmo.db"
 
 [http_service]
   internal_port = 8040
@@ -15,7 +15,7 @@ primary_region = "bom"
   min_machines_running = 0
 
 [mounts]
-  source = "rupsplit_data"
+  source = "frenmo_data"
   destination = "/app/data"
 
 [[vm]]

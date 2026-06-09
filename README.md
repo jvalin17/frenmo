@@ -1,4 +1,4 @@
-# Rup-Split
+# Frenmo
 
 Free Splitwise alternative. Split expenses with friends, simplify debts, settle up — no paywalls.
 

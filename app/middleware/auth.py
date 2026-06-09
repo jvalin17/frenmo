@@ -9,7 +9,7 @@ from app.config import settings
 
 session_serializer = URLSafeTimedSerializer(settings.secret_key)
 
-SESSION_COOKIE_NAME = "rupsplit_session"
+SESSION_COOKIE_NAME = "frenmo_session"
 SESSION_MAX_AGE = 30 * 24 * 3600  # 30 days
 
 

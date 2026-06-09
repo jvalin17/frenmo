@@ -20,7 +20,7 @@ async def lifespan(application: FastAPI):
     yield
 
 
-app = FastAPI(title="Rup-Split", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Frenmo", version="0.1.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(account.router)
 app.include_router(auth.router)

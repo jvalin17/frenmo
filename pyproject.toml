@@ -1,5 +1,5 @@
 [project]
-name = "rup-split"
+name = "frenmo"
 version = "0.1.0"
 description = "Free expense splitting app — Splitwise alternative"
 requires-python = ">=3.11"

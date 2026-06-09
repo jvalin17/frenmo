@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite+aiosqlite:///./rupsplit.db"
+    database_url: str = "sqlite+aiosqlite:///./frenmo.db"
     secret_key: str = secrets.token_urlsafe(32)
     csrf_secret: str = secrets.token_urlsafe(32)
     debug: bool = False
