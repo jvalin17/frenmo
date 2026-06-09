@@ -107,7 +107,7 @@ async def create_expense(
 @router.post("/{expense_id}/delete")
 @login_required
 async def delete_expense(request: Request, expense_id: int, db: AsyncSession = Depends(get_db)):
-    from datetime import UTC, datetime
+    from datetime import datetime
 
     expense = await db.get(Expense, expense_id)
     if expense is None or expense.created_by != request.state.user_id:
@@ -115,7 +115,7 @@ async def delete_expense(request: Request, expense_id: int, db: AsyncSession = D
 
     group_id = expense.group_id
     if expense.deleted_at is None:
-        expense.deleted_at = datetime.now(UTC)
+        expense.deleted_at = datetime.utcnow()
         await db.commit()
     logger.info("Expense soft-deleted: expense_id=%d by user=%d", expense_id, request.state.user_id)
     return RedirectResponse(url=f"/groups/{group_id}", status_code=303)

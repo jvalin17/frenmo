@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,5 +133,5 @@ async def create_expense_with_splits(
 async def soft_delete_expense(db: AsyncSession, expense_id: int) -> None:
     expense = await db.get(Expense, expense_id)
     if expense and expense.deleted_at is None:
-        expense.deleted_at = datetime.now(UTC)
+        expense.deleted_at = datetime.utcnow()
         await db.commit()
