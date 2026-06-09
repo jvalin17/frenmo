@@ -1,30 +1,43 @@
 {% extends "base.html" %}
 {% block title %}Charts — {{ group.name }}{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold">{{ group.name }} — Charts</h2>
-    <a href="/groups/{{ group.id }}" class="btn btn-ghost btn-sm">Back</a>
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Charts</h2>
+    <a href="/groups/{{ group.id }}" class="btn btn-ghost btn-sm">← Back</a>
 </div>
 
 {% if not category_data and not monthly_data %}
-<div class="text-center py-12">
-    <p class="text-gray-400">No expenses yet. Add some to see charts.</p>
+<div class="text-center py-16">
+    <div class="text-4xl mb-3">📊</div>
+    <p style="color: #86868B;">No expenses yet. Add some to see charts.</p>
 </div>
 {% else %}
 
 <!-- Category Breakdown -->
 {% if category_data %}
-<div class="card bg-base-100 shadow-sm mb-4">
-    <div class="card-body py-4">
-        <h3 class="font-semibold text-sm uppercase mb-3">Spending by Category</h3>
-        <div style="max-width: 280px; margin: 0 auto;">
+{% set cat_emojis = {"food": "🍕", "transport": "🚕", "accommodation": "🏨", "shopping": "🛍️", "entertainment": "🎬", "utilities": "💡", "rent": "🏠", "other": "💳"} %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="font-semibold text-sm uppercase mb-4">Spending by Category</h3>
+        <div style="max-width: 220px; margin: 0 auto;">
             <canvas id="categoryChart"></canvas>
         </div>
-        <div class="mt-3">
+        <div class="mt-4 space-y-2">
+            {% set total_cat = category_data.values()|sum %}
             {% for cat, amount in category_data.items() %}
-            <div class="flex justify-between items-center py-1">
-                <span class="text-sm capitalize">{{ cat }}</span>
-                <span class="font-semibold text-sm">${{ "%.2f"|format(amount / 100) }}</span>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm" style="background: #F2F2F7;">
+                    {{ cat_emojis.get(cat, "💳") }}
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium capitalize">{{ cat }}</span>
+                        <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
+                    </div>
+                    <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
+                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: linear-gradient(90deg, #007AFF, #5856D6);"></div>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -34,28 +47,45 @@
 
 <!-- Monthly Spending -->
 {% if monthly_data %}
-<div class="card bg-base-100 shadow-sm mb-4">
-    <div class="card-body py-4">
-        <h3 class="font-semibold text-sm uppercase mb-3">Monthly Spending</h3>
-        <canvas id="monthlyChart" height="200"></canvas>
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="font-semibold text-sm uppercase mb-2">Monthly Spending</h3>
+        <p class="text-xs mb-4" style="color: #AEAEB2;">Total: ${{ "%.2f"|format(monthly_data.values()|sum / 100) }}</p>
+        <canvas id="monthlyChart" height="180"></canvas>
     </div>
 </div>
 {% endif %}
 
 <!-- Per-Member Spending -->
 {% if member_data %}
-<div class="card bg-base-100 shadow-sm mb-4">
-    <div class="card-body py-4">
-        <h3 class="font-semibold text-sm uppercase mb-3">Who Paid What</h3>
-        <canvas id="memberChart" height="200"></canvas>
+{% set total_member = member_data.values()|sum %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="font-semibold text-sm uppercase mb-4">Who Paid What</h3>
+        {% for uid, amount in member_data.items() %}
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #007AFF, #5856D6);">
+                {{ member_names.get(uid, '?')[0]|upper }}
+            </div>
+            <div class="flex-1">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">{{ member_names.get(uid, '?') }}</span>
+                    <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
+                </div>
+                <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
+                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: linear-gradient(90deg, #34C759, #30D158);"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-const colors = ['#1b5e20','#2e7d32','#43a047','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#e8f5e9'];
-const borderColors = ['#14451a','#1b5e20','#2e7d32','#388e3c','#43a047','#4caf50','#66bb6a','#81c784'];
+/* Apple-inspired pastel palette */
+const colors = ['#007AFF','#5856D6','#FF9500','#FF2D55','#34C759','#AF52DE','#FF3B30','#5AC8FA'];
 
 {% if category_data %}
 new Chart(document.getElementById('categoryChart'), {
@@ -65,15 +95,24 @@ new Chart(document.getElementById('categoryChart'), {
         datasets: [{
             data: {{ category_data.values()|list|tojson }}.map(v => v / 100),
             backgroundColor: colors.slice(0, {{ category_data|length }}),
-            borderColor: borderColors.slice(0, {{ category_data|length }}),
-            borderWidth: 2,
+            borderWidth: 0,
+            spacing: 2,
+            hoverOffset: 6,
         }]
     },
     options: {
         responsive: true,
+        cutout: '70%',
         plugins: {
-            legend: { position: 'bottom', labels: { padding: 12 } },
-            tooltip: { callbacks: { label: ctx => ctx.label + ': $' + ctx.parsed.toFixed(2) } }
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1D1D1F',
+                titleFont: { family: 'Inter', weight: '600' },
+                bodyFont: { family: 'Inter' },
+                cornerRadius: 10,
+                padding: 12,
+                callbacks: { label: ctx => ' ' + ctx.label + ': $' + ctx.parsed.toFixed(2) }
+            }
         }
     }
 });
@@ -85,46 +124,38 @@ new Chart(document.getElementById('monthlyChart'), {
     data: {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
-            label: 'Spending ($)',
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: '#2e7d32',
-            borderColor: '#1b5e20',
-            borderWidth: 1,
-            borderRadius: 6,
+            backgroundColor: 'rgba(0, 122, 255, 0.15)',
+            hoverBackgroundColor: 'rgba(0, 122, 255, 0.3)',
+            borderRadius: 8,
+            borderSkipped: false,
         }]
     },
     options: {
         responsive: true,
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1D1D1F',
+                cornerRadius: 10,
+                padding: 12,
+                titleFont: { family: 'Inter', weight: '600' },
+                bodyFont: { family: 'Inter' },
+                callbacks: { label: ctx => ' $' + ctx.parsed.y.toFixed(2) }
+            }
+        },
         scales: {
-            y: { beginAtZero: true, ticks: { callback: v => '$' + v } },
-            x: { grid: { display: false } }
-        }
-    }
-});
-{% endif %}
-
-{% if member_data %}
-new Chart(document.getElementById('memberChart'), {
-    type: 'bar',
-    data: {
-        labels: [{% for uid in member_data %}"{{ member_names.get(uid, '?') }}"{% if not loop.last %},{% endif %}{% endfor %}],
-        datasets: [{
-            label: 'Paid ($)',
-            data: {{ member_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: colors.slice(0, {{ member_data|length }}),
-            borderColor: borderColors.slice(0, {{ member_data|length }}),
-            borderWidth: 1,
-            borderRadius: 6,
-        }]
-    },
-    options: {
-        indexAxis: 'y',
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { beginAtZero: true, ticks: { callback: v => '$' + v } },
-            y: { grid: { display: false } }
+            y: {
+                beginAtZero: true,
+                border: { display: false },
+                grid: { color: '#F2F2F7' },
+                ticks: { color: '#AEAEB2', font: { family: 'Inter', size: 11 }, callback: v => '$' + v }
+            },
+            x: {
+                border: { display: false },
+                grid: { display: false },
+                ticks: { color: '#AEAEB2', font: { family: 'Inter', size: 11 } }
+            }
         }
     }
 });
