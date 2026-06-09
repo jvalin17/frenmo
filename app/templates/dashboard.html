@@ -7,23 +7,38 @@
 {% set total_you_owe = overall_balances.values()|select("lt", 0)|sum %}
 {% set net_total = total_owed_to_you + total_you_owe %}
 
-<div class="text-center py-6">
-    <p class="text-sm" style="color: #697386;">Your net balance</p>
-    <div class="hero-balance {% if net_total > 0 %}hero-positive{% elif net_total < 0 %}hero-negative{% else %}hero-zero{% endif %}">
+<!-- Hero Card -->
+<div class="hero-card mb-6">
+    <p class="text-sm" style="opacity: 0.8;">Total Balance</p>
+    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: #FFFFFF; margin: 0.25rem 0;">
         {% if net_total > 0 %}+${{ "%.2f"|format(net_total / 100) }}
         {% elif net_total < 0 %}-${{ "%.2f"|format((-net_total) / 100) }}
         {% else %}$0.00{% endif %}
     </div>
-    <div class="flex justify-center gap-6 mt-2">
-        <span class="text-sm"><span class="balance-positive">▲</span> Owed to you: ${{ "%.2f"|format(total_owed_to_you / 100) }}</span>
-        <span class="text-sm"><span class="balance-negative">▼</span> You owe: ${{ "%.2f"|format((-total_you_owe) / 100) }}</span>
+    <div class="flex gap-6 mt-2" style="opacity: 0.85;">
+        <span class="text-sm">↑ Owed: ${{ "%.2f"|format(total_owed_to_you / 100) }}</span>
+        <span class="text-sm">↓ Owe: ${{ "%.2f"|format((-total_you_owe) / 100) }}</span>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="flex justify-center gap-3 mb-6">
-    <a href="/groups/new" class="quick-action">+ New Group</a>
-    <a href="/friends" class="quick-action">Find Friends</a>
+<div class="flex justify-center gap-6 mb-6">
+    <a href="/groups/new" class="quick-action">
+        <div class="icon-circle">➕</div>
+        <span class="icon-label">New Group</span>
+    </a>
+    <a href="/friends" class="quick-action">
+        <div class="icon-circle">👥</div>
+        <span class="icon-label">Friends</span>
+    </a>
+    <a href="/friends?q=" class="quick-action">
+        <div class="icon-circle">🔍</div>
+        <span class="icon-label">Search</span>
+    </a>
+    <a href="/account" class="quick-action">
+        <div class="icon-circle">⚙️</div>
+        <span class="icon-label">Settings</span>
+    </a>
 </div>
 
 <!-- People You Owe / Owe You -->

@@ -1,182 +1,215 @@
-/* Rup-Split — Stripe-Inspired Theme */
+/* Rup-Split — Apple-Inspired Light Theme */
 
 /* Balance colors */
-.balance-positive { color: #0E6245; font-weight: 600; }
-.balance-negative { color: #CD3D64; }
-.balance-zero { color: #8792A2; }
+.balance-positive { color: #34C759; font-weight: 600; }
+.balance-negative { color: #FF3B30; }
+.balance-zero { color: #8E8E93; }
 
-/* Cards */
+/* Cards — Apple elevated surface */
 .card {
     background: #FFFFFF !important;
-    border: 1px solid #E3E8EE !important;
-    border-radius: 12px !important;
-    color: #1A1F36;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    color: #1D1D1F;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04) !important;
 }
 
-/* Primary buttons — Stripe indigo */
+/* Hero card */
+.hero-card {
+    background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+    border-radius: 20px !important;
+    padding: 2rem;
+    color: #FFFFFF;
+    box-shadow: 0 8px 30px rgba(0,122,255,0.2);
+}
+
+/* Primary buttons — Apple blue */
 .btn-primary {
-    background: #635BFF !important;
+    background: #007AFF !important;
     border: none !important;
     color: #FFFFFF !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     font-weight: 600;
 }
 .btn-primary:hover {
-    background: #7A73FF !important;
+    background: #0071E3 !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 /* Success button */
 .btn-success {
-    background: #0E6245 !important;
+    background: #34C759 !important;
     border: none !important;
     color: #FFFFFF !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
 }
 
 /* Error/danger */
 .text-error {
-    color: #CD3D64 !important;
+    color: #FF3B30 !important;
 }
 
 /* Ghost buttons */
 .btn-ghost {
-    border-radius: 8px !important;
-    color: #697386 !important;
+    border-radius: 12px !important;
+    color: #6E6E73 !important;
 }
 .btn-ghost:hover {
-    background: #F0F2F5 !important;
-    color: #1A1F36 !important;
+    background: #F2F2F7 !important;
+    color: #1D1D1F !important;
 }
 
 /* Badge */
 .badge-outline {
-    border-color: #635BFF !important;
-    color: #635BFF !important;
-    border-radius: 6px !important;
-    background: #F6F5FF !important;
+    border-color: #007AFF !important;
+    color: #007AFF !important;
+    border-radius: 8px !important;
+    background: #F0F5FF !important;
 }
 
 /* Form inputs */
 .input, .select {
-    background: #FFFFFF !important;
-    border: 1px solid #E3E8EE !important;
-    border-radius: 8px !important;
-    color: #1A1F36 !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+    background: #F2F2F7 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    color: #1D1D1F !important;
 }
 .input:focus, .select:focus {
-    border-color: #635BFF !important;
-    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1), 0 1px 2px rgba(0,0,0,0.04) !important;
+    outline: 2px solid #007AFF !important;
+    outline-offset: -1px;
+    box-shadow: none !important;
 }
 .input::placeholder {
-    color: #A3ACB9 !important;
+    color: #AEAEB2 !important;
 }
 
 .checkbox {
-    border-color: #E3E8EE !important;
+    border-color: #D1D1D6 !important;
 }
 .checkbox:checked {
-    background-color: #635BFF !important;
-    border-color: #635BFF !important;
+    background-color: #007AFF !important;
+    border-color: #007AFF !important;
 }
 
 /* Labels and secondary text */
 .label-text {
-    color: #697386 !important;
+    color: #6E6E73 !important;
 }
 .text-gray-500 {
-    color: #697386 !important;
+    color: #6E6E73 !important;
 }
 .text-gray-400 {
-    color: #8792A2 !important;
+    color: #AEAEB2 !important;
 }
 
 /* Section headers */
 .card-body h3 {
-    letter-spacing: 0.05em;
-    color: #697386 !important;
+    letter-spacing: 0.03em;
+    color: #86868B !important;
+    font-size: 0.75rem;
 }
 
 /* Card titles */
 .card-title {
-    color: #1A1F36 !important;
+    color: #1D1D1F !important;
 }
 
 /* Hero balance */
 .hero-balance {
-    font-size: 2.5rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #1D1D1F;
 }
-.hero-positive { color: #0E6245; }
-.hero-negative { color: #CD3D64; }
-.hero-zero { color: #8792A2; }
+.hero-positive { color: #34C759 !important; }
+.hero-negative { color: #FF3B30 !important; }
+.hero-zero { color: #8E8E93 !important; }
 
-/* Quick action pills */
+/* Quick action circles — Apple style */
 .quick-action {
-    background: #FFFFFF;
-    color: #635BFF;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    border: 1px solid #E3E8EE;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    transition: transform 0.15s ease;
 }
 .quick-action:hover {
-    background: #635BFF;
-    color: #FFFFFF;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
+    transform: scale(1.05);
+}
+.quick-action:active {
+    transform: scale(0.95);
+}
+.quick-action .icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: #F2F2F7;
+    display: grid;
+    place-items: center;
+    font-size: 1.25rem;
+    transition: all 0.15s ease;
+}
+.quick-action:hover .icon-circle {
+    background: #E5E5EA;
+}
+.quick-action .icon-label {
+    font-size: 0.7rem;
+    color: #6E6E73;
+    font-weight: 500;
 }
 
 /* Links */
 .link-primary {
-    color: #635BFF !important;
+    color: #007AFF !important;
 }
 .link-primary:hover {
-    color: #7A73FF !important;
+    color: #0071E3 !important;
 }
 
 /* Alert */
 .alert-error {
-    background: #FFF0F3 !important;
-    color: #CD3D64 !important;
-    border: 1px solid #FECDD3 !important;
+    background: #FFF2F2 !important;
+    color: #FF3B30 !important;
+    border: none !important;
+    border-radius: 12px !important;
 }
 
-/* Typography — Magic Leap precision */
+/* Typography — Apple SF precision */
 h2, h3, .card-title, .hero-balance {
     letter-spacing: -0.02em;
 }
-
-/* Smooth transitions */
-.card, .btn, .input, .select {
-    transition: all 0.2s ease;
+h2 {
+    font-weight: 700;
+    color: #1D1D1F;
 }
 
-/* Hover cards */
+/* Smooth transitions — no lag */
+.card, .btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.input, .select {
+    transition: outline 0.1s ease;
+}
+
+/* Hover cards — subtle lift */
 .card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06) !important;
     transform: translateY(-1px);
 }
 
-/* Navbar link hover */
-.navbar .btn-ghost:hover {
-    color: #635BFF !important;
-    background: #F6F5FF !important;
+/* Navbar hover */
+.navbar a:hover {
+    color: #007AFF !important;
 }
 
-/* Better card padding */
+/* Card padding */
 .card-body {
     padding: 1.25rem !important;
 }
 
-/* Professional section dividers */
+/* Section dividers */
 .border-b {
-    border-color: #E3E8EE !important;
+    border-color: #F2F2F7 !important;
 }
