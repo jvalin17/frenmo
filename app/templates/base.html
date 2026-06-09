@@ -31,23 +31,23 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="min-h-screen" style="background: #09090B; color: #FAFAFA;">
-    <div class="navbar" style="background: #18181B; border-bottom: 1px solid #27272A;">
+<body class="min-h-screen" style="background: #F8F5FF; color: #1E1433;">
+    <div class="navbar shadow-sm" style="background: linear-gradient(135deg, #7C5CFC 0%, #A78BFA 100%); border-bottom: 1px solid #E4DDF0;">
         <div class="flex-1">
-            <a href="/" class="btn btn-ghost text-xl" style="color: #818CF8;">💰 Rup-Split</a>
+            <a href="/" class="btn btn-ghost text-xl text-white hover:bg-white/10">💰 Rup-Split</a>
         </div>
         <div class="flex-none">
             {% if user %}
-                <a href="/" class="btn btn-ghost btn-sm" style="color: #A1A1AA;">Home</a>
-                <a href="/friends" class="btn btn-ghost btn-sm" style="color: #A1A1AA;">Friends</a>
-                <span class="mr-4 text-sm" style="color: #818CF8;">{{ user.name }}</span>
-                <a href="/auth/logout" class="btn btn-ghost btn-sm" style="color: #71717A;">Logout</a>
+                <a href="/" class="btn btn-ghost btn-sm text-white/80 hover:text-white hover:bg-white/10">Home</a>
+                <a href="/friends" class="btn btn-ghost btn-sm text-white/80 hover:text-white hover:bg-white/10">Friends</a>
+                <span class="mr-4 text-sm text-white font-medium">{{ user.name }}</span>
+                <a href="/auth/logout" class="btn btn-ghost btn-sm text-white/60 hover:text-white hover:bg-white/10">Logout</a>
             {% else %}
-                <a href="/auth/login" class="btn btn-ghost btn-sm" style="color: #A1A1AA;">Login</a>
+                <a href="/auth/login" class="btn btn-ghost btn-sm text-white/80 hover:text-white hover:bg-white/10">Login</a>
             {% endif %}
         </div>
     </div>
-    <main class="container mx-auto px-4 py-6 max-w-lg" style="color: #FAFAFA;">
+    <main class="container mx-auto px-4 py-6 max-w-lg" style="color: #1E1433;">
         {% block content %}{% endblock %}
     </main>
 </body>
