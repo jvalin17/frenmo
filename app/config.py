@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     csrf_secret: str = secrets.token_urlsafe(32)
     debug: bool = False
     app_port: int = 8040
+    resend_api_key: str = ""
+    reset_from_email: str = "onboarding@resend.dev"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
