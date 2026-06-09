@@ -8,16 +8,16 @@
 {% set net_total = total_owed_to_you + total_you_owe %}
 
 <!-- Hero Card — color changes based on balance -->
-<div class="hero-card mb-6" style="background: linear-gradient(135deg, {% if net_total > 0 %}#059669 0%, #34D399 100%); box-shadow: 0 8px 30px rgba(5,150,105,0.2){% elif net_total < 0 %}#EA580C 0%, #FB923C 100%); box-shadow: 0 8px 30px rgba(234,88,12,0.2){% else %}#007AFF 0%, #5856D6 100%); box-shadow: 0 8px 30px rgba(0,122,255,0.2){% endif %};">
-    <p class="text-sm" style="opacity: 0.85;">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}Total Balance{% endif %}</p>
-    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: #FFFFFF; margin: 0.25rem 0;">
+<div class="hero-card mb-6" style="background: linear-gradient(135deg, {% if net_total > 0 %}#FFFFFF 0%, #E6FAF0 40%, #B2E8D0 100%); box-shadow: 0 8px 30px rgba(52,199,89,0.08){% elif net_total < 0 %}#FFFFFF 0%, #FFF3EB 40%, #FDDCBE 100%); box-shadow: 0 8px 30px rgba(255,149,0,0.08){% else %}#FFFFFF 0%, #EEF2FF 40%, #DBEAFE 100%); box-shadow: 0 8px 30px rgba(0,122,255,0.08){% endif %}; border: 1px solid {% if net_total > 0 %}#D1FAE5{% elif net_total < 0 %}#FED7AA{% else %}#DBEAFE{% endif %};">
+    <p class="text-sm" style="color: #86868B;">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}Total Balance{% endif %}</p>
+    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: {% if net_total > 0 %}#059669{% elif net_total < 0 %}#C2410C{% else %}#1D1D1F{% endif %}; margin: 0.25rem 0;">
         {% if net_total > 0 %}${{ "%.2f"|format(net_total / 100) }}
         {% elif net_total < 0 %}${{ "%.2f"|format((-net_total) / 100) }}
         {% else %}$0.00{% endif %}
     </div>
-    <div class="flex gap-6 mt-2" style="opacity: 0.85;">
-        <span class="text-sm">↑ Owed: ${{ "%.2f"|format(total_owed_to_you / 100) }}</span>
-        <span class="text-sm">↓ Owe: ${{ "%.2f"|format((-total_you_owe) / 100) }}</span>
+    <div class="flex gap-6 mt-2">
+        <span class="text-sm" style="color: #34C759;">↑ ${{ "%.2f"|format(total_owed_to_you / 100) }} owed</span>
+        <span class="text-sm" style="color: #FF9500;">↓ ${{ "%.2f"|format((-total_you_owe) / 100) }} owe</span>
     </div>
 </div>
 
