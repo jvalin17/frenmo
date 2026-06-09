@@ -54,6 +54,36 @@ def compute_percent_splits(amount_paise: int, member_values: dict[int, float]) -
     return splits
 
 
+def compute_shares_splits(amount_paise: int, member_shares: dict[int, float]) -> dict[int, int]:
+    """Shares/weights split — values are share counts. Distribute proportionally."""
+    if not member_shares:
+        return {}
+    total_shares = sum(member_shares.values())
+    if total_shares == 0:
+        return {}
+
+    splits = {}
+    total_assigned = 0
+    members = list(member_shares.items())
+    for member_id, shares in members[:-1]:
+        paise = round(amount_paise * shares / total_shares)
+        splits[member_id] = paise
+        total_assigned += paise
+
+    # Last member gets the remainder to ensure exact sum
+    last_id = members[-1][0]
+    splits[last_id] = amount_paise - total_assigned
+    return splits
+
+
+def compute_full_split(amount_paise: int, owes_user_id: int, member_ids: list[int]) -> dict[int, int]:
+    """Full split — one person owes the entire amount, everyone else owes 0."""
+    splits = {}
+    for member_id in member_ids:
+        splits[member_id] = amount_paise if member_id == owes_user_id else 0
+    return splits
+
+
 async def create_expense_with_splits(
     db: AsyncSession,
     group_id: int,
@@ -86,6 +116,10 @@ async def create_expense_with_splits(
         owed_splits = compute_exact_splits(amount_paise, member_values)
     elif split_type == "percent" and member_values:
         owed_splits = compute_percent_splits(amount_paise, member_values)
+    elif split_type == "shares" and member_values:
+        owed_splits = compute_shares_splits(amount_paise, member_values)
+    elif split_type == "full" and member_values and "full_owes" in member_values:
+        owed_splits = compute_full_split(amount_paise, int(member_values["full_owes"]), member_ids)
     else:
         owed_splits = compute_equal_splits(amount_paise, member_ids)
 

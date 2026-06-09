@@ -25,3 +25,10 @@ htmlcov/
 .gate/attestation.json
 .gates/
 .scratch/
+
+# Exclude project docs except README
+project-state.md
+HANDOFF.md
+architecture/
+requirements/
+reports/

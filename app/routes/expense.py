@@ -73,7 +73,7 @@ async def create_expense(
         )
         selected_member_ids = [row[0] for row in members_result.all()]
 
-    # Parse per-member amounts for exact/percent splits
+    # Parse per-member values based on split type
     member_values = {}
     if split_type in ("exact", "percent"):
         for member_id in selected_member_ids:
@@ -82,8 +82,26 @@ async def create_expense(
                 member_values[member_id] = float(val)
             except ValueError:
                 member_values[member_id] = 0
+    elif split_type == "shares":
+        for member_id in selected_member_ids:
+            val = form_data.get(f"shares_{member_id}", "1")
+            try:
+                member_values[member_id] = float(val)
+            except ValueError:
+                member_values[member_id] = 1
+    elif split_type == "full":
+        full_owes = int(form_data.get("full_owes", paid_by))
+        # Get all group members for full split
+        members_result = await db.execute(
+            select(GroupMember.user_id).where(GroupMember.group_id == group_id)
+        )
+        selected_member_ids = [row[0] for row in members_result.all()]
 
     idempotency_key = str(uuid.uuid4())
+
+    # For full split, pass owes_user_id via member_values
+    if split_type == "full":
+        member_values = {"full_owes": full_owes}
 
     await create_expense_with_splits(
         db=db,

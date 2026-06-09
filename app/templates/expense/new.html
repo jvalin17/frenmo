@@ -36,19 +36,38 @@
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Split type</span></label>
                 <select name="split_type" class="select select-bordered" id="split-type"
-                        onchange="document.getElementById('exact-fields').style.display = this.value !== 'equal' ? 'block' : 'none'">
+                        onchange="
+                            var v = this.value;
+                            document.getElementById('exact-fields').style.display = (v === 'exact' || v === 'percent') ? 'block' : 'none';
+                            document.getElementById('shares-fields').style.display = v === 'shares' ? 'block' : 'none';
+                            document.getElementById('full-fields').style.display = v === 'full' ? 'block' : 'none';
+                            document.getElementById('split-with').style.display = (v === 'full') ? 'none' : 'block';
+                        ">
                     <option value="equal">Equal</option>
+                    <option value="shares">Shares (e.g., 3 for you + parents)</option>
                     <option value="exact">Exact amounts</option>
                     <option value="percent">Percentage</option>
+                    <option value="full">Full — one person owes it all</option>
                 </select>
             </div>
-            <div class="form-control mb-3">
+            <div id="split-with" class="form-control mb-3">
                 <label class="label"><span class="label-text">Split with</span></label>
                 {% for m in members %}
                 <label class="flex items-center gap-2 py-1">
                     <input type="checkbox" name="split_with" value="{{ m.id }}" class="checkbox checkbox-sm" checked>
                     <span class="text-sm">{{ m.name }}</span>
                 </label>
+                {% endfor %}
+            </div>
+            <div id="shares-fields" style="display:none" class="mb-3">
+                <label class="label"><span class="label-text">Shares per person</span></label>
+                <p class="text-xs mb-2" style="color: #86868B;">Tip: Put 3 for someone covering themselves + 2 guests</p>
+                {% for m in members %}
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-sm w-24">{{ m.name }}</span>
+                    <input type="number" name="shares_{{ m.id }}" min="0" value="1" class="input input-bordered input-sm w-20" placeholder="1">
+                    <span class="text-xs" style="color: #AEAEB2;">shares</span>
+                </div>
                 {% endfor %}
             </div>
             <div id="exact-fields" style="display:none" class="mb-3">
@@ -59,6 +78,14 @@
                     <input type="number" name="amount_{{ m.id }}" step="0.01" min="0" class="input input-bordered input-sm flex-1" placeholder="0">
                 </div>
                 {% endfor %}
+            </div>
+            <div id="full-fields" style="display:none" class="mb-3">
+                <label class="label"><span class="label-text">Who owes the full amount?</span></label>
+                <select name="full_owes" class="select select-bordered">
+                    {% for m in members %}
+                    <option value="{{ m.id }}">{{ m.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-control mb-4">
                 <label class="label"><span class="label-text">Category</span></label>
