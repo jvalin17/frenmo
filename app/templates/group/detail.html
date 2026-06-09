@@ -4,16 +4,21 @@
 {% set sym = {"INR": "₹", "USD": "$", "EUR": "€", "GBP": "£", "AED": "د.إ", "JPY": "¥", "CAD": "C$", "AUD": "A$"} %}
 
 <style>
-.group-layout { display: flex; gap: 1.25rem; max-width: 900px; margin: 0 auto; }
-.sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 80px; align-self: flex-start; }
-.main-content { flex: 1; min-width: 0; }
+/* Break out of parent max-w-xl for sidebar layout */
+.group-page { margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); padding: 0 1rem; }
+.group-layout { display: flex; gap: 1.5rem; max-width: 960px; margin: 0 auto; }
+.sidebar { width: 240px; flex-shrink: 0; position: sticky; top: 80px; align-self: flex-start; }
+.main-content { flex: 1; min-width: 0; max-width: 680px; }
 @media (max-width: 768px) {
+    .group-page { margin-left: 0; margin-right: 0; padding: 0; }
     .group-layout { flex-direction: column; }
     .sidebar { width: 100%; position: static; }
+    .main-content { max-width: 100%; }
 }
 </style>
 
-<div class="flex justify-between items-center mb-4">
+<div class="group-page">
+<div class="flex justify-between items-center mb-4" style="max-width: 960px; margin: 0 auto;">
     <h2 class="text-2xl font-bold">{{ group.name }}</h2>
     <div class="flex gap-1">
         <a href="/groups/{{ group.id }}/charts" class="btn btn-ghost btn-sm">Charts</a>
@@ -216,4 +221,5 @@
 
 </div><!-- end main-content -->
 </div><!-- end group-layout -->
+</div><!-- end group-page -->
 {% endblock %}
