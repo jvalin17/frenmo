@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from app.database import create_tables, engine
-from app.routes import account, auth, dashboard, expense, friend, group, settlement
+from app.routes import account, auth, comment, dashboard, expense, friend, group, settlement
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +24,7 @@ app = FastAPI(title="Rup-Split", version="0.1.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(account.router)
 app.include_router(auth.router)
+app.include_router(comment.router)
 app.include_router(dashboard.router)
 app.include_router(group.router)
 app.include_router(expense.router)

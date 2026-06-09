@@ -96,6 +96,13 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     member_ids = {m.id for m in members}
     available_friends = [f for f in all_friends if f.id not in member_ids]
 
+    # Get comments for all expenses
+    from app.services.comments import get_comments
+
+    expense_comments = {}
+    for expense in expenses:
+        expense_comments[expense.id] = await get_comments(db, expense.id)
+
     return templates.TemplateResponse(
         request,
         "group/detail.html",
@@ -108,6 +115,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "simplified": simplified,
             "member_names": member_names,
             "available_friends": available_friends,
+            "expense_comments": expense_comments,
         },
     )
 
