@@ -12,20 +12,82 @@ BANK_PATTERNS = {
     "bofa": [r"(?i)bank\s*of\s*america", r"(?i)bofa"],
     "amex": [r"(?i)american\s*express", r"(?i)amex"],
     "apple": [r"(?i)apple\s*card", r"(?i)goldman\s*sachs.*apple"],
+    "capital_one": [r"(?i)capital\s*one", r"(?i)capitalone"],
+    "citi": [r"(?i)citibank", r"(?i)citi\s*card", r"(?i)citi\.com"],
+    "wells_fargo": [r"(?i)wells\s*fargo"],
+    "usbank": [r"(?i)u\.?s\.?\s*bank", r"(?i)us\s*bancorp"],
     "hdfc": [r"(?i)hdfc\s*bank", r"(?i)hdfc\s*ltd"],
     "sbi": [r"(?i)state\s*bank\s*of\s*india", r"(?i)\bsbi\b"],
 }
 
-# Transaction line pattern: date + description + amount
-# Matches: 01/15/2026 AMAZON.COM PURCHASE 45.99
-#          01/15 STARBUCKS $5.75
-#          01/15/26 HOTEL BOOKING 1,245.00
+# Bank-specific transaction patterns
+# Each bank has unique date formats and line structures
+BANK_TX_PATTERNS = {
+    # Chase CC: MM/DD description amount (no year, no $)
+    "chase": re.compile(
+        r"^(\d{2}/\d{2})\s+"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # Amex: MM/DD/YY description amount (has year, optional *)
+    "amex": re.compile(
+        r"^(\d{2}/\d{2}/\d{2})\*?\s+"
+        r"(.+?)\s+"
+        r"(-?\$?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # BofA CC: MM/DD MM/DD description [4dig 4dig] amount (two dates, mystery numbers)
+    "bofa": re.compile(
+        r"^(\d{2}/\d{2})\s+\d{2}/\d{2}\s+"
+        r"(.+?)\s+"
+        r"(?:\d{4}\s+\d{4}\s+)?"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # Capital One: Mon DD description $amount (named month, $ in amount)
+    "capital_one": re.compile(
+        r"^([A-Z][a-z]{2}\s+\d{1,2})\s+"
+        r"(.+?)\s+"
+        r"(-?\$[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # Citi: MM/DD [MM/DD] description amount (optional second date)
+    "citi": re.compile(
+        r"^(\d{2}/\d{2})\s+(?:\d{2}/\d{2}\s+)?"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # Wells Fargo: MM/DD description amount
+    "wells_fargo": re.compile(
+        r"^(\d{2}/\d{2})\s+"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # Apple Card: MM/DD/YYYY description [%] [$cash] $amount
+    "apple": re.compile(
+        r"^(\d{2}/\d{2}/\d{4})\s+"
+        r"(.+?)\s+"
+        r"(?:\d+%\s+\$[\d.]+\s+)?"
+        r"(-?\$[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    # US Bank: MM/DD [MM/DD] description amount
+    "usbank": re.compile(
+        r"^(\d{2}/\d{2})\s+(?:\d{2}/\d{2}\s+)?"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+}
+
+# Generic fallback pattern — works for Discover, HDFC, SBI, and unknown banks
 TRANSACTION_PATTERN = re.compile(
-    r"^(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\s+"  # date: MM/DD or MM/DD/YY or MM/DD/YYYY
-    r"(.+?)\s+"                               # description (non-greedy)
-    r"(-?\$?[\d,]+\.\d{2})\s*$",             # amount with optional $, commas, negative
+    r"^(\d{1,2}/\d{1,2}(?:/\d{2,4})?)\s+"
+    r"(.+?)\s+"
+    r"(-?\$?[\d,]+\.\d{2})\s*$",
     re.MULTILINE
 )
+
+# Month name to number mapping for Capital One
+MONTH_MAP = {
+    "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
+    "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12",
+}
 
 # Lines to skip — subtotals, balances, headers
 SKIP_PATTERNS = [
@@ -170,19 +232,28 @@ def parse_transactions(
     if not text:
         return []
 
+    # Select bank-specific pattern or generic fallback
+    pattern = BANK_TX_PATTERNS.get(bank, TRANSACTION_PATTERN)
+
     transactions = []
 
-    for match in TRANSACTION_PATTERN.finditer(text):
+    for match in pattern.finditer(text):
         full_line = match.group(0)
 
         if _is_skip_line(full_line):
             continue
 
-        date_str = match.group(1)
+        date_str = match.group(1).strip()
         description = match.group(2).strip()
         amount_str = match.group(3).strip()
 
-        # Clean amount
+        # Normalize Capital One named month dates (e.g., "Dec 30" → "12/30")
+        if bank == "capital_one":
+            parts = date_str.split()
+            if len(parts) == 2 and parts[0] in MONTH_MAP:
+                date_str = f"{MONTH_MAP[parts[0]]}/{parts[1].zfill(2)}"
+
+        # Clean amount: remove $, commas, convert to cents
         amount_clean = amount_str.replace("$", "").replace(",", "")
         try:
             amount_cents = round(float(amount_clean) * 100)
