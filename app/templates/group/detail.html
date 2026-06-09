@@ -70,7 +70,7 @@
         {% for expense in expenses %}
         <div class="flex justify-between items-center py-3 border-b last:border-b-0">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: {% if expense.expense_type == 'settlement' %}#ECFDF5{% else %}#F6F5FF{% endif %};">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base" style="background: #F2F2F7;">
                     {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
                 </div>
                 <div>
@@ -83,7 +83,7 @@
             <div class="flex items-center gap-2">
                 <span class="font-bold">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
                 {% if expense.created_by == user.id %}
-                <a href="/expenses/{{ expense.id }}/edit" class="btn btn-ghost btn-xs" style="color: #635BFF;">✎</a>
+                <a href="/expenses/{{ expense.id }}/edit" class="btn btn-ghost btn-xs" style="color: #007AFF;">✎</a>
                 <form method="POST" action="/expenses/{{ expense.id }}/delete" class="inline">
                     <button type="submit" class="btn btn-ghost btn-xs text-error"
                             onclick="return confirm('Delete this expense?')">✕</button>
