@@ -1,65 +1,105 @@
-/* Rup-Split — Modern Dark Theme */
+/* Rup-Split — Mercury Minimal Theme */
 
 /* Balance colors */
-.balance-positive { color: #4ade80; font-weight: 600; }
-.balance-negative { color: #f87171; }
-.balance-zero { color: #9ca3af; }
+.balance-positive { color: #34D399; font-weight: 600; }
+.balance-negative { color: #F87171; }
+.balance-zero { color: #A1A1AA; }
 
-/* Cards — glass effect */
+/* Cards */
 .card {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #18181B !important;
+    border: 1px solid #27272A !important;
     border-radius: 16px !important;
+    color: #FAFAFA;
 }
 
-/* Primary buttons — gradient */
+/* Primary buttons — indigo accent */
 .btn-primary {
-    background: linear-gradient(135deg, #10b981, #059669) !important;
+    background: #818CF8 !important;
     border: none !important;
-    color: #ffffff !important;
+    color: #09090B !important;
     border-radius: 12px !important;
     font-weight: 600;
 }
 .btn-primary:hover {
-    background: linear-gradient(135deg, #34d399, #10b981) !important;
+    background: #A5B4FC !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 4px 20px rgba(129, 140, 248, 0.25);
 }
 
 /* Success button */
 .btn-success {
-    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    background: #34D399 !important;
     border: none !important;
+    color: #09090B !important;
     border-radius: 12px !important;
+}
+
+/* Error/danger */
+.text-error, .btn-error {
+    color: #F87171 !important;
 }
 
 /* Ghost buttons */
 .btn-ghost {
     border-radius: 12px !important;
+    color: #A1A1AA !important;
+}
+.btn-ghost:hover {
+    background: #27272A !important;
+    color: #FAFAFA !important;
 }
 
 /* Badge */
 .badge-outline {
-    border-color: #10b981 !important;
-    color: #10b981 !important;
+    border-color: #818CF8 !important;
+    color: #818CF8 !important;
     border-radius: 8px !important;
+    background: transparent !important;
 }
 
 /* Form inputs */
 .input, .select {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: #18181B !important;
+    border: 1px solid #27272A !important;
     border-radius: 12px !important;
+    color: #FAFAFA !important;
 }
 .input:focus, .select:focus {
-    border-color: #10b981 !important;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+    border-color: #818CF8 !important;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15) !important;
+}
+.input::placeholder {
+    color: #71717A !important;
 }
 
+.checkbox {
+    border-color: #27272A !important;
+}
 .checkbox:checked {
-    background-color: #10b981 !important;
-    border-color: #10b981 !important;
+    background-color: #818CF8 !important;
+    border-color: #818CF8 !important;
+}
+
+/* Labels and secondary text */
+.label-text, .text-gray-500, .text-gray-400 {
+    color: #A1A1AA !important;
+}
+
+/* Section headers */
+.card-body h3 {
+    letter-spacing: 0.05em;
+    color: #A1A1AA !important;
+}
+
+/* Card titles */
+.card-title {
+    color: #FAFAFA !important;
+}
+
+/* Links */
+a.link-primary {
+    color: #818CF8 !important;
 }
 
 /* Smooth transitions */
@@ -67,7 +107,7 @@
     transition: all 0.2s ease;
 }
 
-/* Section headers */
-.card-body h3 {
-    letter-spacing: 0.05em;
+/* Hover cards */
+.card:hover {
+    border-color: #3F3F46 !important;
 }
