@@ -1,106 +1,108 @@
-/* Rup-Split — Lavender Dream Theme */
+/* Rup-Split — Stripe-Inspired Theme */
 
 /* Balance colors */
-.balance-positive { color: #36B389; font-weight: 600; }
-.balance-negative { color: #E5484D; }
-.balance-zero { color: #A499B7; }
+.balance-positive { color: #0E6245; font-weight: 600; }
+.balance-negative { color: #CD3D64; }
+.balance-zero { color: #8792A2; }
 
 /* Cards */
 .card {
     background: #FFFFFF !important;
-    border: 1px solid #E4DDF0 !important;
-    border-radius: 16px !important;
-    color: #1E1433;
+    border: 1px solid #E3E8EE !important;
+    border-radius: 12px !important;
+    color: #1A1F36;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important;
 }
 
-/* Primary buttons — amethyst gradient */
+/* Primary buttons — Stripe indigo */
 .btn-primary {
-    background: linear-gradient(135deg, #7C5CFC 0%, #A78BFA 100%) !important;
+    background: #635BFF !important;
     border: none !important;
     color: #FFFFFF !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     font-weight: 600;
 }
 .btn-primary:hover {
-    background: linear-gradient(135deg, #6D4FE8 0%, #9B7AF5 100%) !important;
+    background: #7A73FF !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(124, 92, 252, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.25);
 }
 
 /* Success button */
 .btn-success {
-    background: linear-gradient(135deg, #36B389 0%, #4AD8A5 100%) !important;
+    background: #0E6245 !important;
     border: none !important;
     color: #FFFFFF !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
 }
 
 /* Error/danger */
 .text-error {
-    color: #E5484D !important;
+    color: #CD3D64 !important;
 }
 
 /* Ghost buttons */
 .btn-ghost {
-    border-radius: 12px !important;
-    color: #6B5A85 !important;
+    border-radius: 8px !important;
+    color: #697386 !important;
 }
 .btn-ghost:hover {
-    background: #F0ECFA !important;
-    color: #7C5CFC !important;
+    background: #F0F2F5 !important;
+    color: #1A1F36 !important;
 }
 
 /* Badge */
 .badge-outline {
-    border-color: #7C5CFC !important;
-    color: #7C5CFC !important;
-    border-radius: 8px !important;
-    background: #F0ECFA !important;
+    border-color: #635BFF !important;
+    color: #635BFF !important;
+    border-radius: 6px !important;
+    background: #F6F5FF !important;
 }
 
 /* Form inputs */
 .input, .select {
     background: #FFFFFF !important;
-    border: 1px solid #E4DDF0 !important;
-    border-radius: 12px !important;
-    color: #1E1433 !important;
+    border: 1px solid #E3E8EE !important;
+    border-radius: 8px !important;
+    color: #1A1F36 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 .input:focus, .select:focus {
-    border-color: #7C5CFC !important;
-    box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.12) !important;
+    border-color: #635BFF !important;
+    box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.1), 0 1px 2px rgba(0,0,0,0.04) !important;
 }
 .input::placeholder {
-    color: #A499B7 !important;
+    color: #A3ACB9 !important;
 }
 
 .checkbox {
-    border-color: #E4DDF0 !important;
+    border-color: #E3E8EE !important;
 }
 .checkbox:checked {
-    background-color: #7C5CFC !important;
-    border-color: #7C5CFC !important;
+    background-color: #635BFF !important;
+    border-color: #635BFF !important;
 }
 
 /* Labels and secondary text */
 .label-text {
-    color: #6B5A85 !important;
+    color: #697386 !important;
 }
 .text-gray-500 {
-    color: #6B5A85 !important;
+    color: #697386 !important;
 }
 .text-gray-400 {
-    color: #A499B7 !important;
+    color: #8792A2 !important;
 }
 
 /* Section headers */
 .card-body h3 {
     letter-spacing: 0.05em;
-    color: #6B5A85 !important;
+    color: #697386 !important;
 }
 
 /* Card titles */
 .card-title {
-    color: #1E1433 !important;
+    color: #1A1F36 !important;
 }
 
 /* Hero balance */
@@ -109,50 +111,50 @@
     font-weight: 800;
     letter-spacing: -0.02em;
 }
-.hero-positive { color: #36B389; }
-.hero-negative { color: #E5484D; }
-.hero-zero { color: #A499B7; }
+.hero-positive { color: #0E6245; }
+.hero-negative { color: #CD3D64; }
+.hero-zero { color: #8792A2; }
 
 /* Quick action pills */
 .quick-action {
-    background: #F0ECFA;
-    color: #7C5CFC;
-    border-radius: 12px;
+    background: #FFFFFF;
+    color: #635BFF;
+    border-radius: 8px;
     padding: 0.5rem 1rem;
     font-weight: 600;
     font-size: 0.875rem;
-    border: 1px solid #E4DDF0;
+    border: 1px solid #E3E8EE;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     transition: all 0.2s;
 }
 .quick-action:hover {
-    background: #7C5CFC;
+    background: #635BFF;
     color: #FFFFFF;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(124, 92, 252, 0.2);
+    box-shadow: 0 4px 12px rgba(99, 91, 255, 0.2);
 }
 
 /* Links */
 .link-primary {
-    color: #7C5CFC !important;
+    color: #635BFF !important;
 }
 .link-primary:hover {
-    color: #6D4FE8 !important;
+    color: #7A73FF !important;
 }
 
 /* Alert */
 .alert-error {
-    background: #FFF0F0 !important;
-    color: #E5484D !important;
+    background: #FFF0F3 !important;
+    color: #CD3D64 !important;
     border: 1px solid #FECDD3 !important;
 }
 
 /* Smooth transitions */
 .card, .btn, .input, .select {
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
 }
 
 /* Hover cards */
 .card:hover {
-    border-color: #C9BEE0 !important;
-    box-shadow: 0 4px 20px rgba(124, 92, 252, 0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
 }

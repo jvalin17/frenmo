@@ -8,7 +8,7 @@
 {% set net_total = total_owed_to_you + total_you_owe %}
 
 <div class="text-center py-6">
-    <p class="text-sm" style="color: #6B5A85;">Your net balance</p>
+    <p class="text-sm" style="color: #697386;">Your net balance</p>
     <div class="hero-balance {% if net_total > 0 %}hero-positive{% elif net_total < 0 %}hero-negative{% else %}hero-zero{% endif %}">
         {% if net_total > 0 %}+₹{{ "%.2f"|format(net_total / 100) }}
         {% elif net_total < 0 %}-₹{{ "%.2f"|format((-net_total) / 100) }}
@@ -32,9 +32,9 @@
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm uppercase mb-2">People</h3>
         {% for other_id, net in overall_balances.items() %}
-        <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: #E4DDF0;">
+        <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: #E3E8EE;">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #7C5CFC, #FF6D8B);">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #635BFF;">
                     {{ balance_names.get(other_id, '?')[0]|upper }}
                 </div>
                 <span class="text-sm font-medium">{{ balance_names.get(other_id, '?') }}</span>
@@ -57,14 +57,14 @@
         {% if groups %}
         {% for group in groups %}
         {% set net = group_balances.get(group.id, 0) %}
-        <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-purple-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: #E4DDF0;">
+        <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-purple-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: #E3E8EE;">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: #F0ECFA;">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: #F6F5FF;">
                     {% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}
                 </div>
                 <div>
-                    <p class="font-semibold text-sm" style="color: #1E1433;">{{ group.name }}</p>
-                    <p class="text-xs" style="color: #A499B7;">{{ group.type }}</p>
+                    <p class="font-semibold text-sm" style="color: #1A1F36;">{{ group.name }}</p>
+                    <p class="text-xs" style="color: #8792A2;">{{ group.type }}</p>
                 </div>
             </div>
             <span class="font-bold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
@@ -77,8 +77,8 @@
         {% else %}
         <div class="text-center py-8">
             <div class="text-4xl mb-3">💸</div>
-            <p style="color: #6B5A85;" class="mb-2">No groups yet</p>
-            <p style="color: #A499B7;" class="text-sm">Create a group to start splitting expenses with friends</p>
+            <p style="color: #697386;" class="mb-2">No groups yet</p>
+            <p style="color: #8792A2;" class="text-sm">Create a group to start splitting expenses with friends</p>
         </div>
         {% endif %}
     </div>
