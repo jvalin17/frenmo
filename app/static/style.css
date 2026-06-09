@@ -5,14 +5,20 @@
 .balance-negative { color: #FF3B30; }
 .balance-zero { color: #8E8E93; }
 
-/* Cards — Apple elevated surface */
+/* Cards — top-color fade to white */
 .card {
-    background: #FFFFFF !important;
-    border: none !important;
+    background: linear-gradient(180deg, #EEF2FF 0%, #FFFFFF 40%) !important;
+    border: 1px solid #E5E7EB !important;
     border-radius: 16px !important;
     color: #1D1D1F;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03) !important;
 }
+
+/* Card color variants */
+.card-blue { background: linear-gradient(180deg, #DBEAFE 0%, #FFFFFF 40%) !important; border-color: #BFDBFE !important; }
+.card-green { background: linear-gradient(180deg, #D1FAE5 0%, #FFFFFF 40%) !important; border-color: #A7F3D0 !important; }
+.card-orange { background: linear-gradient(180deg, #FED7AA 0%, #FFFFFF 40%) !important; border-color: #FDBA74 !important; }
+.card-yellow { background: linear-gradient(180deg, #FEF3C7 0%, #FFFFFF 40%) !important; border-color: #FDE68A !important; }
 
 /* Hero card */
 .hero-card {

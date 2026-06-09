@@ -12,7 +12,7 @@
 
 <!-- Simplified Debts -->
 {% if simplified %}
-<div class="card bg-base-100 shadow-sm mb-4">
+<div class="card card-orange mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Settle Up</h3>
         {% for debtor_id, creditor_id, amount in simplified %}
@@ -42,7 +42,7 @@
 {% endif %}
 
 <!-- Member Balances -->
-<div class="card bg-base-100 shadow-sm mb-4">
+<div class="card card-green mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Balances</h3>
         {% for member in members %}
@@ -63,7 +63,7 @@
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
 <!-- Expense List -->
-<div class="card bg-base-100 shadow-sm">
+<div class="card card-blue mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Activity</h3>
         {% if expenses %}
@@ -127,7 +127,7 @@
 </div>
 
 <!-- Members -->
-<div class="card bg-base-100 shadow-sm mt-4">
+<div class="card card-yellow mt-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Members ({{ members|length }})</h3>
         {% for member in members %}

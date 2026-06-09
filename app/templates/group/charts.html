@@ -16,7 +16,7 @@
 <!-- Category Breakdown -->
 {% if category_data %}
 {% set cat_emojis = {"food": "🍕", "transport": "🚕", "accommodation": "🏨", "shopping": "🛍️", "entertainment": "🎬", "utilities": "💡", "rent": "🏠", "other": "💳"} %}
-<div class="card mb-4">
+<div class="card card-blue mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-4">Spending by Category</h3>
         <div style="max-width: 220px; margin: 0 auto;">
@@ -47,7 +47,7 @@
 
 <!-- Monthly Spending -->
 {% if monthly_data %}
-<div class="card mb-4">
+<div class="card card-green mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-2">Monthly Spending</h3>
         <p class="text-xs mb-4" style="color: #AEAEB2;">Total: ${{ "%.2f"|format(monthly_data.values()|sum / 100) }}</p>
@@ -59,7 +59,7 @@
 <!-- Per-Member Spending -->
 {% if member_data %}
 {% set total_member = member_data.values()|sum %}
-<div class="card mb-4">
+<div class="card card-orange mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-4">Who Paid What</h3>
         {% for uid, amount in member_data.items() %}

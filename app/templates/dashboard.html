@@ -39,7 +39,7 @@
 
 <!-- People You Owe / Owe You -->
 {% if overall_balances %}
-<div class="card shadow-sm mb-4">
+<div class="card card-orange mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm uppercase mb-2">People</h3>
         {% for other_id, net in overall_balances.items() %}
@@ -62,7 +62,7 @@
 {% endif %}
 
 <!-- Groups -->
-<div class="card shadow-sm mb-4">
+<div class="card card-blue mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm uppercase mb-2">Your Groups</h3>
         {% if groups %}
