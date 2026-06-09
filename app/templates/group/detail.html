@@ -195,51 +195,68 @@
 <!-- Add Expense Button -->
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
-<!-- Expenses -->
+<!-- Expenses — grouped by member -->
+{% set member_colors = ["#007AFF", "#AF52DE", "#FF2D55", "#FF9500", "#34C759", "#5856D6", "#FF3B30", "#5AC8FA"] %}
+{% set member_colors_light = ["#DBEAFE", "#F3E8FF", "#FFE4E6", "#FED7AA", "#D1FAE5", "#EDE9FE", "#FEE2E2", "#DBEAFE"] %}
+{% set member_colors_border = ["#93C5FD", "#D8B4FE", "#FCA5A5", "#FDBA74", "#86EFAC", "#C4B5FD", "#FCA5A5", "#7DD3FC"] %}
+
 <form id="bulk-delete-form" method="POST" action="/expenses/bulk-delete/{{ group.id }}">
-<div class="card card-blue mb-4">
-    <div class="card-body py-3">
-        <div class="flex justify-between items-center mb-2">
-            <h3 class="font-semibold text-sm text-gray-500 uppercase">Expenses</h3>
-            <button type="submit" id="bulk-delete-btn" class="text-xs font-medium px-2 py-1 rounded-lg" style="background: #FEF2F2; color: #DC2626; border: none; display: none; cursor: pointer;" onclick="return confirm('Delete selected expenses?')">Delete selected</button>
+<div class="flex justify-between items-center mb-3">
+    <h3 class="font-semibold text-sm text-gray-500 uppercase">Expenses</h3>
+    <button type="submit" id="bulk-delete-btn" class="text-xs font-medium px-2 py-1 rounded-lg" style="background: #FEF2F2; color: #DC2626; border: none; display: none; cursor: pointer;" onclick="return confirm('Delete selected expenses?')">Delete selected</button>
+</div>
+
+{% if expenses %}
+<script>
+function toggleSection(id) {
+    var el = document.getElementById(id);
+    var arrow = document.getElementById('arrow-' + id);
+    if (el.style.display === 'none') { el.style.display = 'block'; arrow.textContent = '▼'; }
+    else { el.style.display = 'none'; arrow.textContent = '▶'; }
+}
+</script>
+
+{% for member in members %}
+{% set member_expenses = [] %}
+{% for expense in expenses %}{% if expense.paid_by == member.id %}{% set _ = member_expenses.append(expense) %}{% endif %}{% endfor %}
+{% if member_expenses %}
+{% set color_idx = loop.index0 % member_colors|length %}
+{% set color = member_colors[color_idx] %}
+{% set color_light = member_colors_light[color_idx] %}
+{% set color_border = member_colors_border[color_idx] %}
+{% set member_total = member_expenses|map(attribute='amount')|sum %}
+
+<!-- {{ member.name }}'s expenses -->
+<div class="rounded-2xl mb-3 overflow-hidden" style="border: 1px solid {{ color_border }};">
+    <!-- Collapsible header -->
+    <div onclick="toggleSection('sec-{{ member.id }}')" class="flex items-center justify-between p-3 cursor-pointer" style="background: linear-gradient(180deg, {{ color_light }} 0%, #FFFFFF 100%);">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: {{ color }};">
+                {{ member.name[0]|upper }}
+            </div>
+            <div>
+                <span class="text-sm font-semibold" style="color: #1D1D1F;">{{ member.name }}</span>
+                <span class="text-xs ml-2" style="color: #86868B;">{{ member_expenses|length }} expense{{ 's' if member_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(member_total / 100) }}</span>
+            </div>
         </div>
-        <!-- Member filter tabs -->
-        {% if expenses %}
-        <div class="flex gap-1 mb-3 overflow-x-auto pb-1">
-            <button onclick="filterExpenses('all')" class="member-tab text-xs font-medium px-3 py-1 rounded-full" style="background: #007AFF; color: #FFFFFF; border: none; cursor: pointer; white-space: nowrap;" data-filter="all">All</button>
-            {% for member in members %}
-            <button onclick="filterExpenses('{{ member.id }}')" class="member-tab text-xs font-medium px-3 py-1 rounded-full" style="background: #F2F2F7; color: #1D1D1F; border: none; cursor: pointer; white-space: nowrap;" data-filter="{{ member.id }}">{{ member.name }}</button>
-            {% endfor %}
-        </div>
-        <script>
-        function filterExpenses(memberId) {
-            document.querySelectorAll('.expense-row').forEach(function(row) {
-                row.style.display = (memberId === 'all' || row.dataset.paidBy === memberId) ? '' : 'none';
-            });
-            document.querySelectorAll('.member-tab').forEach(function(tab) {
-                if (tab.dataset.filter === memberId) {
-                    tab.style.background = '#007AFF'; tab.style.color = '#FFFFFF';
-                } else {
-                    tab.style.background = '#F2F2F7'; tab.style.color = '#1D1D1F';
-                }
-            });
-        }
-        </script>
-        {% for expense in expenses %}
-        <div class="py-3 border-b last:border-b-0 expense-row" data-paid-by="{{ expense.paid_by }}">
+        <span id="arrow-sec-{{ member.id }}" class="text-xs" style="color: #86868B;">▼</span>
+    </div>
+
+    <!-- Expense list -->
+    <div id="sec-{{ member.id }}" class="px-3 pb-2">
+        {% for expense in member_expenses %}
+        <div class="py-2.5 {% if not loop.last %}border-b{% endif %}" style="border-color: {{ color_border }}40;">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2.5">
                     {% if expense.created_by == user.id %}
                     <input type="checkbox" name="expense_ids" value="{{ expense.id }}" class="checkbox checkbox-sm bulk-check" onchange="document.getElementById('bulk-delete-btn').style.display = document.querySelectorAll('.bulk-check:checked').length ? 'block' : 'none';">
                     {% endif %}
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base" style="background: #F2F2F7;">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: #F2F2F7;">
                         {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
                     </div>
                     <div>
                         <span class="font-medium text-sm">{{ expense.description }}</span>
-                        <div class="text-xs" style="color: #8792A2;">
-                            {{ member_names.get(expense.paid_by, '?') }} paid · {{ expense.created_at.strftime('%b %d, %Y') }}
-                        </div>
+                        <div class="text-xs" style="color: #AEAEB2;">{{ expense.created_at.strftime('%b %d, %Y') }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -247,50 +264,57 @@
                         {% set from_rate = rates.get(expense.currency, 1) %}
                         {% set to_rate = rates.get(group.currency, 1) %}
                         {% set converted = (expense.amount / from_rate * to_rate)|round|int %}
-                        <span class="font-bold">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(converted / 100) }}*</span>
+                        <span class="font-bold text-sm">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(converted / 100) }}*</span>
                         <span class="text-xs" style="color: #AEAEB2;">({{ sym.get(expense.currency, "") }}{{ "%.2f"|format(expense.amount / 100) }})</span>
                     {% else %}
-                        <span class="font-bold">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
+                        <span class="font-bold text-sm">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
                     {% endif %}
                     {% if expense.created_by == user.id %}
-                    <a href="/expenses/{{ expense.id }}/edit" class="btn btn-ghost btn-xs" style="color: #007AFF;">✎</a>
+                    <a href="/expenses/{{ expense.id }}/edit" class="text-xs" style="color: {{ color }}; text-decoration: none;">✎</a>
                     {% endif %}
                 </div>
             </div>
             <!-- Comments -->
             {% set comments = expense_comments.get(expense.id, []) %}
-            <div class="mt-2 ml-12 rounded-xl p-3" style="background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%); border: 1px solid #BFDBFE;">
+            <div class="mt-2 ml-10 rounded-xl p-2.5" style="background: linear-gradient(180deg, {{ color_light }}80 0%, #FFFFFF 100%); border: 1px solid {{ color_border }}60;">
                 {% if comments %}
                 {% for comment in comments %}
-                <div class="flex justify-between items-start mb-2 last:mb-0">
-                    <div class="flex gap-2">
+                <div class="flex justify-between items-start mb-1.5 last:mb-0">
+                    <div class="flex gap-1.5">
                         <span class="text-xs">💬</span>
                         <div>
-                            <span class="text-xs font-semibold" style="color: #1E40AF;">{{ member_names.get(comment.user_id, '?') }}</span>
+                            <span class="text-xs font-semibold" style="color: {{ color }};">{{ member_names.get(comment.user_id, '?') }}</span>
                             <p class="text-xs" style="color: #6B7280;">{{ comment.text }}</p>
                         </div>
                     </div>
                     {% if comment.user_id == user.id %}
                     <form method="POST" action="/comments/delete/{{ comment.id }}">
-                        <button type="submit" class="text-xs" style="color: #93C5FD; opacity: 0.8;" onclick="return confirm('Delete comment?')">✕</button>
+                        <button type="submit" class="text-xs" style="color: {{ color_border }};" onclick="return confirm('Delete comment?')">✕</button>
                     </form>
                     {% endif %}
                 </div>
                 {% endfor %}
                 {% endif %}
-                <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-2 pt-2{% endif %}" {% if comments %}style="border-top: 1px solid #BFDBFE;"{% endif %}>
-                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-3 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F;" required>
-                    <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background: #DBEAFE; color: #1E40AF;">Post</button>
+                <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-1.5 pt-1.5{% endif %}" {% if comments %}style="border-top: 1px solid {{ color_border }}40;"{% endif %}>
+                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-2.5 py-1 rounded-lg" style="background: #FFFFFF; border: 1px solid {{ color_border }}60; color: #1D1D1F;" required>
+                    <button type="submit" class="text-xs font-semibold px-2.5 py-1 rounded-lg" style="background: {{ color_light }}; color: {{ color }};">Post</button>
                 </form>
             </div>
         </div>
         {% endfor %}
-        {% else %}
-        <p class="text-sm text-gray-400 py-4 text-center">No expenses yet</p>
-        {% endif %}
     </div>
 </div>
-</form><!-- end bulk-delete-form -->
+{% endif %}
+{% endfor %}
+
+{% else %}
+<div class="card mb-4">
+    <div class="card-body">
+        <p class="text-sm text-gray-400 py-4 text-center">No expenses yet</p>
+    </div>
+</div>
+{% endif %}
+</form>
 
 </div><!-- end main-content -->
 </div><!-- end group-layout -->

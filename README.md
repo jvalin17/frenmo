@@ -19,7 +19,9 @@ Free Splitwise alternative. Split expenses with friends, simplify debts, settle 
 - **Password Reset** — Forgot password sends a signed reset link via email (Resend API). Expires in 30 minutes. Doesn't reveal whether email exists (security).
 - **Account Settings** — Edit nickname, email, default currency, change password, delete account
 - **Dashboard** — Hero balance card (green when owed, orange when owing, blue when settled), quick actions, per-group balances with emoji icons
-- **Bank Statement Import** — Upload PDF bank statement, auto-detect bank (Discover, Chase, BoA, Amex, Apple Card, HDFC, SBI), extract transactions, review and select which to add. PDF never stored — processed in memory and wiped.
+- **Bank Statement Import** — Upload PDF bank statement, auto-detect bank (Discover, Chase, BoA, Amex, Apple Card, HDFC, SBI), extract transactions with auto-categorization, review and select which to add. Dedup prevents double-imports. PDF never stored — processed in memory and wiped.
+- **Per-Member Expense View** — Collapsible sections grouped by who paid, each with unique color (blue, purple, pink, orange, green). Shows expense count and total per person.
+- **Bulk Delete** — Checkbox multi-select to delete multiple expenses at once
 - **Sidebar Layout** — Members panel with balances on left, converter widget, content on right (responsive — stacks on mobile)
 
 ## Tech Stack
