@@ -108,3 +108,21 @@ def test_full_split_payer_owes_themselves():
     splits = compute_full_split(10000, owes_user_id=1, member_ids=[1, 2])
     assert splits[1] == 10000
     assert splits[2] == 0
+
+
+def test_shares_split_group_default_trip():
+    """Trip: jj=1 share, Bob=3 (parents), Alice=2 (partner). $60 expense."""
+    splits = compute_shares_splits(6000, {1: 1, 2: 3, 3: 2})  # 6 total shares
+    assert splits[1] == 1000   # jj: 1/6 = $10
+    assert splits[2] == 3000   # Bob: 3/6 = $30
+    assert splits[3] == 2000   # Alice: 2/6 = $20
+    assert sum(splits.values()) == 6000
+
+
+def test_shares_split_group_default_uneven():
+    """$100 split 1:3:2 = 16.67, 50.00, 33.33"""
+    splits = compute_shares_splits(10000, {1: 1, 2: 3, 3: 2})
+    assert splits[1] == 1667   # 1/6
+    assert splits[2] == 5000   # 3/6
+    assert splits[3] == 3333   # remainder adjustment
+    assert sum(splits.values()) == 10000

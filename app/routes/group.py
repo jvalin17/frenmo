@@ -71,6 +71,13 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
     members = members_result.scalars().all()
 
+    # Get default shares per member
+    shares_result = await db.execute(
+        select(GroupMember.user_id, GroupMember.default_shares)
+        .where(GroupMember.group_id == group_id)
+    )
+    member_shares = {row[0]: row[1] for row in shares_result.all()}
+
     # Get expenses (non-deleted)
     from app.models.expense import Expense
 
@@ -123,6 +130,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "available_friends": available_friends,
             "expense_comments": expense_comments,
             "rates": rates,
+            "member_shares": member_shares,
         },
     )
 
@@ -151,6 +159,18 @@ async def update_group_settings(request: Request, group_id: int, db: AsyncSessio
     if new_name:
         group.name = new_name
     group.currency = new_currency
+
+    # Update default shares per member
+    all_members = await db.execute(
+        select(GroupMember).where(GroupMember.group_id == group_id)
+    )
+    for gm in all_members.scalars().all():
+        shares_val = form_data.get(f"shares_{gm.user_id}", "1")
+        try:
+            gm.default_shares = max(1, int(shares_val))
+        except ValueError:
+            gm.default_shares = 1
+
     await db.commit()
     logger.info("Group settings updated: group=%d by user=%d", group_id, user_id)
     return RedirectResponse(url=f"/groups/{group_id}", status_code=303)

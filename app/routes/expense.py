@@ -76,8 +76,20 @@ async def create_expense(
         )
         selected_member_ids = [row[0] for row in members_result.all()]
 
-    # Parse per-member values based on split type
+    # For "equal" split, check if group has custom default shares
+    # If any member has shares != 1, use shares split instead of equal
     member_values = {}
+    if split_type == "equal":
+        shares_result = await db.execute(
+            select(GroupMember.user_id, GroupMember.default_shares)
+            .where(GroupMember.group_id == group_id, GroupMember.user_id.in_(selected_member_ids))
+        )
+        shares_map = {row[0]: row[1] for row in shares_result.all()}
+        has_custom_shares = any(s != 1 for s in shares_map.values())
+        if has_custom_shares:
+            split_type = "shares"
+            member_values = {uid: float(shares) for uid, shares in shares_map.items()}
+
     if split_type in ("exact", "percent"):
         for member_id in selected_member_ids:
             val = form_data.get(f"amount_{member_id}", "0")

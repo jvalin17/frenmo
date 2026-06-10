@@ -27,6 +27,7 @@ class GroupMember(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    default_shares: Mapped[int] = mapped_column(default=1)
     joined_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     __table_args__ = (UniqueConstraint("group_id", "user_id"),)
