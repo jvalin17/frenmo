@@ -86,16 +86,62 @@
 [data-theme="dark"] .person-row .p-name { color: #E5E5E7; }
 [data-theme="dark"] .person-row .p-status { border-color: #48484A; }
 
-/* Dark mode inline styles override */
-[data-theme="dark"] [style*="color: #1D1D1F"] { color: #E5E5E7 !important; }
-[data-theme="dark"] [style*="color: #86868B"] { color: #98989F !important; }
-[data-theme="dark"] [style*="color: #AEAEB2"] { color: #636366 !important; }
+/* Dark mode — universal overrides for ALL light backgrounds */
+/* Solid white backgrounds */
+[data-theme="dark"] [style*="background: #FFFFFF"] { background: #1C1C1E !important; }
 [data-theme="dark"] [style*="background: #F2F2F7"] { background: #2C2C2E !important; }
 [data-theme="dark"] [style*="background: #F9FAFB"] { background: #2C2C2E !important; }
-[data-theme="dark"] [style*="background: #FFFFFF"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="background: #F8FAFF"] { background: #2C2C2E !important; }
+[data-theme="dark"] [style*="background: #FFFDF7"] { background: #2C2C2E !important; }
+[data-theme="dark"] [style*="background: #EEF2FF"] { background: #2C2C2E !important; }
+[data-theme="dark"] [style*="background: #ECFDF5"] { background: #1A2E1A !important; }
+[data-theme="dark"] [style*="background: #FEF2F2"] { background: #3A1C1E !important; }
+
+/* Gradient backgrounds — override ALL light gradients */
+[data-theme="dark"] [style*="linear-gradient(180deg, #DBEAFE"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #EEF2FF"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #EFF6FF"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #F0FDF4"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #D1FAE5"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #FED7AA"] { background: #1C1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #BBF7D0"] { background: #1A2E1A !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #93C5FD"] { background: #0A1A3D !important; }
+[data-theme="dark"] [style*="linear-gradient(180deg, #FEF2F2"] { background: #3A1C1E !important; }
+[data-theme="dark"] [style*="linear-gradient(135deg, #FFFFFF"] { background: #1C1C1E !important; }
+
+/* Hero card balance variants */
+[data-theme="dark"] .hero-card { background: #1C1C1E !important; border: 1px solid #38383A !important; }
+
+/* Rounded containers (sidebar, converter, etc) */
+[data-theme="dark"] .rounded-2xl[style*="background"] { background: #1C1C1E !important; border-color: #38383A !important; }
+[data-theme="dark"] .rounded-xl[style*="background"] { background: #1C1C1E !important; border-color: #38383A !important; }
+
+/* Text colors */
+[data-theme="dark"] [style*="color: #86868B"] { color: #98989F !important; }
+[data-theme="dark"] [style*="color: #AEAEB2"] { color: #636366 !important; }
+[data-theme="dark"] [style*="color: #6E6E73"] { color: #98989F !important; }
+[data-theme="dark"] [style*="color: #697386"] { color: #98989F !important; }
+[data-theme="dark"] [style*="color: #78716C"] { color: #636366 !important; }
+
+/* Borders */
 [data-theme="dark"] [style*="border: 1px solid #E5E7EB"] { border-color: #38383A !important; }
 [data-theme="dark"] [style*="border: 1px solid #BFDBFE"] { border-color: #38383A !important; }
+[data-theme="dark"] [style*="border: 1px solid #BBF7D0"] { border-color: #38383A !important; }
+[data-theme="dark"] [style*="border: 1px solid #A7F3D0"] { border-color: #38383A !important; }
+[data-theme="dark"] [style*="border: 1px solid #FECACA"] { border-color: #5C2C2E !important; }
+[data-theme="dark"] [style*="border: 1px solid #FDE68A"] { border-color: #38383A !important; }
+[data-theme="dark"] [style*="border: 1px solid #DBEAFE"] { border-color: #38383A !important; }
 [data-theme="dark"] [style*="border-color: #E3E8EE"] { border-color: #38383A !important; }
+[data-theme="dark"] [style*="border: 2px dashed #BFDBFE"] { border-color: #38383A !important; }
+
+/* Inputs in dark mode */
+[data-theme="dark"] input[style*="background"], [data-theme="dark"] select[style*="background"] {
+    background: #2C2C2E !important; color: #E5E5E7 !important; border-color: #48484A !important;
+}
+
+/* Hover states on dark */
+[data-theme="dark"] .hover\:bg-gray-50:hover { background: #2C2C2E !important; }
+[data-theme="dark"] .hover\:bg-blue-50:hover { background: #0A1A3D !important; }
 
 /* Balance colors */
 .balance-positive { color: #34C759; font-weight: 600; }
