@@ -10,14 +10,14 @@
 <!-- Hero Card — stronger blue default, green when owed, orange when owing -->
 <div class="hero-card mb-6" style="background: linear-gradient(180deg, {% if net_total > 0 %}#BBF7D0 0%, #DCFCE7 30%, #FFFFFF 100%); border: 1px solid #86EFAC; box-shadow: 0 8px 30px rgba(34,197,94,0.12){% elif net_total < 0 %}#FED7AA 0%, #FFEDD5 30%, #FFFFFF 100%); border: 1px solid #FDBA74; box-shadow: 0 8px 30px rgba(249,115,22,0.12){% else %}#93C5FD 0%, #BFDBFE 30%, #FFFFFF 100%); border: 1px solid #60A5FA; box-shadow: 0 8px 30px rgba(59,130,246,0.15){% endif %};">
     <p class="text-sm font-medium" style="color: #6E6E73;">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}All settled up{% endif %}</p>
-    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: #1D1D1F; margin: 0.25rem 0;">
+    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-primary); margin: 0.25rem 0;">
         {% if net_total > 0 %}${{ "%.2f"|format(net_total / 100) }}
         {% elif net_total < 0 %}${{ "%.2f"|format((-net_total) / 100) }}
         {% else %}$0.00{% endif %}
     </div>
     <div class="flex gap-6 mt-3">
-        <span class="text-sm font-medium" style="color: #1D1D1F;"><span style="color: #16A34A;">▲</span> ${{ "%.2f"|format(total_owed_to_you / 100) }} owed</span>
-        <span class="text-sm font-medium" style="color: #1D1D1F;"><span style="color: #DC2626;">▼</span> ${{ "%.2f"|format((-total_you_owe) / 100) }} owe</span>
+        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #16A34A;">▲</span> ${{ "%.2f"|format(total_owed_to_you / 100) }} owed</span>
+        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #DC2626;">▼</span> ${{ "%.2f"|format((-total_you_owe) / 100) }} owe</span>
     </div>
 </div>
 
@@ -74,7 +74,7 @@
                     {% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}
                 </div>
                 <div>
-                    <p class="font-semibold text-sm" style="color: #1A1F36;">{{ group.name }}</p>
+                    <p class="font-semibold text-sm" style="color: var(--text-primary);">{{ group.name }}</p>
                     <p class="text-xs" style="color: #8792A2;">{{ group.type }}</p>
                 </div>
             </div>

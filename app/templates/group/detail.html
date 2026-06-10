@@ -23,14 +23,14 @@
     <div class="rounded-2xl p-5" style="background: linear-gradient(180deg, #DBEAFE 0%, #FFFFFF 50%); border: 1px solid #BFDBFE; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
         <div class="flex items-center gap-2 mb-2">
             <span class="text-lg">{% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}</span>
-            <h2 class="text-xl font-bold" style="color: #1D1D1F;">{{ group.name }}</h2>
+            <h2 class="text-xl font-bold" style="color: var(--text-primary);">{{ group.name }}</h2>
             <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: #EEF2FF; color: #3B82F6;">{{ group.currency }}</span>
             <span class="text-xs" style="color: #86868B;">{{ members|length }} members</span>
         </div>
         <div class="flex flex-wrap gap-1.5">
-            <a href="/statement/{{ group.id }}" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Import</a>
-            <a href="/groups/{{ group.id }}/charts" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Charts</a>
-            <a href="/groups/{{ group.id }}/invite" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">Invite</a>
+            <a href="/statement/{{ group.id }}" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Import</a>
+            <a href="/groups/{{ group.id }}/charts" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Charts</a>
+            <a href="/groups/{{ group.id }}/invite" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Invite</a>
             <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="text-xs px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: #007AFF; border: none; cursor: pointer;">✎ Edit</button>
         </div>
         <!-- Inline edit form -->
@@ -56,7 +56,7 @@
                 {% for member in members %}
                 <div class="flex items-center gap-2 mb-1">
                     <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #007AFF;">{{ member.name[0]|upper }}</div>
-                    <span class="text-xs flex-1" style="color: #1D1D1F;">{{ member.name }}</span>
+                    <span class="text-xs flex-1" style="color: var(--text-primary);">{{ member.name }}</span>
                     <input type="number" name="shares_{{ member.id }}" value="{{ member_shares.get(member.id, 1) }}" min="1" max="20" class="text-sm px-2 py-1 rounded-lg w-16 text-center" style="background: #FFFFFF; border: 1px solid #BFDBFE;">
                     <span class="text-xs" style="color: #AEAEB2;">share{{ 's' if member_shares.get(member.id, 1) != 1 }}</span>
                 </div>
@@ -82,7 +82,7 @@
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1">
-                        <p class="text-sm font-medium truncate" style="color: #1D1D1F;">{{ member.name }}</p>
+                        <p class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ member.name }}</p>
                         {% if member_shares.get(member.id, 1) > 1 %}
                         <span class="text-xs px-1 rounded" style="background: #EEF2FF; color: #3B82F6;">×{{ member_shares.get(member.id, 1) }}</span>
                         {% endif %}
@@ -120,8 +120,8 @@
         <h3 class="font-semibold text-xs uppercase mb-3" style="color: #86868B; letter-spacing: 0.05em;">💱 Convert</h3>
         <div class="space-y-2">
             <div class="flex gap-1">
-                <input type="number" id="conv-amount" value="100" min="0" step="0.01" class="text-sm px-2 py-1.5 rounded-lg flex-1" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F; width: 70px;">
-                <select id="conv-from" class="text-xs px-1 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: #1D1D1F;">
+                <input type="number" id="conv-amount" value="100" min="0" step="0.01" class="text-sm px-2 py-1.5 rounded-lg flex-1" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: var(--text-primary); width: 70px;">
+                <select id="conv-from" class="text-xs px-1 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #BFDBFE; color: var(--text-primary);">
                     <option value="USD" selected>USD</option>
                     <option value="INR">INR</option>
                     <option value="EUR">EUR</option>
@@ -134,7 +134,7 @@
             </div>
             <div class="text-center text-xs" style="color: #AEAEB2;">↓</div>
             <div class="text-center">
-                <span id="conv-result" class="text-lg font-bold" style="color: #1D1D1F;">—</span>
+                <span id="conv-result" class="text-lg font-bold" style="color: var(--text-primary);">—</span>
                 <span id="conv-to-label" class="text-xs" style="color: #86868B;">{{ group.currency }}</span>
                 <span class="text-xs" style="color: #AEAEB2;">*</span>
             </div>
@@ -202,7 +202,7 @@
 {% set total_spent = expenses|map(attribute='amount')|sum %}
 <div class="rounded-xl p-4 mb-4 text-center" style="background: linear-gradient(180deg, #F0FDF4 0%, #FFFFFF 100%); border: 1px solid #BBF7D0;">
     <p class="text-xs font-medium uppercase" style="color: #86868B;">Total Spent</p>
-    <p class="text-2xl font-bold" style="color: #1D1D1F;">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(total_spent / 100) }}</p>
+    <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(total_spent / 100) }}</p>
     <p class="text-xs" style="color: #AEAEB2;">{{ expenses|length }} expense{{ 's' if expenses|length != 1 }}</p>
 </div>
 
@@ -249,7 +249,7 @@ function toggleSection(id) {
                 {{ member.name[0]|upper }}
             </div>
             <div>
-                <span class="text-sm font-semibold" style="color: #1D1D1F;">{{ member.name }}</span>
+                <span class="text-sm font-semibold" style="color: var(--text-primary);">{{ member.name }}</span>
                 <span class="text-xs ml-2" style="color: #86868B;">{{ member_expenses|length }} expense{{ 's' if member_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(member_total / 100) }}</span>
             </div>
         </div>
@@ -310,7 +310,7 @@ function toggleSection(id) {
                 {% endfor %}
                 {% endif %}
                 <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-1.5 pt-1.5{% endif %}" {% if comments %}style="border-top: 1px solid {{ color_border }}40;"{% endif %}>
-                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-2.5 py-1 rounded-lg" style="background: #FFFFFF; border: 1px solid {{ color_border }}60; color: #1D1D1F;" required>
+                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-2.5 py-1 rounded-lg" style="background: #FFFFFF; border: 1px solid {{ color_border }}60; color: var(--text-primary);" required>
                     <button type="submit" class="text-xs font-semibold px-2.5 py-1 rounded-lg" style="background: {{ color_light }}; color: {{ color }};">Post</button>
                 </form>
             </div>

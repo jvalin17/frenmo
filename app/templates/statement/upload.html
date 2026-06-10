@@ -5,7 +5,7 @@
 
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">Import from Statement</h2>
-    <a href="/groups/{{ group.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: #1D1D1F; text-decoration: none;">← Back</a>
+    <a href="/groups/{{ group.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">← Back</a>
 </div>
 
 <!-- Upload Card -->
@@ -34,7 +34,7 @@
                  ondragleave="this.style.borderColor='#BFDBFE'; this.style.background='linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%)';"
                  ondrop="event.preventDefault(); document.getElementById('file-input').files = event.dataTransfer.files; document.getElementById('file-name').textContent = event.dataTransfer.files[0].name; this.style.borderColor='#34C759'; this.style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)';">
                 <div class="text-3xl mb-2">📄</div>
-                <p class="text-sm font-medium" style="color: #1D1D1F;">Drop your PDF here or click to browse</p>
+                <p class="text-sm font-medium" style="color: var(--text-primary);">Drop your PDF here or click to browse</p>
                 <p class="text-xs mt-1" style="color: #AEAEB2;">PDF only, max 10MB</p>
                 <p id="file-name" class="text-xs mt-2 font-medium" style="color: #007AFF;"></p>
             </div>
@@ -75,7 +75,7 @@
                        onmouseout="this.style.background='#F9FAFB'; this.style.borderColor='#E5E7EB';">
                     <input type="checkbox" name="tx_{{ loop.index0 }}" class="checkbox checkbox-sm" checked>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate" style="color: #1D1D1F;">{{ tx.description }}</p>
+                        <p class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ tx.description }}</p>
                         <div class="flex items-center gap-2">
                             <span class="text-xs" style="color: #AEAEB2;">{{ tx.date }}</span>
                             {% if tx.category %}
@@ -83,7 +83,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    <span class="text-sm font-bold" style="color: #1D1D1F;">
+                    <span class="text-sm font-bold" style="color: var(--text-primary);">
                         {% if tx.amount > 0 %}${{ "%.2f"|format(tx.amount / 100) }}{% else %}-${{ "%.2f"|format((-tx.amount) / 100) }}{% endif %}
                     </span>
                     <input type="hidden" name="desc_{{ loop.index0 }}" value="{{ tx.description }}">
