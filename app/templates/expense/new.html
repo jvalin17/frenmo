@@ -55,13 +55,25 @@
                 </select>
             </div>
             <div id="split-with" class="form-control mb-3">
-                <label class="label"><span class="label-text">Split with</span></label>
+                <label class="label"><span class="label-text">Who's splitting?</span></label>
+                <p class="text-xs mb-2" style="color: #AEAEB2;">Uncheck anyone who's exempt from this expense</p>
                 {% for m in members %}
-                <label class="flex items-center gap-2 py-1">
-                    <input type="checkbox" name="split_with" value="{{ m.id }}" class="checkbox checkbox-sm" checked>
-                    <span class="text-sm">{{ m.name }}</span>
+                <label class="flex items-center gap-2 p-2 rounded-xl mb-1 cursor-pointer split-toggle" style="background: #ECFDF5; border: 1px solid #A7F3D0; transition: all 0.15s;">
+                    <input type="checkbox" name="split_with" value="{{ m.id }}" class="checkbox checkbox-sm" checked
+                           onchange="var p = this.closest('.split-toggle'); if(this.checked) { p.style.background='#ECFDF5'; p.style.borderColor='#A7F3D0'; } else { p.style.background='#F9FAFB'; p.style.borderColor='#E5E7EB'; }">
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #007AFF;">{{ m.name[0]|upper }}</div>
+                    <span class="text-sm font-medium flex-1">{{ m.name }}</span>
+                    <span class="exempt-label text-xs px-2 py-0.5 rounded-full" style="display: none; background: #FEF2F2; color: #DC2626;">exempt</span>
                 </label>
                 {% endfor %}
+                <script>
+                document.querySelectorAll('.split-toggle input[type=checkbox]').forEach(function(cb) {
+                    cb.addEventListener('change', function() {
+                        var label = this.closest('.split-toggle').querySelector('.exempt-label');
+                        label.style.display = this.checked ? 'none' : 'inline';
+                    });
+                });
+                </script>
             </div>
             <div id="shares-fields" style="display:none" class="mb-3">
                 <label class="label"><span class="label-text">Shares per person</span></label>
