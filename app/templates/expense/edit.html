@@ -48,14 +48,27 @@
             </div>
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Who's splitting?</span></label>
-                <p class="text-xs mb-2" style="color: #AEAEB2;">Uncheck anyone who's exempt from this expense</p>
+                <p class="text-xs mb-2" style="color: #AEAEB2;">Tap to exempt someone from this expense</p>
+                <style>
+                .person-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-radius: 14px; opacity: 0.45; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
+                .person-row:has(:checked) { opacity: 1; background: rgba(0, 122, 255, 0.04); }
+                .person-row .p-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; padding: 2px; background: transparent; transition: background 0.3s ease; filter: grayscale(60%); }
+                .person-row:has(:checked) .p-avatar { filter: grayscale(0%); background: linear-gradient(135deg, #007AFF, #5856D6); }
+                .person-row .p-name { font-weight: 500; font-size: 14px; color: #1D1D1F; flex: 1; }
+                .person-row .p-status { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D1D5DB; transition: all 0.2s ease; flex-shrink: 0; }
+                .person-row:has(:checked) .p-status { background: #007AFF; border-color: #007AFF; box-shadow: 0 0 8px rgba(0, 122, 255, 0.3); }
+                .person-row:not(:has(:checked)):hover { opacity: 0.65; }
+                .person-row:active { transform: scale(0.98); transition-duration: 0.1s; }
+                .person-row .p-exempt { display: none; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #FEF2F2; color: #DC2626; }
+                .person-row:not(:has(:checked)) .p-exempt { display: inline; }
+                </style>
                 {% for m in members %}
-                <label class="flex items-center gap-2 p-2 rounded-xl mb-1 cursor-pointer split-toggle" style="background: #ECFDF5; border: 1px solid #A7F3D0; transition: all 0.15s;">
-                    <input type="checkbox" name="split_with" value="{{ m.id }}" class="checkbox checkbox-sm" checked
-                           onchange="var p = this.closest('.split-toggle'); if(this.checked) { p.style.background='#ECFDF5'; p.style.borderColor='#A7F3D0'; } else { p.style.background='#F9FAFB'; p.style.borderColor='#E5E7EB'; }">
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #007AFF;">{{ m.name[0]|upper }}</div>
-                    <span class="text-sm font-medium flex-1">{{ m.name }}</span>
-                    <span class="exempt-label text-xs px-2 py-0.5 rounded-full" style="display: none; background: #FEF2F2; color: #DC2626;">exempt</span>
+                <label class="person-row">
+                    <input type="checkbox" name="split_with" value="{{ m.id }}" hidden checked>
+                    <div class="p-avatar" style="background: linear-gradient(135deg, #007AFF, #5856D6);">{{ m.name[0]|upper }}</div>
+                    <span class="p-name">{{ m.name }}</span>
+                    <span class="p-exempt">exempt</span>
+                    <div class="p-status"></div>
                 </label>
                 {% endfor %}
             </div>
