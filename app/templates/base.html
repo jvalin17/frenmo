@@ -19,30 +19,58 @@
     </script>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#007AFF">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <script>
+    // Dark mode: restore preference before paint
+    (function() {
+        var t = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+    })();
+    function toggleTheme() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
+    </script>
 </head>
-<body class="min-h-screen font-sans" style="background: #FBFBFD; color: #1D1D1F; -webkit-font-smoothing: antialiased;">
-    <div class="navbar px-6" style="background: rgba(251,251,253,0.92); border-bottom: 1px solid #E5E5EA; min-height: 52px;">
+<body class="min-h-screen font-sans" style="background: var(--bg-page); color: var(--text-primary); -webkit-font-smoothing: antialiased;">
+    <div class="navbar px-6" style="background: var(--navbar-bg); border-bottom: 1px solid var(--navbar-border); min-height: 52px;">
         <div class="flex-1">
             <a href="/" class="text-2xl font-extrabold" style="text-decoration: none; letter-spacing: -0.03em;"><span>💰</span><span style="background: linear-gradient(135deg, #3C3B6E 0%, #B0C4DE 50%, #B22234 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"> Frenmo</span></a>
         </div>
         <div class="flex items-center gap-2">
+            <button onclick="toggleTheme()" class="theme-toggle" title="Toggle dark mode">
+                <span id="theme-icon">🌙</span>
+            </button>
             {% if user %}
-                <a href="/" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: #6E6E73; text-decoration: none;">Home</a>
-                <a href="/friends" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: #6E6E73; text-decoration: none;">Friends</a>
+                <a href="/" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Home</a>
+                <a href="/friends" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Friends</a>
                 <a href="/account" style="text-decoration: none;">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #007AFF, #5856D6); cursor: pointer;">
                         {{ user.name[0]|upper }}
                     </div>
                 </a>
-                <a href="/auth/logout" class="text-sm px-2 py-1" style="color: #AEAEB2; text-decoration: none;">Logout</a>
+                <a href="/auth/logout" class="text-sm px-2 py-1" style="color: var(--text-muted); text-decoration: none;">Logout</a>
             {% else %}
-                <a href="/auth/login" class="text-sm font-medium px-3 py-1.5" style="color: #6E6E73; text-decoration: none;">Sign In</a>
+                <a href="/auth/login" class="text-sm font-medium px-3 py-1.5" style="color: var(--text-secondary); text-decoration: none;">Sign In</a>
                 <a href="/auth/register" class="btn btn-primary btn-sm">Get Started</a>
             {% endif %}
         </div>
     </div>
-    <main class="container mx-auto px-4 py-8 max-w-xl" style="color: #1D1D1F;">
+    <main class="container mx-auto px-4 py-8 max-w-xl" style="color: var(--text-primary);">
         {% block content %}{% endblock %}
     </main>
+    <script>
+    // Set correct icon on page load
+    document.getElementById('theme-icon').textContent = (localStorage.getItem('theme') === 'dark') ? '☀️' : '🌙';
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').catch(function() {});
+    }
+    </script>
 </body>
 </html>

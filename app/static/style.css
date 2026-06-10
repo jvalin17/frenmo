@@ -1,17 +1,49 @@
-/* Frenmo — Apple-Inspired Light Theme */
+/* Frenmo — Apple-Inspired Theme with Dark Mode */
+
+:root {
+    --bg-page: #FBFBFD;
+    --bg-card: #FFFFFF;
+    --bg-input: #F2F2F7;
+    --bg-hover: #F2F2F7;
+    --text-primary: #1D1D1F;
+    --text-secondary: #86868B;
+    --text-muted: #AEAEB2;
+    --border: #E5E7EB;
+    --border-light: #F2F2F7;
+    --accent: #007AFF;
+    --navbar-bg: #FFFFFF;
+    --navbar-border: #E3E8EE;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+}
+
+[data-theme="dark"] {
+    --bg-page: #1C1C1E;
+    --bg-card: #2C2C2E;
+    --bg-input: #3A3A3C;
+    --bg-hover: #3A3A3C;
+    --text-primary: #F5F5F7;
+    --text-secondary: #98989D;
+    --text-muted: #636366;
+    --border: #3A3A3C;
+    --border-light: #2C2C2E;
+    --accent: #0A84FF;
+    --navbar-bg: #2C2C2E;
+    --navbar-border: #3A3A3C;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.15);
+}
 
 /* Balance colors */
 .balance-positive { color: #34C759; font-weight: 600; }
 .balance-negative { color: #FF3B30; }
-.balance-zero { color: #8E8E93; }
+.balance-zero { color: var(--text-muted); }
 
-/* Cards — top-color fade to white */
+/* Cards */
 .card {
-    background: linear-gradient(180deg, #EEF2FF 0%, #FFFFFF 40%) !important;
-    border: 1px solid #E5E7EB !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 16px !important;
-    color: #1D1D1F;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03) !important;
+    color: var(--text-primary);
+    box-shadow: var(--card-shadow) !important;
 }
 
 /* Card color variants */
@@ -59,11 +91,11 @@
 /* Ghost buttons */
 .btn-ghost {
     border-radius: 12px !important;
-    color: #6E6E73 !important;
+    color: var(--text-secondary) !important;
 }
 .btn-ghost:hover {
-    background: #F2F2F7 !important;
-    color: #1D1D1F !important;
+    background: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
 }
 
 /* Badge */
@@ -76,10 +108,10 @@
 
 /* Form inputs */
 .input, .select {
-    background: #F2F2F7 !important;
+    background: var(--bg-input) !important;
     border: none !important;
     border-radius: 12px !important;
-    color: #1D1D1F !important;
+    color: var(--text-primary) !important;
 }
 .input:focus, .select:focus {
     outline: 2px solid #007AFF !important;
@@ -100,25 +132,25 @@
 
 /* Labels and secondary text */
 .label-text {
-    color: #6E6E73 !important;
+    color: var(--text-secondary) !important;
 }
 .text-gray-500 {
-    color: #6E6E73 !important;
+    color: var(--text-secondary) !important;
 }
 .text-gray-400 {
-    color: #AEAEB2 !important;
+    color: var(--text-muted) !important;
 }
 
 /* Section headers */
 .card-body h3 {
     letter-spacing: 0.03em;
-    color: #86868B !important;
+    color: var(--text-secondary) !important;
     font-size: 0.75rem;
 }
 
 /* Card titles */
 .card-title {
-    color: #1D1D1F !important;
+    color: var(--text-primary) !important;
 }
 
 /* Hero balance */
@@ -217,5 +249,14 @@ h2 {
 
 /* Section dividers */
 .border-b {
-    border-color: #F2F2F7 !important;
+    border-color: var(--border-light) !important;
 }
+
+/* Dark mode toggle */
+.theme-toggle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: none; font-size: 16px;
+    background: var(--bg-input); transition: all 0.2s ease;
+}
+.theme-toggle:hover { background: var(--bg-hover); }
