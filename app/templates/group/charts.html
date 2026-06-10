@@ -84,8 +84,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-/* USA flag palette — navy, red, white variations */
-const colors = ['#3C3B6E','#B22234','#FFFFFF','#5C5B8E','#D44A5C','#8B8AAE','#E07380','#A3A2C6'];
+/* Theme-aware colors */
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+const colors = isDark
+    ? ['#5C5BDE','#E04456','#6B8AFF','#8B7ADE','#FF7A85','#7C9BFF','#E88A92','#A3A2FF']
+    : ['#3C3B6E','#B22234','#FFFFFF','#5C5B8E','#D44A5C','#8B8AAE','#E07380','#A3A2C6'];
+const gridColor = isDark ? '#38383A' : '#F2F2F7';
+const tickColor = isDark ? '#636366' : '#AEAEB2';
+const tooltipBg = isDark ? '#2C2C2E' : '#1D1D1F';
+const tooltipColor = isDark ? '#E5E5E7' : '#FFFFFF';
 
 {% if category_data %}
 new Chart(document.getElementById('categoryChart'), {
@@ -106,7 +113,9 @@ new Chart(document.getElementById('categoryChart'), {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#1D1D1F',
+                backgroundColor: tooltipBg,
+                titleColor: tooltipColor,
+                bodyColor: tooltipColor,
                 titleFont: { family: 'Inter', weight: '600' },
                 bodyFont: { family: 'Inter' },
                 cornerRadius: 10,
@@ -125,8 +134,8 @@ new Chart(document.getElementById('monthlyChart'), {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: 'rgba(60, 59, 110, 0.15)',
-            hoverBackgroundColor: 'rgba(60, 59, 110, 0.3)',
+            backgroundColor: isDark ? 'rgba(92, 91, 222, 0.4)' : 'rgba(60, 59, 110, 0.15)',
+            hoverBackgroundColor: isDark ? 'rgba(92, 91, 222, 0.6)' : 'rgba(60, 59, 110, 0.3)',
             borderRadius: 8,
             borderSkipped: false,
         }]
@@ -136,7 +145,9 @@ new Chart(document.getElementById('monthlyChart'), {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: '#1D1D1F',
+                backgroundColor: tooltipBg,
+                titleColor: tooltipColor,
+                bodyColor: tooltipColor,
                 cornerRadius: 10,
                 padding: 12,
                 titleFont: { family: 'Inter', weight: '600' },
@@ -148,13 +159,13 @@ new Chart(document.getElementById('monthlyChart'), {
             y: {
                 beginAtZero: true,
                 border: { display: false },
-                grid: { color: '#F2F2F7' },
-                ticks: { color: '#AEAEB2', font: { family: 'Inter', size: 11 }, callback: v => '$' + v }
+                grid: { color: gridColor },
+                ticks: { color: tickColor, font: { family: 'Inter', size: 11 }, callback: v => '$' + v }
             },
             x: {
                 border: { display: false },
                 grid: { display: false },
-                ticks: { color: '#AEAEB2', font: { family: 'Inter', size: 11 } }
+                ticks: { color: tickColor, font: { family: 'Inter', size: 11 } }
             }
         }
     }
