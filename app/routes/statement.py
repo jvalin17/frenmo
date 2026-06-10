@@ -124,6 +124,7 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             description = form_data.get(f"desc_{index}", "").strip()
             amount_str = form_data.get(f"amount_{index}", "0")
             category = form_data.get(f"cat_{index}", "").strip() or None
+            tx_date_str = form_data.get(f"date_{index}", "").strip()
 
             try:
                 amount_cents = int(amount_str)
@@ -146,7 +147,7 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             if existing.scalar_one_or_none() is not None:
                 continue  # skip duplicate
 
-            await create_expense_with_splits(
+            expense = await create_expense_with_splits(
                 db=db,
                 group_id=group_id,
                 description=description,
@@ -159,6 +160,25 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
                 category=category,
                 idempotency_key=str(uuid.uuid4()),
             )
+
+            # Set the original transaction date from bank statement
+            if tx_date_str and expense:
+                from datetime import datetime
+                try:
+                    # Try MM/DD/YYYY, MM/DD/YY, MM/DD
+                    for fmt in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
+                        try:
+                            parsed_date = datetime.strptime(tx_date_str, fmt)
+                            if parsed_date.year == 1900:
+                                parsed_date = parsed_date.replace(year=datetime.utcnow().year)
+                            expense.created_at = parsed_date
+                            await db.commit()
+                            break
+                        except ValueError:
+                            continue
+                except Exception:
+                    pass
+
             imported_count += 1
 
     logger.info("Imported %d expenses from statement to group %d", imported_count, group_id)

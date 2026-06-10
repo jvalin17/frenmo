@@ -89,6 +89,7 @@
                     <input type="hidden" name="desc_{{ loop.index0 }}" value="{{ tx.description }}">
                     <input type="hidden" name="amount_{{ loop.index0 }}" value="{{ tx.amount }}">
                     <input type="hidden" name="cat_{{ loop.index0 }}" value="{{ tx.category or '' }}">
+                    <input type="hidden" name="date_{{ loop.index0 }}" value="{{ tx.date }}">
                 </label>
                 {% endfor %}
             </div>
