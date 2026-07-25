@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     csrf_secret: str = secrets.token_urlsafe(32)
     debug: bool = False
     app_port: int = 8040
-    smtp_from_email: str = "jvalin17@gmail.com"
-    smtp_password: str = ""
+    brevo_api_key: str = ""
+    brevo_from_email: str = "jvalin.austin@gmail.com"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

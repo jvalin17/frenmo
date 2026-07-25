@@ -10,7 +10,7 @@ services:
         generateValue: true
       - key: CSRF_SECRET
         generateValue: true
-      - key: SMTP_FROM_EMAIL
+      - key: BREVO_API_KEY
         sync: false
-      - key: SMTP_PASSWORD
+      - key: BREVO_FROM_EMAIL
         sync: false

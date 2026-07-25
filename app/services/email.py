@@ -1,6 +1,5 @@
 import logging
-import aiosmtplib
-from email.message import EmailMessage
+import httpx
 
 from app.config import settings
 
@@ -8,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 async def send_reset_email(to_email: str, reset_url: str) -> bool:
-    """Send password reset email via Gmail SMTP."""
-    if not settings.smtp_password:
-        logger.warning("SMTP_PASSWORD not set — logging reset URL instead")
+    """Send password reset email via Brevo (Sendinblue) HTTP API."""
+    if not settings.brevo_api_key:
+        logger.warning("BREVO_API_KEY not set — logging reset URL instead")
         logger.info("Password reset URL for %s: %s", to_email, reset_url)
         return True
 
@@ -29,24 +28,24 @@ async def send_reset_email(to_email: str, reset_url: str) -> bool:
         </div>
     """
 
-    msg = EmailMessage()
-    msg["Subject"] = "Reset your Frenmo password"
-    msg["From"] = settings.smtp_from_email
-    msg["To"] = to_email
-    msg.set_content("Reset your Frenmo password: " + reset_url)
-    msg.add_alternative(html, subtype="html")
-
-    try:
-        await aiosmtplib.send(
-            msg,
-            hostname="smtp.gmail.com",
-            port=587,
-            start_tls=True,
-            username=settings.smtp_from_email,
-            password=settings.smtp_password,
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": settings.brevo_api_key,
+                "Content-Type": "application/json",
+            },
+            json={
+                "sender": {"name": "Frenmo", "email": settings.brevo_from_email},
+                "to": [{"email": to_email}],
+                "subject": "Reset your Frenmo password",
+                "htmlContent": html,
+            },
         )
+
+    if response.status_code == 201:
         logger.info("Reset email sent to %s", to_email)
         return True
-    except Exception as e:
-        logger.error("Failed to send reset email: %s", e)
-        return False
+
+    logger.error("Failed to send reset email: %s %s", response.status_code, response.text)
+    return False
