@@ -10,7 +10,7 @@ services:
         generateValue: true
       - key: CSRF_SECRET
         generateValue: true
-      - key: RESEND_API_KEY
+      - key: SMTP_FROM_EMAIL
         sync: false
-      - key: RESET_FROM_EMAIL
+      - key: SMTP_PASSWORD
         sync: false
