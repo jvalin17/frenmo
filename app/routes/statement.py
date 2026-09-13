@@ -134,17 +134,36 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             if amount_cents <= 0 or not description:
                 continue
 
-            # Dedup: skip if same description + amount already exists in group
+            # Parse transaction date from bank statement
+            from datetime import datetime
+            parsed_date = None
+            if tx_date_str:
+                for fmt in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
+                    try:
+                        parsed_date = datetime.strptime(tx_date_str, fmt)
+                        if parsed_date.year == 1900:
+                            parsed_date = parsed_date.replace(year=datetime.now().year)
+                        break
+                    except ValueError:
+                        continue
+
+            # Dedup: skip if same description + amount + date already exists in group
             from app.models.expense import Expense as ExpenseModel
-            existing = await db.execute(
-                select(ExpenseModel).where(
-                    ExpenseModel.group_id == group_id,
-                    ExpenseModel.description == description,
-                    ExpenseModel.amount == amount_cents,
-                    ExpenseModel.deleted_at.is_(None),
+            dedup_filters = [
+                ExpenseModel.group_id == group_id,
+                ExpenseModel.description == description,
+                ExpenseModel.amount == amount_cents,
+                ExpenseModel.deleted_at.is_(None),
+            ]
+            if parsed_date is not None:
+                from sqlalchemy import func
+                dedup_filters.append(
+                    func.date(ExpenseModel.created_at) == parsed_date.date()
                 )
+            existing = await db.execute(
+                select(ExpenseModel).where(*dedup_filters)
             )
-            if existing.scalar_one_or_none() is not None:
+            if existing.scalars().first() is not None:
                 continue  # skip duplicate
 
             expense = await create_expense_with_splits(
@@ -162,22 +181,9 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
             )
 
             # Set the original transaction date from bank statement
-            if tx_date_str and expense:
-                from datetime import datetime
-                try:
-                    # Try MM/DD/YYYY, MM/DD/YY, MM/DD
-                    for fmt in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
-                        try:
-                            parsed_date = datetime.strptime(tx_date_str, fmt)
-                            if parsed_date.year == 1900:
-                                parsed_date = parsed_date.replace(year=datetime.utcnow().year)
-                            expense.created_at = parsed_date
-                            await db.commit()
-                            break
-                        except ValueError:
-                            continue
-                except Exception:
-                    pass
+            if parsed_date and expense:
+                expense.created_at = parsed_date
+                await db.commit()
 
             imported_count += 1
 

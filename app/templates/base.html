@@ -71,6 +71,8 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/static/sw.js').catch(function() {});
     }
+    // Keep server alive — ping /health every 5 min to prevent idle spindown
+    setInterval(function() { fetch('/health').catch(function() {}); }, 5 * 60 * 1000);
     </script>
 </body>
 </html>
