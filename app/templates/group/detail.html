@@ -210,9 +210,9 @@
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
 <!-- Expenses — grouped by member -->
-{% set member_colors = ["var(--accent)","#8B6F4E","#B05030","#D4925C","#7A5C3A","#A8672D","#C89060","#5E3D1E"] %}
-{% set member_colors_light = ["var(--bg-hover)","#EAE5DE","#FAE0CC","var(--bg-hover)","#E8DECE","#F0D8C0","#F8ECD8","#E0D0BC"] %}
-{% set member_colors_border = ["var(--border)","#C5BFB6","#D4A080","#E0B888","#B8A890","#D0A070","#E0C098","#C0A880"] %}
+{% set member_colors = ["var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)"] %}
+{% set member_colors_light = ["var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)"] %}
+{% set member_colors_border = ["var(--border)","var(--border-light)","var(--border)","var(--border-light)","var(--border)","var(--border-light)","var(--border)","var(--border-light)"] %}
 
 <form id="bulk-delete-form" method="POST" action="/expenses/bulk-delete/{{ group.id }}">
 <div class="flex justify-between items-center mb-3">
