@@ -196,3 +196,39 @@ class TestWellsFargoParser:
         transactions = parse_transactions(text, "wells_fargo")
         assert len(transactions) == 2
         assert transactions[0]["amount"] == 250000
+
+
+class TestHDFCParser:
+    def test_hdfc_dd_mm_yyyy(self):
+        """HDFC uses DD/MM/YYYY — 10/05/2024 means May 10, not Oct 5."""
+        text = """HDFC Bank
+10/05/2024 AMAZON INDIA 4599.00
+25/12/2024 FLIPKART ORDER 1299.00
+"""
+        transactions = parse_transactions(text, "hdfc")
+        assert len(transactions) == 2
+        # DD/MM/YYYY: 10/05 = May 10, normalized to MM/DD
+        assert transactions[0]["date"] == "05/10/2024"
+        assert transactions[1]["date"] == "12/25/2024"
+
+    def test_hdfc_dd_mm_no_year(self):
+        """HDFC without year: DD/MM format."""
+        text = """HDFC Bank
+10/05 SWIGGY ORDER 350.00
+"""
+        transactions = parse_transactions(text, "hdfc")
+        assert len(transactions) == 1
+        assert transactions[0]["date"] == "05/10"
+
+
+class TestSBIParser:
+    def test_sbi_dd_mm_yyyy(self):
+        """SBI uses DD/MM/YYYY — same as HDFC."""
+        text = """State Bank of India
+15/06/2024 UPI PAYMENT 500.00
+01/01/2025 ATM WITHDRAWAL 2000.00
+"""
+        transactions = parse_transactions(text, "sbi")
+        assert len(transactions) == 2
+        assert transactions[0]["date"] == "06/15/2024"
+        assert transactions[1]["date"] == "01/01/2025"

@@ -73,6 +73,17 @@ BANK_TX_PATTERNS = {
         r"(.+?)\s+"
         r"(-?\$?[\d,]+\.\d{2})\s*$", re.MULTILINE
     ),
+    # HDFC/SBI: DD/MM/YYYY or DD/MM description amount (Indian banks use day-first)
+    "hdfc": re.compile(
+        r"^(\d{2}/\d{2}(?:/\d{2,4})?)\s+"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
+    "sbi": re.compile(
+        r"^(\d{2}/\d{2}(?:/\d{2,4})?)\s+"
+        r"(.+?)\s+"
+        r"(-?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
     # US Bank: MM/DD [MM/DD] description amount
     "usbank": re.compile(
         r"^(\d{2}/\d{2})\s+(?:\d{2}/\d{2}\s+)?"
@@ -258,6 +269,14 @@ def parse_transactions(
             parts = date_str.split()
             if len(parts) == 2 and parts[0] in MONTH_MAP:
                 date_str = f"{MONTH_MAP[parts[0]]}/{parts[1].zfill(2)}"
+
+        # Normalize Indian bank DD/MM → MM/DD (HDFC, SBI use day-first format)
+        if bank in ("hdfc", "sbi"):
+            parts = date_str.split("/")
+            if len(parts) == 3:  # DD/MM/YYYY → MM/DD/YYYY
+                date_str = f"{parts[1]}/{parts[0]}/{parts[2]}"
+            elif len(parts) == 2:  # DD/MM → MM/DD
+                date_str = f"{parts[1]}/{parts[0]}"
 
         # Clean amount: remove $, commas, convert to cents
         amount_clean = amount_str.replace("$", "").replace(",", "")
