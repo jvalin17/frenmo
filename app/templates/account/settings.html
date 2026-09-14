@@ -16,19 +16,19 @@
 
 <!-- Avatar + Name -->
 <div class="flex items-center gap-4 mb-6">
-    <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style="background: #C07A45;">
+    <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style="background: var(--accent);">
         {{ user.name[0]|upper }}
     </div>
     <div>
         <p class="font-semibold text-lg">{{ user.name }}</p>
-        <p class="text-sm" style="color: #5E5549;">{{ user.email }}</p>
+        <p class="text-sm" style="color: var(--text-secondary);">{{ user.email }}</p>
     </div>
 </div>
 
 <!-- Profile -->
 <div class="card mb-4">
     <div class="card-body">
-        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #5E5549;">Profile</h3>
+        <h3 class="font-semibold text-sm uppercase mb-3" style="color: var(--text-secondary);">Profile</h3>
         <form method="POST" action="/account/profile">
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Nickname</span></label>
@@ -59,8 +59,8 @@
 <!-- Theme -->
 <div class="card mb-4">
     <div class="card-body">
-        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #5E5549;">Theme</h3>
-        <p class="text-xs mb-3" style="color: #8C8076;">Choose a color theme for your app.</p>
+        <h3 class="font-semibold text-sm uppercase mb-3" style="color: var(--text-secondary);">Theme</h3>
+        <p class="text-xs mb-3" style="color: var(--text-muted);">Choose a color theme for your app.</p>
         <form method="POST" action="/account/theme" id="theme-form">
             <div class="flex flex-wrap gap-4 justify-center">
                 {% set themes = [
@@ -91,7 +91,7 @@
 <!-- Password -->
 <div class="card">
     <div class="card-body">
-        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #5E5549;">Change Password</h3>
+        <h3 class="font-semibold text-sm uppercase mb-3" style="color: var(--text-secondary);">Change Password</h3>
         <form method="POST" action="/account/password">
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Current Password</span></label>

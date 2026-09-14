@@ -8,8 +8,8 @@
 {% set net_total = total_owed_to_you + total_you_owe %}
 
 <!-- Hero Card — stronger blue default, green when owed, orange when owing -->
-<div class="hero-card mb-6" style="background: linear-gradient(180deg, {% if net_total > 0 %}#BBF7D0 0%, #DCFCE7 30%, #FFFFFF 100%); border: 1px solid #86EFAC; box-shadow: 0 8px 30px rgba(34,197,94,0.12){% elif net_total < 0 %}#FED7AA 0%, #FFEDD5 30%, #FFFFFF 100%); border: 1px solid #FDBA74; box-shadow: 0 8px 30px rgba(249,115,22,0.12){% else %}#F5E6D8 0%, #F2EFEA 30%, #FAF9F7 100%); border: 1px solid #DDB896; box-shadow: 0 8px 30px rgba(192,122,69,0.12){% endif %};">
-    <p class="text-sm font-medium" style="color: #5E5549;">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}All settled up{% endif %}</p>
+<div class="hero-card mb-6" style="background: linear-gradient(180deg, {% if net_total > 0 %}#BBF7D0 0%, #DCFCE7 30%, #FFFFFF 100%); border: 1px solid #86EFAC; box-shadow: 0 8px 30px rgba(34,197,94,0.12){% elif net_total < 0 %}#FED7AA 0%, #FFEDD5 30%, #FFFFFF 100%); border: 1px solid #FDBA74; box-shadow: 0 8px 30px rgba(249,115,22,0.12){% else %}#F5E6D8 0%, var(--bg-card) 30%, #FAF9F7 100%); border: 1px solid var(--border); box-shadow: 0 8px 30px rgba(192,122,69,0.12){% endif %};">
+    <p class="text-sm font-medium" style="color: var(--text-secondary);">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}All settled up{% endif %}</p>
     <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-primary); margin: 0.25rem 0;">
         {% if net_total > 0 %}${{ "%.2f"|format(net_total / 100) }}
         {% elif net_total < 0 %}${{ "%.2f"|format((-net_total) / 100) }}
@@ -43,9 +43,9 @@
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm uppercase mb-2">People</h3>
         {% for other_id, net in overall_balances.items() %}
-        <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: #C5BFB6;">
+        <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: var(--border);">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #C07A45;">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
                     {{ balance_names.get(other_id, '?')[0]|upper }}
                 </div>
                 <span class="text-sm font-medium">{{ balance_names.get(other_id, '?') }}</span>
@@ -68,14 +68,14 @@
         {% if groups %}
         {% for group in groups %}
         {% set net = group_balances.get(group.id, 0) %}
-        <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: #C5BFB6;">
+        <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: var(--border);">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: #F5E6D8;">
                     {% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}
                 </div>
                 <div>
                     <p class="font-semibold text-sm" style="color: var(--text-primary);">{{ group.name }}</p>
-                    <p class="text-xs" style="color: #8C8076;">{{ group.type }}</p>
+                    <p class="text-xs" style="color: var(--text-muted);">{{ group.type }}</p>
                 </div>
             </div>
             <span class="font-bold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
@@ -88,8 +88,8 @@
         {% else %}
         <div class="text-center py-8">
             <div class="text-4xl mb-3">💸</div>
-            <p style="color: #5E5549;" class="mb-2">No groups yet</p>
-            <p style="color: #8C8076;" class="text-sm">Create a group to start splitting expenses with friends</p>
+            <p style="color: var(--text-secondary);" class="mb-2">No groups yet</p>
+            <p style="color: var(--text-muted);" class="text-sm">Create a group to start splitting expenses with friends</p>
         </div>
         {% endif %}
     </div>

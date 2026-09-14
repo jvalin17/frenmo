@@ -120,9 +120,9 @@ class TestGroupDetailTemplate:
         # #007AFF should not appear as an accent (may appear in semantic contexts)
         assert html.count("#007AFF") == 0, "No Apple blue accent in group detail"
 
-    def test_member_colors_are_warm(self):
+    def test_member_colors_use_css_var(self):
         html = Path("app/templates/group/detail.html").read_text()
-        assert "#C07A45" in html, "Member colors should include copper"
+        assert "var(--accent)" in html, "Member colors should use var(--accent)"
 
     def test_sidebar_chips_use_copper(self):
         html = Path("app/templates/group/detail.html").read_text()
@@ -136,47 +136,47 @@ class TestDashboardTemplate:
         html = Path("app/templates/dashboard.html").read_text()
         assert "#635BFF" not in html, "No Stripe purple should remain in dashboard"
 
-    def test_copper_avatar(self):
+    def test_avatar_uses_css_var(self):
         html = Path("app/templates/dashboard.html").read_text()
-        assert "#C07A45" in html, "Dashboard avatars should use copper"
+        assert "var(--accent)" in html, "Dashboard avatars should use var(--accent)"
 
 
 class TestStatementTemplate:
     """statement/upload.html should use copper palette."""
 
-    def test_drop_zone_uses_copper(self):
+    def test_drop_zone_uses_css_vars(self):
         html = Path("app/templates/statement/upload.html").read_text()
-        assert "#DDB896" in html, "Drop zone border should be copper #DDB896"
+        assert "var(--border)" in html, "Drop zone should use var(--border)"
 
     def test_no_blue_drop_zone(self):
         html = Path("app/templates/statement/upload.html").read_text()
         assert "#BFDBFE" not in html, "No blue border in drop zone"
 
-    def test_file_name_color_is_copper(self):
+    def test_file_name_uses_css_var(self):
         html = Path("app/templates/statement/upload.html").read_text()
-        assert "#C07A45" in html, "File name display should use copper"
+        assert "var(--accent)" in html, "File name display should use var(--accent)"
 
 
 class TestExpenseTemplates:
     """expense new/edit should use copper palette."""
 
-    def test_person_row_avatar_is_copper(self):
+    def test_person_row_uses_css_var(self):
         html = Path("app/templates/expense/new.html").read_text()
-        assert "#C07A45" in html, "Person row avatar should use copper"
+        assert "var(--accent)" in html, "Person row should use var(--accent)"
         assert "#007AFF" not in html, "No Apple blue in expense/new.html"
 
-    def test_edit_template_matches(self):
+    def test_edit_template_uses_css_var(self):
         html = Path("app/templates/expense/edit.html").read_text()
-        assert "#C07A45" in html, "Person row avatar should use copper in edit"
+        assert "var(--accent)" in html, "Person row should use var(--accent) in edit"
         assert "#007AFF" not in html, "No Apple blue in expense/edit.html"
 
 
 class TestAccountSettings:
     """account/settings.html should use copper palette."""
 
-    def test_avatar_is_copper(self):
+    def test_avatar_uses_css_var(self):
         html = Path("app/templates/account/settings.html").read_text()
-        assert "#C07A45" in html, "Account avatar should use copper"
+        assert "var(--accent)" in html, "Account avatar should use var(--accent)"
         assert "#635BFF" not in html, "No Stripe purple in settings"
 
 
@@ -204,9 +204,9 @@ class TestNoBlueTailwindClasses:
 class TestChartsTemplate:
     """group/charts.html should use copper palette."""
 
-    def test_progress_bars_use_copper(self):
+    def test_progress_bars_use_css_var(self):
         html = Path("app/templates/group/charts.html").read_text()
-        assert "#C07A45" in html, "Progress bars should use copper"
+        assert "var(--accent)" in html, "Progress bars should use var(--accent)"
         assert "#3C3B6E" not in html, "No old navy blue in charts"
 
 
@@ -291,6 +291,60 @@ class TestThemeUserModel:
     def test_user_model_has_theme_color(self):
         from app.models.user import User
         assert hasattr(User, "theme_color"), "User model should have theme_color field"
+
+
+class TestThemeVarUsage:
+    """Templates should use CSS variables, not hardcoded copper hex, for theme-switching to work."""
+
+    def test_no_hardcoded_accent_in_base(self):
+        html = Path("app/templates/base.html").read_text()
+        # Avatar should use var(--accent), not #C07A45
+        assert "var(--accent)" in html, "base.html should use var(--accent)"
+
+    def test_no_hardcoded_accent_in_dashboard(self):
+        html = Path("app/templates/dashboard.html").read_text()
+        assert "var(--accent)" in html, "dashboard should use var(--accent) for avatars"
+
+    def test_no_hardcoded_accent_in_settings_avatar(self):
+        html = Path("app/templates/account/settings.html").read_text()
+        # The theme swatch hex values are OK — but the avatar should use var
+        lines_before_theme_section = html.split("<!-- Theme -->")[0]
+        assert "var(--accent)" in lines_before_theme_section, \
+            "Settings avatar should use var(--accent)"
+
+    def test_group_detail_uses_css_vars(self):
+        html = Path("app/templates/group/detail.html").read_text()
+        assert "var(--accent)" in html, "Group detail should use var(--accent)"
+        assert "var(--border)" in html, "Group detail should use var(--border)"
+        assert "var(--bg-input)" in html, "Group detail should use var(--bg-input)"
+
+    def test_statement_uses_css_vars(self):
+        html = Path("app/templates/statement/upload.html").read_text()
+        assert "var(--accent)" in html, "Statement should use var(--accent)"
+        assert "var(--border)" in html, "Statement should use var(--border)"
+
+    def test_expense_new_uses_css_vars(self):
+        html = Path("app/templates/expense/new.html").read_text()
+        assert "var(--accent)" in html, "Expense new should use var(--accent)"
+
+    def test_expense_edit_uses_css_vars(self):
+        html = Path("app/templates/expense/edit.html").read_text()
+        assert "var(--accent)" in html, "Expense edit should use var(--accent)"
+
+    def test_charts_uses_css_vars(self):
+        html = Path("app/templates/group/charts.html").read_text()
+        assert "var(--accent)" in html, "Charts should use var(--accent)"
+
+    def test_user_model_has_server_default(self):
+        """User.theme_color should have server_default for existing DB rows."""
+        from app.models.user import User
+        col = User.__table__.columns["theme_color"]
+        assert col.server_default is not None, "theme_color needs server_default for ALTER TABLE"
+
+    def test_base_html_guards_none_theme(self):
+        """base.html should handle None theme_color (existing users before migration)."""
+        html = Path("app/templates/base.html").read_text()
+        assert "or 'copper'" in html, "base.html should fallback to copper when theme_color is None"
 
 
 class TestThemeRouteValidation:

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color if user else 'copper' }}">
+<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color or 'copper' if user else 'copper' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,7 +52,7 @@
                 <a href="/" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Home</a>
                 <a href="/friends" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Friends</a>
                 <a href="/account" style="text-decoration: none;">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #C07A45, #8B6F4E); cursor: pointer;">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--accent), var(--accent)); cursor: pointer;">
                         {{ user.name[0]|upper }}
                     </div>
                 </a>

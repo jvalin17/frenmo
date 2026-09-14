@@ -20,29 +20,29 @@
 <div class="group-page">
 <!-- Group Header Card -->
 <div style="max-width: 960px; margin: 0 auto 1rem auto;">
-    <div class="rounded-2xl p-5" style="background: linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 50%); border: 1px solid #DDB896; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+    <div class="rounded-2xl p-5" style="background: linear-gradient(180deg, #F5E6D8 0%, var(--bg-card) 50%); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
         <div class="flex items-center gap-2 mb-2">
             <span class="text-lg">{% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}</span>
             <h2 class="text-xl font-bold" style="color: var(--text-primary);">{{ group.name }}</h2>
-            <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: #F5E6D8; color: #A8672D;">{{ group.currency }}</span>
-            <span class="text-xs" style="color: #5E5549;">{{ members|length }} members</span>
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: #F5E6D8; color: var(--accent);">{{ group.currency }}</span>
+            <span class="text-xs" style="color: var(--text-secondary);">{{ members|length }} members</span>
         </div>
         <div class="flex flex-wrap gap-2 mt-1">
-            <a href="/statement/{{ group.id }}" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: #F5E6D8; color: #A8672D; text-decoration: none;">📥 Import Expenses</a>
-            <a href="/groups/{{ group.id }}/charts" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: #EAE5DE; color: #5E5549; text-decoration: none;">📊 Charts</a>
-            <a href="/groups/{{ group.id }}/invite" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: #EAE5DE; color: #5E5549; text-decoration: none;">➕ Invite</a>
-            <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: #EAE5DE; color: #5E5549; border: none; cursor: pointer;">✏️ Edit</button>
+            <a href="/statement/{{ group.id }}" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: #F5E6D8; color: var(--accent); text-decoration: none;">📥 Import Expenses</a>
+            <a href="/groups/{{ group.id }}/charts" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary); text-decoration: none;">📊 Charts</a>
+            <a href="/groups/{{ group.id }}/invite" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary); text-decoration: none;">➕ Invite</a>
+            <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary); border: none; cursor: pointer;">✏️ Edit</button>
         </div>
         <!-- Inline edit form -->
         <form id="group-edit" method="POST" action="/groups/{{ group.id }}/settings" style="display: none;" class="mt-3 pt-3" style="border-top: 1px solid #DDB896;">
             <div class="flex gap-2 items-end mb-3">
                 <div class="flex-1">
-                    <label class="text-xs" style="color: #5E5549;">Name</label>
-                    <input type="text" name="name" value="{{ group.name }}" class="text-sm px-3 py-1.5 rounded-lg w-full" style="background: #FFFFFF; border: 1px solid #DDB896;">
+                    <label class="text-xs" style="color: var(--text-secondary);">Name</label>
+                    <input type="text" name="name" value="{{ group.name }}" class="text-sm px-3 py-1.5 rounded-lg w-full" style="background: #FFFFFF; border: 1px solid var(--border);">
                 </div>
                 <div>
-                    <label class="text-xs" style="color: #5E5549;">Currency</label>
-                    <select name="currency" class="text-sm px-2 py-1.5 rounded-lg" style="background: #FFFFFF; border: 1px solid #DDB896;">
+                    <label class="text-xs" style="color: var(--text-secondary);">Currency</label>
+                    <select name="currency" class="text-sm px-2 py-1.5 rounded-lg" style="background: #FFFFFF; border: 1px solid var(--border);">
                         {% for c in ["USD","INR","EUR","GBP","AED","JPY","CAD","AUD"] %}
                         <option value="{{ c }}" {% if c == group.currency %}selected{% endif %}>{{ c }}</option>
                         {% endfor %}
@@ -51,18 +51,18 @@
             </div>
             <!-- Default split shares -->
             <div class="mb-3">
-                <label class="text-xs" style="color: #5E5549;">Default split shares</label>
-                <p class="text-xs mb-2" style="color: #8C8076;">Set how many shares each person covers (e.g., 3 if bringing 2 guests)</p>
+                <label class="text-xs" style="color: var(--text-secondary);">Default split shares</label>
+                <p class="text-xs mb-2" style="color: var(--text-muted);">Set how many shares each person covers (e.g., 3 if bringing 2 guests)</p>
                 {% for member in members %}
                 <div class="flex items-center gap-2 mb-1">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #C07A45;">{{ member.name[0]|upper }}</div>
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">{{ member.name[0]|upper }}</div>
                     <span class="text-xs flex-1" style="color: var(--text-primary);">{{ member.name }}</span>
-                    <input type="number" name="shares_{{ member.id }}" value="{{ member_shares.get(member.id, 1) }}" min="1" max="20" class="text-sm px-2 py-1 rounded-lg w-16 text-center" style="background: #FFFFFF; border: 1px solid #DDB896;">
-                    <span class="text-xs" style="color: #8C8076;">share{{ 's' if member_shares.get(member.id, 1) != 1 }}</span>
+                    <input type="number" name="shares_{{ member.id }}" value="{{ member_shares.get(member.id, 1) }}" min="1" max="20" class="text-sm px-2 py-1 rounded-lg w-16 text-center" style="background: #FFFFFF; border: 1px solid var(--border);">
+                    <span class="text-xs" style="color: var(--text-muted);">share{{ 's' if member_shares.get(member.id, 1) != 1 }}</span>
                 </div>
                 {% endfor %}
             </div>
-            <button type="submit" class="text-sm font-semibold px-4 py-2 rounded-lg w-full" style="background: #C07A45; color: #FFFFFF; border: none;">Save Settings</button>
+            <button type="submit" class="text-sm font-semibold px-4 py-2 rounded-lg w-full" style="background: var(--accent); color: #FFFFFF; border: none;">Save Settings</button>
         </form>
     </div>
 </div>
@@ -71,20 +71,20 @@
 
 <!-- LEFT SIDEBAR — Members -->
 <div class="sidebar">
-    <div class="rounded-2xl p-4" style="background: #FFFFFF; border: 1px solid #C5BFB6; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-        <h3 class="font-semibold text-xs uppercase mb-3" style="color: #5E5549; letter-spacing: 0.05em;">Members</h3>
+    <div class="rounded-2xl p-4" style="background: #FFFFFF; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <h3 class="font-semibold text-xs uppercase mb-3" style="color: var(--text-secondary); letter-spacing: 0.05em;">Members</h3>
         <div class="space-y-1">
             {% for member in members %}
             {% set net = balances.get(member.id, 0) %}
             <div class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #C07A45, #8B6F4E);">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
                     {{ member.name[0]|upper }}
                 </div>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1">
                         <p class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ member.name }}</p>
                         {% if member_shares.get(member.id, 1) > 1 %}
-                        <span class="text-xs px-1 rounded" style="background: #F5E6D8; color: #A8672D;">×{{ member_shares.get(member.id, 1) }}</span>
+                        <span class="text-xs px-1 rounded" style="background: #F5E6D8; color: var(--accent);">×{{ member_shares.get(member.id, 1) }}</span>
                         {% endif %}
                     </div>
                     <p class="text-xs {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
@@ -96,8 +96,8 @@
         </div>
 
         {% if available_friends %}
-        <div class="mt-3 pt-3" style="border-top: 1px solid #EAE5DE;">
-            <h4 class="text-xs uppercase mb-2" style="color: #8C8076;">Add Friends</h4>
+        <div class="mt-3 pt-3" style="border-top: 1px solid var(--bg-input);">
+            <h4 class="text-xs uppercase mb-2" style="color: var(--text-muted);">Add Friends</h4>
             {% for friend in available_friends %}
             <div class="flex items-center justify-between p-1.5 rounded-lg mb-1">
                 <div class="flex items-center gap-2">
@@ -107,7 +107,7 @@
                     <span class="text-xs">{{ friend.name }}</span>
                 </div>
                 <form method="POST" action="/friends/add-to-group/{{ group.id }}/{{ friend.id }}">
-                    <button type="submit" class="text-xs font-semibold px-2 py-0.5 rounded-md" style="background: #F5E6D8; color: #C07A45;">+</button>
+                    <button type="submit" class="text-xs font-semibold px-2 py-0.5 rounded-md" style="background: #F5E6D8; color: var(--accent);">+</button>
                 </form>
             </div>
             {% endfor %}
@@ -116,12 +116,12 @@
     </div>
 
     <!-- Currency Converter -->
-    <div class="rounded-2xl p-4 mt-3" style="background: linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%); border: 1px solid #F5E6D8; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-        <h3 class="font-semibold text-xs uppercase mb-3" style="color: #5E5549; letter-spacing: 0.05em;">💱 Convert</h3>
+    <div class="rounded-2xl p-4 mt-3" style="background: linear-gradient(180deg, #F5E6D8 0%, var(--bg-card) 100%); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <h3 class="font-semibold text-xs uppercase mb-3" style="color: var(--text-secondary); letter-spacing: 0.05em;">💱 Convert</h3>
         <div class="space-y-2">
             <div class="flex gap-1">
-                <input type="number" id="conv-amount" value="100" min="0" step="0.01" class="text-sm px-2 py-1.5 rounded-lg flex-1" style="background: #F8FAFF; border: 1px solid #DDB896; color: var(--text-primary); width: 70px;">
-                <select id="conv-from" class="text-xs px-1 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid #DDB896; color: var(--text-primary);">
+                <input type="number" id="conv-amount" value="100" min="0" step="0.01" class="text-sm px-2 py-1.5 rounded-lg flex-1" style="background: #F8FAFF; border: 1px solid var(--border); color: var(--text-primary); width: 70px;">
+                <select id="conv-from" class="text-xs px-1 py-1.5 rounded-lg" style="background: #F8FAFF; border: 1px solid var(--border); color: var(--text-primary);">
                     <option value="USD" selected>USD</option>
                     <option value="INR">INR</option>
                     <option value="EUR">EUR</option>
@@ -132,13 +132,13 @@
                     <option value="AUD">AUD</option>
                 </select>
             </div>
-            <div class="text-center text-xs" style="color: #8C8076;">↓</div>
+            <div class="text-center text-xs" style="color: var(--text-muted);">↓</div>
             <div class="text-center">
                 <span id="conv-result" class="text-lg font-bold" style="color: var(--text-primary);">—</span>
-                <span id="conv-to-label" class="text-xs" style="color: #5E5549;">{{ group.currency }}</span>
-                <span class="text-xs" style="color: #8C8076;">*</span>
+                <span id="conv-to-label" class="text-xs" style="color: var(--text-secondary);">{{ group.currency }}</span>
+                <span class="text-xs" style="color: var(--text-muted);">*</span>
             </div>
-            <p class="text-xs text-center" style="color: #8C8076;">* approximate rate</p>
+            <p class="text-xs text-center" style="color: var(--text-muted);">* approximate rate</p>
         </div>
         <script>
         (function() {
@@ -200,17 +200,17 @@
 
 <!-- Total Spent -->
 {% set total_spent = expenses|map(attribute='amount')|sum %}
-<div class="rounded-xl p-4 mb-4 text-center" style="background: linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%); border: 1px solid #DDB896;">
-    <p class="text-xs font-medium uppercase" style="color: #5E5549;">Total Spent</p>
+<div class="rounded-xl p-4 mb-4 text-center" style="background: linear-gradient(180deg, #F5E6D8 0%, var(--bg-card) 100%); border: 1px solid var(--border);">
+    <p class="text-xs font-medium uppercase" style="color: var(--text-secondary);">Total Spent</p>
     <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(total_spent / 100) }}</p>
-    <p class="text-xs" style="color: #8C8076;">{{ expenses|length }} expense{{ 's' if expenses|length != 1 }}</p>
+    <p class="text-xs" style="color: var(--text-muted);">{{ expenses|length }} expense{{ 's' if expenses|length != 1 }}</p>
 </div>
 
 <!-- Add Expense Button -->
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
 <!-- Expenses — grouped by member -->
-{% set member_colors = ["#C07A45","#8B6F4E","#B05030","#D4925C","#7A5C3A","#A8672D","#C89060","#5E3D1E"] %}
+{% set member_colors = ["var(--accent)","#8B6F4E","#B05030","#D4925C","#7A5C3A","#A8672D","#C89060","#5E3D1E"] %}
 {% set member_colors_light = ["#F5E6D8","#EAE5DE","#FAE0CC","#F5E6D8","#E8DECE","#F0D8C0","#F8ECD8","#E0D0BC"] %}
 {% set member_colors_border = ["#DDB896","#C5BFB6","#D4A080","#E0B888","#B8A890","#D0A070","#E0C098","#C0A880"] %}
 
@@ -250,10 +250,10 @@ function toggleSection(id) {
             </div>
             <div>
                 <span class="text-sm font-semibold" style="color: var(--text-primary);">{{ member.name }}</span>
-                <span class="text-xs ml-2" style="color: #5E5549;">{{ member_expenses|length }} expense{{ 's' if member_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(member_total / 100) }}</span>
+                <span class="text-xs ml-2" style="color: var(--text-secondary);">{{ member_expenses|length }} expense{{ 's' if member_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(member_total / 100) }}</span>
             </div>
         </div>
-        <span id="arrow-sec-{{ member.id }}" class="text-xs" style="color: #5E5549;">▼</span>
+        <span id="arrow-sec-{{ member.id }}" class="text-xs" style="color: var(--text-secondary);">▼</span>
     </div>
 
     <!-- Expense list -->
@@ -265,12 +265,12 @@ function toggleSection(id) {
                     {% if expense.created_by == user.id %}
                     <input type="checkbox" name="expense_ids" value="{{ expense.id }}" class="checkbox checkbox-sm bulk-check" onchange="document.getElementById('bulk-delete-btn').style.display = document.querySelectorAll('.bulk-check:checked').length ? 'block' : 'none';">
                     {% endif %}
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: #EAE5DE;">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: var(--bg-input);">
                         {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
                     </div>
                     <div>
                         <span class="font-medium text-sm">{{ expense.description }}</span>
-                        <div class="text-xs" style="color: #8C8076;">{{ expense.created_at.strftime('%b %d, %Y') }}</div>
+                        <div class="text-xs" style="color: var(--text-muted);">{{ expense.created_at.strftime('%b %d, %Y') }}</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -279,7 +279,7 @@ function toggleSection(id) {
                         {% set to_rate = rates.get(group.currency, 1) %}
                         {% set converted = (expense.amount / from_rate * to_rate)|round|int %}
                         <span class="font-bold text-sm">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(converted / 100) }}*</span>
-                        <span class="text-xs" style="color: #8C8076;">({{ sym.get(expense.currency, "") }}{{ "%.2f"|format(expense.amount / 100) }})</span>
+                        <span class="text-xs" style="color: var(--text-muted);">({{ sym.get(expense.currency, "") }}{{ "%.2f"|format(expense.amount / 100) }})</span>
                     {% else %}
                         <span class="font-bold text-sm">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
                     {% endif %}
@@ -291,7 +291,7 @@ function toggleSection(id) {
             <!-- Split breakdown -->
             {% set splits = expense_splits.get(expense.id, []) %}
             {% if splits|length > 1 %}
-            <div class="text-xs mt-1 ml-10" style="color: #5E5549;">
+            <div class="text-xs mt-1 ml-10" style="color: var(--text-secondary);">
                 → {% for s in splits %}{% if s.owed_amount > 0 %}{{ member_names.get(s.user_id, '?') }}({{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}){% if not loop.last %}, {% endif %}{% endif %}{% endfor %}
             </div>
             {% endif %}
