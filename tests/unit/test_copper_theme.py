@@ -180,6 +180,27 @@ class TestAccountSettings:
         assert "#635BFF" not in html, "No Stripe purple in settings"
 
 
+class TestManifest:
+    """PWA manifest should use copper palette."""
+
+    def test_manifest_theme_color_is_copper(self):
+        html = Path("app/static/manifest.json").read_text()
+        assert "#007AFF" not in html, "PWA manifest should not have Apple blue"
+        assert "#C07A45" in html, "PWA manifest theme_color should be copper"
+
+    def test_manifest_bg_is_warm(self):
+        html = Path("app/static/manifest.json").read_text()
+        assert "#FBFBFD" not in html, "PWA manifest bg should not be cold white"
+
+
+class TestNoBlueTailwindClasses:
+    """No Tailwind blue utility classes in templates."""
+
+    def test_no_bg_blue_in_dashboard(self):
+        html = Path("app/templates/dashboard.html").read_text()
+        assert "bg-blue" not in html, "No bg-blue Tailwind class should remain"
+
+
 class TestChartsTemplate:
     """group/charts.html should use copper palette."""
 
