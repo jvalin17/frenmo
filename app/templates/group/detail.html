@@ -28,7 +28,7 @@
             <span class="text-xs" style="color: #86868B;">{{ members|length }} members</span>
         </div>
         <div class="flex flex-wrap gap-1.5">
-            <a href="/statement/{{ group.id }}" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Import</a>
+            <a href="/statement/{{ group.id }}" class="btn btn-ghost btn-sm" style="text-decoration: none;">Import Expenses</a>
             <a href="/groups/{{ group.id }}/charts" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Charts</a>
             <a href="/groups/{{ group.id }}/invite" class="text-xs font-medium px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">Invite</a>
             <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="text-xs px-2.5 py-1 rounded-lg" style="background: #F2F2F7; color: #007AFF; border: none; cursor: pointer;">✎ Edit</button>
