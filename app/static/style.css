@@ -142,12 +142,13 @@
 }
 
 [data-theme="dark"] .btn-primary {
-    background: #D4925C !important;
-    color: #0E0C09 !important;
+    background: var(--accent) !important;
+    color: var(--bg-page) !important;
 }
 [data-theme="dark"] .btn-primary:hover {
-    background: #E0A872 !important;
-    box-shadow: 0 4px 12px rgba(212, 146, 92, 0.3) !important;
+    background: var(--accent) !important;
+    filter: brightness(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 [data-theme="dark"] .btn-success {
     background: #30D158 !important;
@@ -160,13 +161,13 @@
 }
 
 [data-theme="dark"] .link-primary {
-    color: #D4925C !important;
+    color: var(--accent) !important;
 }
 
 [data-theme="dark"] .badge-outline {
-    background: #242018 !important;
-    border-color: #D4925C !important;
-    color: #D4925C !important;
+    background: var(--bg-input) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
 }
 
 [data-theme="dark"] .checkbox {
@@ -258,7 +259,7 @@
 
 /* Hero card */
 .hero-card {
-    background: linear-gradient(135deg, #C07A45 0%, #8B6F4E 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--bg-hover) 100%);
     border-radius: 20px !important;
     padding: 2rem;
     color: #FFFFFF;
@@ -267,16 +268,17 @@
 
 /* Primary buttons — Copper */
 .btn-primary {
-    background: #C07A45 !important;
+    background: var(--accent) !important;
     border: none !important;
     color: #FFFFFF !important;
     border-radius: 12px !important;
     font-weight: 600;
 }
 .btn-primary:hover {
-    background: #A8672D !important;
+    background: var(--accent) !important;
+    filter: brightness(0.85);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(192, 122, 69, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Success button */
@@ -304,10 +306,10 @@
 
 /* Badge */
 .badge-outline {
-    border-color: #C07A45 !important;
-    color: #A8672D !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
     border-radius: 8px !important;
-    background: #F5E6D8 !important;
+    background: var(--bg-input) !important;
 }
 
 /* Form inputs */
@@ -318,8 +320,8 @@
     color: var(--text-primary) !important;
 }
 .input:focus, .select:focus, .select-bordered:focus {
-    outline: 2px solid #C07A45 !important;
-    border-color: #C07A45 !important;
+    outline: 2px solid var(--accent) !important;
+    border-color: var(--accent) !important;
     outline-offset: -1px;
     box-shadow: none !important;
 }
@@ -331,8 +333,8 @@
     border-color: #C5BFB6 !important;
 }
 .checkbox:checked {
-    background-color: #C07A45 !important;
-    border-color: #C07A45 !important;
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
 }
 
 /* Labels and secondary text */
@@ -405,10 +407,11 @@
 
 /* Links */
 .link-primary {
-    color: #C07A45 !important;
+    color: var(--accent) !important;
 }
 .link-primary:hover {
-    color: #A8672D !important;
+    color: var(--accent) !important;
+    filter: brightness(0.85);
 }
 
 /* Alert */
@@ -444,7 +447,7 @@ h2 {
 
 /* Navbar hover */
 .navbar a:hover {
-    color: #C07A45 !important;
+    color: var(--accent) !important;
 }
 
 /* Card padding */

@@ -28,10 +28,10 @@
             </div>
 
             <!-- Drop Zone -->
-            <div id="drop-zone" class="rounded-2xl p-8 text-center cursor-pointer" style="border: 2px dashed var(--border); background: linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%); transition: all 0.2s;"
+            <div id="drop-zone" class="rounded-2xl p-8 text-center cursor-pointer" style="border: 2px dashed var(--border); background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%); transition: all 0.2s;"
                  onclick="document.getElementById('file-input').click()"
-                 ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='#F5E6D8';"
-                 ondragleave="this.style.borderColor='var(--border)'; this.style.background='linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%)';"
+                 ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--bg-hover)';"
+                 ondragleave="this.style.borderColor='var(--border)'; this.style.background='linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%)';"
                  ondrop="event.preventDefault(); document.getElementById('file-input').files = event.dataTransfer.files; document.getElementById('file-name').textContent = event.dataTransfer.files[0].name; this.style.borderColor='#34C759'; this.style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)';">
                 <div class="text-3xl mb-2">📄</div>
                 <p class="text-sm font-medium" style="color: var(--text-primary);">Drop your PDF here or click to browse</p>
@@ -71,7 +71,7 @@
             <div class="space-y-2">
                 {% for tx in transactions %}
                 <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style="background: var(--bg-card); border: 1px solid var(--border); transition: all 0.15s;"
-                       onmouseover="this.style.background='#F5E6D8'; this.style.borderColor='var(--border)';"
+                       onmouseover="this.style.background='var(--bg-hover)'; this.style.borderColor='var(--border)';"
                        onmouseout="this.style.background='var(--bg-card)'; this.style.borderColor='var(--border)';">
                     <input type="checkbox" name="tx_{{ loop.index0 }}" class="checkbox checkbox-sm" checked>
                     <div class="flex-1 min-w-0">
@@ -79,7 +79,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs" style="color: var(--text-muted);">{{ tx.date }}</span>
                             {% if tx.category %}
-                            <span class="text-xs px-1.5 py-0.5 rounded-md" style="background: #F5E6D8; color: var(--accent);">{{ tx.category }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded-md" style="background: var(--bg-hover); color: var(--accent);">{{ tx.category }}</span>
                             {% endif %}
                         </div>
                     </div>

@@ -72,10 +72,11 @@ class TestCSSClassColors:
         assert "#C07A45" in STYLE_CSS and ".btn-primary" in STYLE_CSS, \
             "btn-primary should use copper accent"
 
-    def test_no_apple_blue_in_btn_primary(self):
-        # Find the btn-primary rule and check no blue
-        btn_section = STYLE_CSS[STYLE_CSS.index(".btn-primary"):STYLE_CSS.index(".btn-primary") + 500]
-        assert "#007AFF" not in btn_section, "btn-primary should not contain Apple blue"
+    def test_btn_primary_uses_var_accent(self):
+        # btn-primary should use var(--accent), not hardcoded hex
+        btn_idx = STYLE_CSS.index(".btn-primary")
+        btn_section = STYLE_CSS[btn_idx:btn_idx + 200]
+        assert "var(--accent)" in btn_section, "btn-primary should use var(--accent) not hardcoded hex"
 
     def test_hero_card_uses_copper(self):
         assert "#C07A45" in STYLE_CSS or "#8B6F4E" in STYLE_CSS, \
@@ -106,9 +107,9 @@ class TestBaseTemplate:
 class TestGroupDetailTemplate:
     """group/detail.html should use copper palette with pill toolbar."""
 
-    def test_header_card_uses_copper_tint(self):
+    def test_header_card_uses_css_var(self):
         html = Path("app/templates/group/detail.html").read_text()
-        assert "#F5E6D8" in html, "Header card should use copper tint #F5E6D8"
+        assert "var(--bg-hover)" in html, "Header card should use var(--bg-hover)"
         assert "#DBEAFE" not in html, "No blue tint #DBEAFE should remain"
 
     def test_toolbar_has_pill_style(self):
@@ -345,6 +346,61 @@ class TestThemeVarUsage:
         """base.html should handle None theme_color (existing users before migration)."""
         html = Path("app/templates/base.html").read_text()
         assert "or 'copper'" in html, "base.html should fallback to copper when theme_color is None"
+
+
+class TestNoHardcodedThemeColors:
+    """No non-semantic hardcoded hex should remain in templates.
+    Every color must use a CSS variable so themes actually switch."""
+
+    # Copper-specific hex values that should be var(--*) instead
+    BANNED_HEX = ["#F5E6D8", "#DDB896", "#F8FAFF", "#6B7280"]
+
+    def _template_content(self, path: str) -> str:
+        return Path(path).read_text()
+
+    def _strip_theme_swatches(self, html: str) -> str:
+        """Remove the theme swatch section — those hex values are intentional."""
+        if "<!-- Theme -->" in html:
+            before = html.split("<!-- Theme -->")[0]
+            after_parts = html.split("<!-- Password -->")
+            after = after_parts[1] if len(after_parts) > 1 else ""
+            return before + after
+        return html
+
+    def test_group_detail_no_hardcoded_copper_tint(self):
+        html = self._template_content("app/templates/group/detail.html")
+        for hex_val in self.BANNED_HEX:
+            assert hex_val not in html, \
+                f"group/detail.html still has hardcoded {hex_val} — should be a CSS variable"
+
+    def test_dashboard_no_hardcoded_copper_tint(self):
+        html = self._template_content("app/templates/dashboard.html")
+        for hex_val in self.BANNED_HEX:
+            assert hex_val not in html, \
+                f"dashboard.html still has hardcoded {hex_val}"
+
+    def test_statement_no_hardcoded_copper_tint(self):
+        html = self._template_content("app/templates/statement/upload.html")
+        for hex_val in self.BANNED_HEX:
+            assert hex_val not in html, \
+                f"statement/upload.html still has hardcoded {hex_val}"
+
+    def test_settings_no_hardcoded_outside_swatches(self):
+        html = self._template_content("app/templates/account/settings.html")
+        cleaned = self._strip_theme_swatches(html)
+        assert "#6B7280" not in cleaned, "settings.html has hardcoded #6B7280 outside swatches"
+
+    def test_base_logo_uses_var_accent(self):
+        html = self._template_content("app/templates/base.html")
+        assert "#5E3D1E" not in html, "Logo gradient should use var(--accent), not hardcoded copper"
+
+    def test_detail_no_hardcoded_white_backgrounds(self):
+        """#FFFFFF used as card/input bg should be var(--bg-card) or var(--bg-input)."""
+        html = self._template_content("app/templates/group/detail.html")
+        # Count #FFFFFF occurrences — some are legitimate (button text white-on-accent)
+        # But background: #FFFFFF should not exist
+        assert 'background: #FFFFFF' not in html and "background: #FFFFFF" not in html, \
+            "group/detail.html has background: #FFFFFF — should be var(--bg-card)"
 
 
 class TestThemeRouteValidation:
