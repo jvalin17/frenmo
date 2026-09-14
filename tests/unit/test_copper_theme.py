@@ -205,9 +205,11 @@ class TestNoBlueTailwindClasses:
 class TestChartsTemplate:
     """group/charts.html should use copper palette."""
 
-    def test_progress_bars_use_css_var(self):
+    def test_chart_uses_distinct_muted_colors(self):
         html = Path("app/templates/group/charts.html").read_text()
-        assert "var(--accent)" in html, "Progress bars should use var(--accent)"
+        assert "#7C9885" in html, "Chart should use muted sage green"
+        assert "#B07D62" in html, "Chart should use muted clay"
+        assert "#6B8EAD" in html, "Chart should use muted dusty blue"
         assert "#3C3B6E" not in html, "No old navy blue in charts"
 
 
@@ -332,9 +334,9 @@ class TestThemeVarUsage:
         html = Path("app/templates/expense/edit.html").read_text()
         assert "var(--accent)" in html, "Expense edit should use var(--accent)"
 
-    def test_charts_uses_css_vars(self):
+    def test_charts_uses_distinct_colors(self):
         html = Path("app/templates/group/charts.html").read_text()
-        assert "var(--accent)" in html, "Charts should use var(--accent)"
+        assert "#7C9885" in html, "Charts should use distinct muted palette"
 
     def test_user_model_has_server_default(self):
         """User.theme_color should have server_default for existing DB rows."""

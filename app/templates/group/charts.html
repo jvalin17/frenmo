@@ -22,6 +22,7 @@
         <div style="max-width: 220px; margin: 0 auto;">
             <canvas id="categoryChart"></canvas>
         </div>
+        {% set chart_colors = ['#7C9885', '#B07D62', '#6B8EAD', '#C4956A', '#8B7BA5', '#5E9B9B', '#A8845E', '#7A8B99'] %}
         <div class="mt-4 space-y-2">
             {% set total_cat = category_data.values()|sum %}
             {% for cat, amount in category_data.items() %}
@@ -35,7 +36,7 @@
                         <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                     </div>
                     <div class="w-full rounded-full h-1.5 mt-1" style="background: var(--bg-input);">
-                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: var(--accent);"></div>
+                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: {{ chart_colors[loop.index0 % 8] }};"></div>
                     </div>
                 </div>
             </div>
@@ -59,12 +60,13 @@
 <!-- Per-Member Spending -->
 {% if member_data %}
 {% set total_member = member_data.values()|sum %}
+{% set member_colors = ['#7C9885', '#B07D62', '#6B8EAD', '#C4956A', '#8B7BA5', '#5E9B9B', '#A8845E', '#7A8B99'] %}
 <div class="card card-blue mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-4">Who Paid What</h3>
         {% for uid, amount in member_data.items() %}
         <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: {{ member_colors[loop.index0 % 8] }};">
                 {{ member_names.get(uid, '?')[0]|upper }}
             </div>
             <div class="flex-1">
@@ -73,7 +75,7 @@
                     <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                 </div>
                 <div class="w-full rounded-full h-1.5 mt-1" style="background: var(--bg-input);">
-                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: var(--accent);"></div>
+                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: {{ member_colors[loop.index0 % 8] }};"></div>
                 </div>
             </div>
         </div>
@@ -91,8 +93,8 @@ const gridColor = cs.getPropertyValue('--border').trim();
 const tickColor = cs.getPropertyValue('--text-muted').trim();
 const tooltipBg = cs.getPropertyValue('--bg-card').trim();
 const tooltipColor = cs.getPropertyValue('--text-primary').trim();
-/* Generate chart palette from accent with opacity variations */
-const colors = [accent, accent+'CC', accent+'99', accent+'66', accent+'44', accent+'BB', accent+'88', accent+'55'];
+/* Distinct chart palette — muted, distinguishable tones */
+const colors = ['#7C9885', '#B07D62', '#6B8EAD', '#C4956A', '#8B7BA5', '#5E9B9B', '#A8845E', '#7A8B99'];
 
 {% if category_data %}
 new Chart(document.getElementById('categoryChart'), {
