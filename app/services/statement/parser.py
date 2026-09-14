@@ -67,6 +67,12 @@ BANK_TX_PATTERNS = {
         r"(?:\d+%\s+\$[\d.]+\s+)?"
         r"(-?\$[\d,]+\.\d{2})\s*$", re.MULTILINE
     ),
+    # Discover: MM/DD [MM/DD] description amount (optional post date)
+    "discover": re.compile(
+        r"^(\d{2}/\d{2})\s+(?:\d{2}/\d{2}\s+)?"
+        r"(.+?)\s+"
+        r"(-?\$?[\d,]+\.\d{2})\s*$", re.MULTILINE
+    ),
     # US Bank: MM/DD [MM/DD] description amount
     "usbank": re.compile(
         r"^(\d{2}/\d{2})\s+(?:\d{2}/\d{2}\s+)?"

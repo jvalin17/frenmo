@@ -7,22 +7,26 @@ Free expense splitting app. Split costs with friends, simplify debts, settle up 
 ## Features
 
 - **5 Split Types** — Equal, exact amounts, percentage, shares (e.g., 3 shares for you + parents), and full (one person owes all)
+- **Share Recalculation** — Change default shares in group settings and all existing equal-split expenses recalculate retroactively. Thread-safe with row-level locking.
+- **Split Breakdown** — Per-person owed amounts displayed on every expense (e.g., "Alice($30), Bob($60)")
 - **Multi-currency** — USD, INR, EUR, GBP, AED, JPY, CAD, AUD. Each group has its own currency. Expenses in any currency auto-convert to group currency with `*` (approximate).
 - **Currency Converter** — Live exchange rates (cached 12h) with converter widget in every group sidebar.
-- **Bank Statement Import** — Upload PDF bank statement, auto-detect bank and extract transactions. Supports 10 banks: Chase, Amex, Bank of America, Capital One, Citi, Wells Fargo, Apple Card, US Bank, Discover, HDFC/SBI. Auto-categorizes expenses (food, transport, shopping, etc.). Dedup prevents double-imports. PDF never stored — processed in memory and wiped immediately.
-- **Groups** — Create groups (trip, home, couple) with their own currency, invite via shareable link. Editable name and currency.
-- **Per-Member Expense View** — Collapsible sections grouped by who paid, each with unique color. Shows expense count and total per person.
+- **6 Color Themes** — Copper, Classic (blue), Dollar (orange), Coral, Violet, Midnight. Selectable in account settings. Works in both light and dark mode (12 combinations). Config-driven via CSS variables.
+- **Bank Statement Import** — Upload PDF bank statement, auto-detect bank and extract transactions. Supports 11 banks: Chase, Amex, Bank of America, Capital One, Citi, Wells Fargo, Apple Card, US Bank, Discover, HDFC, SBI. Auto-categorizes expenses (food, transport, shopping, etc.). Dedup by description + amount + date prevents double-imports. PDF never stored — processed in memory and wiped immediately.
+- **Groups** — Create groups (trip, home, couple) with their own currency, invite via shareable link. Editable name, currency, and per-member shares.
+- **Date-Grouped Expenses** — Expenses grouped by date with collapsible sections (newest first). Each expense shows who paid as a pill badge. Keyboard accessible.
 - **Friends** — Search by email, send/accept/reject requests, add friends to groups directly
 - **Debt Simplification** — Greedy algorithm minimizes transactions needed to settle up
-- **Spending Charts** — Category pie chart, monthly bar chart, per-member spending with progress bars
+- **Spending Charts** — Category pie chart, monthly bar chart, per-member spending with progress bars. Theme-aware colors via CSS variables.
 - **Comments** — Threaded comments on each expense
-- **Edit Expenses** — Update description, amount, date, split type, category after creation
+- **Edit Expenses** — Update description, amount, date, split type (including shares and full), category after creation
 - **Bulk Delete** — Checkbox multi-select to delete multiple expenses at once
 - **Date Picker** — Set expense date for past-date expenses (trips, receipts, etc.)
-- **Password Reset** — Email-based via Resend API. Signed token, 30-minute expiry. Doesn't reveal whether email exists (security).
-- **Account Settings** — Edit nickname, email, default currency, change password, delete account
-- **Dashboard** — Hero balance card (green when owed, orange when owing, blue when settled), quick actions, per-group balances with emoji icons
+- **Password Reset** — Email-based via Brevo API. Signed token, 30-minute expiry. Doesn't reveal whether email exists (security).
+- **Account Settings** — Edit nickname, email, default currency, theme, change password, delete account
+- **Dashboard** — Hero balance card (green when owed, orange when owing, theme-neutral when settled), quick actions, per-group balances with emoji icons
 - **Sidebar Layout** — Members panel with balances on left, converter widget, content on right (responsive — stacks on mobile)
+- **Auto-Migration** — Startup schema migration automatically adds missing columns to existing tables. No manual ALTER TABLE needed for new features.
 
 ## Supported Banks
 
@@ -47,11 +51,11 @@ Adding a new bank requires only a regex pattern + detection keywords — no stru
 - **Frontend:** Jinja2 + HTMX + Tailwind CSS + DaisyUI + Chart.js
 - **Database:** SQLite (dev) / PostgreSQL (prod, Neon)
 - **Auth:** Session-based (bcrypt + HTTP-only cookies + signed reset tokens)
-- **Email:** Resend API
+- **Email:** Brevo (Sendinblue) HTTP API
 - **Exchange Rates:** open.er-api.com
 - **PDF Parsing:** pdfplumber (server-side, memory-only)
 - **Hosting:** Render + Neon PostgreSQL (both free tier)
-- **Theme:** Apple-inspired light with color-faded cards, per-member colors, USA flag gradient logo
+- **Theme:** 6 selectable color themes (Copper, Classic, Dollar, Coral, Violet, Midnight) with light + dark mode. CSS variable-driven.
 
 ## Project Structure
 
@@ -73,8 +77,9 @@ app/
       parser.py        Bank detection + 10 bank-specific transaction parsers
       extractor.py     PDF text extraction (pdfplumber, memory-only)
   templates/           Jinja2 (base, auth, dashboard, group, expense, friends, account, statement)
-  static/style.css     Apple-inspired CSS theme
-tests/unit/            99 unit tests
+  static/style.css     Multi-theme CSS system (6 themes × light/dark)
+  static/manifest.json PWA manifest
+tests/unit/            200 unit tests
 ```
 
 ## Privacy & Security
@@ -98,7 +103,7 @@ Frenmo was built from zero to production using the [Agent Toolkit](https://githu
 1. **`/requirements`** — Gathered scope, user stories, and priorities. Researched existing expense-splitting apps to identify feature gaps.
 2. **`/architecture`** — Designed the system with 11 logged decisions: FastAPI monolith, PostgreSQL with integer cents, derived balances, greedy debt simplification.
 3. **`/implementation`** — Built feature-by-feature in TDD slabs. Each slab: failing tests → implement → verify → commit. No slab started until the previous was committed and working.
-4. **`/precommit`** — Quality gate before every commit. Tests must pass, code reviewed, app verified running. Zero skipped gates across 99 tests.
+4. **`/precommit`** — Quality gate before every commit. Tests must pass, code reviewed, app verified running. Zero skipped gates across 200 tests.
 5. **`/debug`** — Hypothesis-driven debugging for production issues (asyncpg timezone mismatch, SSL connections). Root cause → test → fix.
 
 **What the toolkit provides:**
@@ -107,7 +112,7 @@ Frenmo was built from zero to production using the [Agent Toolkit](https://githu
 - **Session continuity** — HANDOFF.md preserves context across sessions
 - **Auto mode** — Skills chain: requirements → architecture → implementation → deploy
 
-The entire app — auth, groups, 5 split types, friends, charts, comments, password reset, currency converter, bank statement import for 10 banks, Apple-inspired theme — was built across 3 sessions.
+The entire app — auth, groups, 5 split types, friends, charts, comments, password reset, currency converter, bank statement import for 11 banks, 6 color themes, share recalculation, date-grouped expenses — was built using agent toolkit skills.
 
 **Repo:** [github.com/jvalin17/agent-toolkit](https://github.com/jvalin17/agent-toolkit)
 

@@ -39,6 +39,19 @@ class TestExpenseDateGrouping:
         assert 'tabindex="0"' in DETAIL_HTML, "Date headers need tabindex for keyboard nav"
         assert 'role="button"' in DETAIL_HTML, "Date headers need role=button for screen readers"
 
+    def test_discover_two_date_strips_post_date(self):
+        """Discover statements with trans+post date should not include post date in description."""
+        from app.services.statement.parser import parse_transactions
+        text = "Discover Bank\n05/10 06/10 STARBUCKS COFFEE 5.75\n05/28 06/01 UBER TRIP 23.50\n"
+        txns = parse_transactions(text, "discover")
+        assert len(txns) == 2
+        # Description should NOT contain the post date
+        assert "06/10" not in txns[0]["description"], f"Post date leaked into description: {txns[0]['description']}"
+        assert "06/01" not in txns[1]["description"], f"Post date leaked into description: {txns[1]['description']}"
+        # Transaction date should be the FIRST date (trans date)
+        assert txns[0]["date"] == "05/10"
+        assert txns[1]["date"] == "05/28"
+
     def test_no_n1_comments_query(self):
         """Comments should be fetched in a batch, not per-expense."""
         route_code = Path("app/routes/group.py").read_text()
