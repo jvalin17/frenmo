@@ -100,6 +100,20 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
         for s in splits_result.scalars().all():
             expense_splits.setdefault(s.expense_id, []).append(s)
 
+    # Group expenses by date (newest first, no-date at top)
+    from collections import OrderedDict
+    expenses_by_date = OrderedDict()
+    no_date_expenses = []
+    for expense in expenses:
+        if expense.created_at:
+            date_key = expense.created_at.strftime('%b %d, %Y')
+        else:
+            date_key = None
+        if date_key is None:
+            no_date_expenses.append(expense)
+        else:
+            expenses_by_date.setdefault(date_key, []).append(expense)
+
     # Get balances
     from app.services.balance import get_group_balances, simplify_debts
 
@@ -116,12 +130,16 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     member_ids = {m.id for m in members}
     available_friends = [f for f in all_friends if f.id not in member_ids]
 
-    # Get comments for all expenses
-    from app.services.comments import get_comments
+    # Get comments for all expenses (single batch query, no N+1)
+    from app.models.comment import Comment
 
     expense_comments = {}
-    for expense in expenses:
-        expense_comments[expense.id] = await get_comments(db, expense.id)
+    if expense_ids:
+        comments_result = await db.execute(
+            select(Comment).where(Comment.expense_id.in_(expense_ids)).order_by(Comment.created_at)
+        )
+        for comment in comments_result.scalars().all():
+            expense_comments.setdefault(comment.expense_id, []).append(comment)
 
     # Get exchange rates for converter widget
     from app.services.currency import get_exchange_rates
@@ -144,6 +162,8 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "rates": rates,
             "member_shares": member_shares,
             "expense_splits": expense_splits,
+            "expenses_by_date": expenses_by_date,
+            "no_date_expenses": no_date_expenses,
         },
     )
 

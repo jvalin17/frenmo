@@ -209,11 +209,7 @@
 <!-- Add Expense Button -->
 <a href="/expenses/new/{{ group.id }}" class="btn btn-primary btn-block mb-4">Add Expense</a>
 
-<!-- Expenses — grouped by member -->
-{% set member_colors = ["var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)","var(--accent)"] %}
-{% set member_colors_light = ["var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)","var(--bg-hover)","var(--bg-input)"] %}
-{% set member_colors_border = ["var(--border)","var(--border-light)","var(--border)","var(--border-light)","var(--border)","var(--border-light)","var(--border)","var(--border-light)"] %}
-
+<!-- Expenses — grouped by date -->
 <form id="bulk-delete-form" method="POST" action="/expenses/bulk-delete/{{ group.id }}">
 <div class="flex justify-between items-center mb-3">
     <h3 class="font-semibold text-sm text-gray-500 uppercase">Expenses</h3>
@@ -230,102 +226,107 @@ function toggleSection(id) {
 }
 </script>
 
-{% for member in members %}
-{% set member_expenses = [] %}
-{% for expense in expenses %}{% if expense.paid_by == member.id %}{% set _ = member_expenses.append(expense) %}{% endif %}{% endfor %}
-{% if member_expenses %}
-{% set color_idx = loop.index0 % member_colors|length %}
-{% set color = member_colors[color_idx] %}
-{% set color_light = member_colors_light[color_idx] %}
-{% set color_border = member_colors_border[color_idx] %}
-{% set member_total = member_expenses|map(attribute='amount')|sum %}
-
-<!-- {{ member.name }}'s expenses -->
-<div class="rounded-2xl mb-3 overflow-hidden" style="border: 1px solid {{ color_border }};">
-    <!-- Collapsible header -->
-    <div onclick="toggleSection('sec-{{ member.id }}')" class="flex items-center justify-between p-3 cursor-pointer" style="background: linear-gradient(180deg, {{ color_light }} 0%, var(--bg-card) 100%);">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: {{ color }};">
-                {{ member.name[0]|upper }}
+{% macro render_expense(expense) %}
+<div class="py-2.5 border-b last:border-b-0" style="border-color: var(--border-light);">
+    <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+            {% if expense.created_by == user.id %}
+            <input type="checkbox" name="expense_ids" value="{{ expense.id }}" class="checkbox checkbox-sm bulk-check" onchange="document.getElementById('bulk-delete-btn').style.display = document.querySelectorAll('.bulk-check:checked').length ? 'block' : 'none';">
+            {% endif %}
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: var(--bg-input);">
+                {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
             </div>
             <div>
-                <span class="text-sm font-semibold" style="color: var(--text-primary);">{{ member.name }}</span>
-                <span class="text-xs ml-2" style="color: var(--text-secondary);">{{ member_expenses|length }} expense{{ 's' if member_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(member_total / 100) }}</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-medium text-sm">{{ expense.description }}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-input); color: var(--text-muted);">{{ member_names.get(expense.paid_by, '?') }}</span>
+                </div>
             </div>
         </div>
-        <span id="arrow-sec-{{ member.id }}" class="text-xs" style="color: var(--text-secondary);">▼</span>
-    </div>
-
-    <!-- Expense list -->
-    <div id="sec-{{ member.id }}" class="px-3 pb-2">
-        {% for expense in member_expenses %}
-        <div class="py-2.5 {% if not loop.last %}border-b{% endif %}" style="border-color: {{ color_border }}40;">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2.5">
-                    {% if expense.created_by == user.id %}
-                    <input type="checkbox" name="expense_ids" value="{{ expense.id }}" class="checkbox checkbox-sm bulk-check" onchange="document.getElementById('bulk-delete-btn').style.display = document.querySelectorAll('.bulk-check:checked').length ? 'block' : 'none';">
-                    {% endif %}
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: var(--bg-input);">
-                        {% if expense.expense_type == 'settlement' %}🤝{% elif expense.category == 'food' %}🍕{% elif expense.category == 'transport' %}🚕{% elif expense.category == 'accommodation' %}🏨{% elif expense.category == 'shopping' %}🛍️{% elif expense.category == 'entertainment' %}🎬{% elif expense.category == 'utilities' %}💡{% elif expense.category == 'rent' %}🏠{% else %}💳{% endif %}
-                    </div>
-                    <div>
-                        <span class="font-medium text-sm">{{ expense.description }}</span>
-                        <div class="text-xs" style="color: var(--text-muted);">{{ expense.created_at.strftime('%b %d, %Y') }}</div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    {% if expense.currency != group.currency and rates %}
-                        {% set from_rate = rates.get(expense.currency, 1) %}
-                        {% set to_rate = rates.get(group.currency, 1) %}
-                        {% set converted = (expense.amount / from_rate * to_rate)|round|int %}
-                        <span class="font-bold text-sm">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(converted / 100) }}*</span>
-                        <span class="text-xs" style="color: var(--text-muted);">({{ sym.get(expense.currency, "") }}{{ "%.2f"|format(expense.amount / 100) }})</span>
-                    {% else %}
-                        <span class="font-bold text-sm">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
-                    {% endif %}
-                    {% if expense.created_by == user.id %}
-                    <a href="/expenses/{{ expense.id }}/edit" class="text-xs" style="color: {{ color }}; text-decoration: none;">✎</a>
-                    {% endif %}
-                </div>
-            </div>
-            <!-- Split breakdown -->
-            {% set splits = expense_splits.get(expense.id, []) %}
-            {% if splits|length > 1 %}
-            <div class="text-xs mt-1 ml-10" style="color: var(--text-secondary);">
-                → {% for s in splits %}{% if s.owed_amount > 0 %}{{ member_names.get(s.user_id, '?') }}({{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}){% if not loop.last %}, {% endif %}{% endif %}{% endfor %}
-            </div>
+        <div class="flex items-center gap-2">
+            {% if expense.currency != group.currency and rates %}
+                {% set from_rate = rates.get(expense.currency, 1) %}
+                {% set to_rate = rates.get(group.currency, 1) %}
+                {% set converted = (expense.amount / from_rate * to_rate)|round|int %}
+                <span class="font-bold text-sm">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(converted / 100) }}*</span>
+                <span class="text-xs" style="color: var(--text-muted);">({{ sym.get(expense.currency, "") }}{{ "%.2f"|format(expense.amount / 100) }})</span>
+            {% else %}
+                <span class="font-bold text-sm">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(expense.amount / 100) }}</span>
             {% endif %}
-            <!-- Comments -->
-            {% set comments = expense_comments.get(expense.id, []) %}
-            <div class="mt-2 ml-10 rounded-xl p-2.5" style="background: linear-gradient(180deg, {{ color_light }}80 0%, var(--bg-card) 100%); border: 1px solid {{ color_border }}60;">
-                {% if comments %}
-                {% for comment in comments %}
-                <div class="flex justify-between items-start mb-1.5 last:mb-0">
-                    <div class="flex gap-1.5">
-                        <span class="text-xs">💬</span>
-                        <div>
-                            <span class="text-xs font-semibold" style="color: {{ color }};">{{ member_names.get(comment.user_id, '?') }}</span>
-                            <p class="text-xs" style="color: var(--text-muted);">{{ comment.text }}</p>
-                        </div>
-                    </div>
-                    {% if comment.user_id == user.id %}
-                    <form method="POST" action="/comments/delete/{{ comment.id }}">
-                        <button type="submit" class="text-xs" style="color: {{ color_border }};" onclick="return confirm('Delete comment?')">✕</button>
-                    </form>
-                    {% endif %}
+            {% if expense.created_by == user.id %}
+            <a href="/expenses/{{ expense.id }}/edit" class="text-xs" style="color: var(--accent); text-decoration: none;">✎</a>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Split breakdown -->
+    {% set splits = expense_splits.get(expense.id, []) %}
+    {% if splits|length > 1 %}
+    <div class="text-xs mt-1 ml-10" style="color: var(--text-secondary);">
+        → {% for s in splits %}{% if s.owed_amount > 0 %}{{ member_names.get(s.user_id, '?') }}({{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}){% if not loop.last %}, {% endif %}{% endif %}{% endfor %}
+    </div>
+    {% endif %}
+    <!-- Comments -->
+    {% set comments = expense_comments.get(expense.id, []) %}
+    <div class="mt-2 ml-10 rounded-xl p-2.5" style="background: var(--bg-hover); border: 1px solid var(--border-light);">
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="flex justify-between items-start mb-1.5 last:mb-0">
+            <div class="flex gap-1.5">
+                <span class="text-xs">💬</span>
+                <div>
+                    <span class="text-xs font-semibold" style="color: var(--accent);">{{ member_names.get(comment.user_id, '?') }}</span>
+                    <p class="text-xs" style="color: var(--text-muted);">{{ comment.text }}</p>
                 </div>
-                {% endfor %}
-                {% endif %}
-                <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-1.5 pt-1.5{% endif %}" {% if comments %}style="border-top: 1px solid {{ color_border }}40;"{% endif %}>
-                    <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-2.5 py-1 rounded-lg" style="background: var(--bg-card); border: 1px solid {{ color_border }}60; color: var(--text-primary);" required>
-                    <button type="submit" class="text-xs font-semibold px-2.5 py-1 rounded-lg" style="background: {{ color_light }}; color: {{ color }};">Post</button>
-                </form>
             </div>
+            {% if comment.user_id == user.id %}
+            <form method="POST" action="/comments/delete/{{ comment.id }}">
+                <button type="submit" class="text-xs" style="color: var(--text-muted);" onclick="return confirm('Delete comment?')">✕</button>
+            </form>
+            {% endif %}
         </div>
         {% endfor %}
+        {% endif %}
+        <form method="POST" action="/comments/add/{{ expense.id }}" class="flex gap-2 {% if comments %}mt-1.5 pt-1.5{% endif %}" {% if comments %}style="border-top: 1px solid var(--border-light);"{% endif %}>
+            <input type="text" name="text" placeholder="Add a comment..." class="flex-1 text-xs px-2.5 py-1 rounded-lg" style="background: var(--bg-card); border: 1px solid var(--border-light); color: var(--text-primary);" required>
+            <button type="submit" class="text-xs font-semibold px-2.5 py-1 rounded-lg" style="background: var(--bg-input); color: var(--accent);">Post</button>
+        </form>
+    </div>
+</div>
+{% endmacro %}
+
+<!-- No date group -->
+{% if no_date_expenses %}
+<div class="rounded-2xl mb-3 overflow-hidden" style="border: 1px solid var(--border);">
+    <div onclick="toggleSection('sec-no-date')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('sec-no-date')}" tabindex="0" role="button" class="flex items-center justify-between p-3 cursor-pointer" style="background: var(--bg-hover);">
+        <div class="flex items-center gap-2">
+            <span class="text-sm">📌</span>
+            <span class="text-sm font-semibold" style="color: var(--text-primary);">No date</span>
+            <span class="text-xs" style="color: var(--text-muted);">{{ no_date_expenses|length }} expense{{ 's' if no_date_expenses|length != 1 }}</span>
+        </div>
+        <span id="arrow-sec-no-date" class="text-xs" style="color: var(--text-secondary);">▼</span>
+    </div>
+    <div id="sec-no-date" class="px-3 pb-2">
+        {% for expense in no_date_expenses %}{{ render_expense(expense) }}{% endfor %}
     </div>
 </div>
 {% endif %}
+
+<!-- Date groups -->
+{% for date_key, date_expenses in expenses_by_date.items() %}
+{% set date_total = date_expenses|map(attribute='amount')|sum %}
+<div class="rounded-2xl mb-3 overflow-hidden" style="border: 1px solid var(--border);">
+    <div onclick="toggleSection('sec-date-{{ loop.index }}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('sec-date-{{ loop.index }}')}" tabindex="0" role="button" class="flex items-center justify-between p-3 cursor-pointer" style="background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%);">
+        <div class="flex items-center gap-2">
+            <span class="text-sm">📅</span>
+            <span class="text-sm font-semibold" style="color: var(--text-primary);">{{ date_key }}</span>
+            <span class="text-xs" style="color: var(--text-muted);">{{ date_expenses|length }} expense{{ 's' if date_expenses|length != 1 }} · {{ sym.get(group.currency, "$") }}{{ "%.2f"|format(date_total / 100) }}</span>
+        </div>
+        <span id="arrow-sec-date-{{ loop.index }}" class="text-xs" style="color: var(--text-secondary);">▼</span>
+    </div>
+    <div id="sec-date-{{ loop.index }}" class="px-3 pb-2">
+        {% for expense in date_expenses %}{{ render_expense(expense) }}{% endfor %}
+    </div>
+</div>
 {% endfor %}
 
 {% else %}
