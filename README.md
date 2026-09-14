@@ -40,7 +40,7 @@ Free expense splitting app. Split costs with friends, simplify debts, settle up 
 | Wells Fargo | MM/DD | ✅ Tested |
 | Apple Card | MM/DD/YYYY | ✅ Tested |
 | US Bank | MM/DD | ✅ Tested |
-| Discover | MM/DD | ✅ Tested |
+| Discover | MM/DD [+ Post Date] | ✅ Tested |
 | HDFC / SBI | MM/DD | ✅ Generic |
 
 Adding a new bank requires only a regex pattern + detection keywords — no structural changes.
@@ -65,21 +65,21 @@ app/
   routes/              auth, password_reset, account, dashboard, expense,
                        friend, group, comment, settlement, statement
   services/
-    expense.py         5 split type calculators
+    expense.py         5 split type calculators + share recalculation
     balance.py         Derived balance computation
     friendship.py      Friend request logic
     charts.py          Chart data aggregation
     comments.py        Comment CRUD
     currency.py        Exchange rate fetching + caching + conversion
     password_reset.py  Token generation/validation
-    email.py           Resend API integration
+    email.py           Brevo API integration
     statement/
-      parser.py        Bank detection + 10 bank-specific transaction parsers
+      parser.py        Bank detection + 11 bank-specific transaction parsers
       extractor.py     PDF text extraction (pdfplumber, memory-only)
   templates/           Jinja2 (base, auth, dashboard, group, expense, friends, account, statement)
   static/style.css     Multi-theme CSS system (6 themes × light/dark)
   static/manifest.json PWA manifest
-tests/unit/            200 unit tests
+tests/unit/            201 unit tests
 ```
 
 ## Privacy & Security
@@ -98,21 +98,25 @@ tests/unit/            200 unit tests
 
 Frenmo was built from zero to production using the [Agent Toolkit](https://github.com/jvalin17/agent-toolkit) — an open-source harness for structured AI-assisted development with Claude Code.
 
-**How it worked:**
+**Skills used:**
 
-1. **`/requirements`** — Gathered scope, user stories, and priorities. Researched existing expense-splitting apps to identify feature gaps.
-2. **`/architecture`** — Designed the system with 11 logged decisions: FastAPI monolith, PostgreSQL with integer cents, derived balances, greedy debt simplification.
-3. **`/implementation`** — Built feature-by-feature in TDD slabs. Each slab: failing tests → implement → verify → commit. No slab started until the previous was committed and working.
-4. **`/precommit`** — Quality gate before every commit. Tests must pass, code reviewed, app verified running. Zero skipped gates across 200 tests.
-5. **`/debug`** — Hypothesis-driven debugging for production issues (asyncpg timezone mismatch, SSL connections). Root cause → test → fix.
+1. **`/requirements`** — Gathered scope, user stories, priorities. Researched Splitwise, Venmo, Cash App for feature gaps.
+2. **`/architecture`** — 11 logged decisions: FastAPI monolith, PostgreSQL with integer cents, derived balances, greedy debt simplification.
+3. **`/implementation`** — TDD slabs with failing tests first. UI/UX research agents for color palette, button sizing, fintech patterns. Plan mode before every feature.
+4. **`/precommit`** — Quality gate before every commit. Tests must pass, code reviewed, app verified. `finalize_report.py` re-runs tests independently.
+5. **`/reviewer`** — Role-based code review (DBA, Security, Architect). Found N+1 queries, missing server_default, hardcoded colors bypassing theme system.
+6. **`/debug`** — Hypothesis-driven debugging. Found Discover post-date leak (05/10 → 06/10), statement import `MultipleResultsFound` crash, `tailwindcss.config` ReferenceError.
+7. **`/readme`** — Line-by-line README validation. Caught stale test counts, wrong email provider, missing bank count.
+8. **`/explore`** — Full codebase audit: 200+ hardcoded colors inventoried across 12 templates for theme migration.
 
-**What the toolkit provides:**
-- **Skill workflows** — Enforce TDD, prevent shortcuts, catch regressions before they ship
-- **Quality gates** — Pre-commit hooks block commits until tests pass
+**What the toolkit enforces:**
+- **TDD** — Failing test before code. No exceptions.
+- **Quality gates** — `finalize_report.py` blocks commits until tests + lint pass
+- **Role checks** — Active roles (DBA, Security, Architect, Infrastructure) review every change
+- **Research agents** — UI/UX, functional-researcher, QA agents for evidence-based decisions
 - **Session continuity** — HANDOFF.md preserves context across sessions
-- **Auto mode** — Skills chain: requirements → architecture → implementation → deploy
 
-The entire app — auth, groups, 5 split types, friends, charts, comments, password reset, currency converter, bank statement import for 11 banks, 6 color themes, share recalculation, date-grouped expenses — was built using agent toolkit skills.
+The entire app — auth, groups, 5 split types, friends, charts, comments, password reset, currency converter, bank statement import for 11 banks, 6 color themes, share recalculation, date-grouped expenses, auto-migration — was built using agent toolkit skills across multiple sessions.
 
 **Repo:** [github.com/jvalin17/agent-toolkit](https://github.com/jvalin17/agent-toolkit)
 
