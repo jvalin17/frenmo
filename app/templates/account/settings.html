@@ -56,6 +56,38 @@
     </div>
 </div>
 
+<!-- Theme -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #5E5549;">Theme</h3>
+        <p class="text-xs mb-3" style="color: #8C8076;">Choose a color theme for your app.</p>
+        <form method="POST" action="/account/theme" id="theme-form">
+            <div class="flex flex-wrap gap-4 justify-center">
+                {% set themes = [
+                    ("copper", "#C07A45", "Copper"),
+                    ("classic", "#2563EB", "Classic"),
+                    ("dollar", "#EA580C", "Dollar"),
+                    ("coral", "#E8522A", "Coral"),
+                    ("violet", "#7C3AED", "Violet"),
+                    ("midnight", "#1E40AF", "Midnight")
+                ] %}
+                {% for theme_id, theme_hex, theme_label in themes %}
+                <label class="flex flex-col items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="theme_color" value="{{ theme_id }}" class="hidden"
+                           {% if user.theme_color == theme_id %}checked{% endif %}
+                           onchange="document.documentElement.setAttribute('data-theme-color', this.value); localStorage.setItem('theme_color', this.value); document.getElementById('theme-form').submit();">
+                    <div class="w-10 h-10 rounded-full transition-all"
+                         style="background: {{ theme_hex }};
+                                {% if user.theme_color == theme_id %}box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 5px {{ theme_hex }};{% endif %}">
+                    </div>
+                    <span class="text-xs font-medium" style="color: {% if user.theme_color == theme_id %}var(--accent){% else %}var(--text-muted){% endif %};">{{ theme_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Password -->
 <div class="card">
     <div class="card-body">

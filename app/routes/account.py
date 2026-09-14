@@ -52,6 +52,23 @@ async def update_profile(request: Request, db: AsyncSession = Depends(get_db)):
     )
 
 
+VALID_THEMES = {"copper", "classic", "dollar", "coral", "violet", "midnight"}
+
+
+@router.post("/theme")
+@login_required
+async def update_theme(request: Request, db: AsyncSession = Depends(get_db)):
+    user = await db.get(User, request.state.user_id)
+    form_data = await request.form()
+    theme_color = form_data.get("theme_color", "copper").strip().lower()
+
+    if theme_color in VALID_THEMES:
+        user.theme_color = theme_color
+        await db.commit()
+
+    return RedirectResponse(url="/account", status_code=303)
+
+
 @router.post("/password")
 @login_required
 async def change_password(request: Request, db: AsyncSession = Depends(get_db)):

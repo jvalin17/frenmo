@@ -208,3 +208,134 @@ class TestChartsTemplate:
         html = Path("app/templates/group/charts.html").read_text()
         assert "#C07A45" in html, "Progress bars should use copper"
         assert "#3C3B6E" not in html, "No old navy blue in charts"
+
+
+# ============================================================
+# MULTI-THEME SYSTEM TESTS
+# ============================================================
+
+THEMES = {
+    "classic": {"light_accent": "#2563EB", "dark_accent": "#60A5FA"},
+    "dollar": {"light_accent": "#EA580C", "dark_accent": "#FB923C"},
+    "coral": {"light_accent": "#E8522A", "dark_accent": "#FF7B52"},
+    "violet": {"light_accent": "#7C3AED", "dark_accent": "#A78BFA"},
+    "midnight": {"light_accent": "#1E40AF", "dark_accent": "#60A5FA"},
+}
+
+
+class TestThemeCSSBlocks:
+    """Each theme should have a light and dark CSS variable block."""
+
+    def test_classic_light_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme-color="classic"]' in css
+
+    def test_dollar_light_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme-color="dollar"]' in css
+
+    def test_coral_light_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme-color="coral"]' in css
+
+    def test_violet_light_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme-color="violet"]' in css
+
+    def test_midnight_light_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme-color="midnight"]' in css
+
+    def test_classic_dark_block_exists(self):
+        css = Path("app/static/style.css").read_text()
+        assert '[data-theme="dark"][data-theme-color="classic"]' in css
+
+    def test_each_theme_has_correct_light_accent(self):
+        css = Path("app/static/style.css").read_text()
+        for name, colors in THEMES.items():
+            assert colors["light_accent"] in css, \
+                f"Theme {name} light accent {colors['light_accent']} missing from CSS"
+
+    def test_each_theme_has_correct_dark_accent(self):
+        css = Path("app/static/style.css").read_text()
+        for name, colors in THEMES.items():
+            assert colors["dark_accent"] in css, \
+                f"Theme {name} dark accent {colors['dark_accent']} missing from CSS"
+
+
+class TestThemeSettingsUI:
+    """Settings page should have theme selector with all 6 swatches."""
+
+    def test_settings_has_theme_section(self):
+        html = Path("app/templates/account/settings.html").read_text()
+        assert "Theme" in html or "theme" in html, "Settings should have a theme section"
+        for name in ["copper", "classic", "dollar", "coral", "violet", "midnight"]:
+            assert name in html.lower(), f"Theme swatch for '{name}' missing from settings"
+
+
+class TestThemeBaseHTML:
+    """base.html should support data-theme-color attribute."""
+
+    def test_base_has_theme_color_attribute(self):
+        html = Path("app/templates/base.html").read_text()
+        assert "data-theme-color" in html, "base.html should have data-theme-color attribute"
+
+    def test_base_has_theme_color_localstorage(self):
+        html = Path("app/templates/base.html").read_text()
+        assert "theme_color" in html, "base.html should read/write theme_color in localStorage"
+
+
+class TestThemeUserModel:
+    """User model should have theme_color column."""
+
+    def test_user_model_has_theme_color(self):
+        from app.models.user import User
+        assert hasattr(User, "theme_color"), "User model should have theme_color field"
+
+
+class TestThemeRouteValidation:
+    """Theme route should validate against allow-list."""
+
+    async def test_valid_theme_accepted(self, db_session, client):
+        from app.models.user import User
+        from app.services.auth import hash_password
+        from app.middleware.auth import session_serializer
+
+        user = User(email="theme@test.com", name="Themer", password_hash=hash_password("pass1234"))
+        db_session.add(user)
+        await db_session.flush()
+        await db_session.commit()
+
+        cookie = session_serializer.dumps({"user_id": user.id})
+        resp = await client.post(
+            "/account/theme",
+            data={"theme_color": "violet"},
+            cookies={"frenmo_session": cookie},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303
+
+        await db_session.refresh(user)
+        assert user.theme_color == "violet"
+
+    async def test_invalid_theme_rejected(self, db_session, client):
+        from app.models.user import User
+        from app.services.auth import hash_password
+        from app.middleware.auth import session_serializer
+
+        user = User(email="theme2@test.com", name="Themer2", password_hash=hash_password("pass1234"))
+        db_session.add(user)
+        await db_session.flush()
+        await db_session.commit()
+
+        cookie = session_serializer.dumps({"user_id": user.id})
+        resp = await client.post(
+            "/account/theme",
+            data={"theme_color": "hacked_theme"},
+            cookies={"frenmo_session": cookie},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303
+
+        await db_session.refresh(user)
+        assert user.theme_color != "hacked_theme"

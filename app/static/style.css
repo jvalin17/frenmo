@@ -40,6 +40,90 @@
     --pc: 30 20% 5%;
 }
 
+/* ============================================================
+   THEME COLOR SYSTEM — each theme overrides CSS variables only
+   ============================================================ */
+
+/* --- Classic (blue + white) --- */
+[data-theme-color="classic"] {
+    --bg-page: #F8FAFC; --bg-card: #FFFFFF; --bg-input: #F1F5F9;
+    --bg-hover: #E2E8F0; --text-primary: #0F172A; --text-secondary: #475569;
+    --text-muted: #94A3B8; --border: #CBD5E1; --border-light: #E2E8F0;
+    --accent: #2563EB; --navbar-bg: #FFFFFF; --navbar-border: #E2E8F0;
+    --p: 217 91% 60%; --pf: 217 91% 50%; --pc: 210 40% 98%;
+}
+[data-theme="dark"][data-theme-color="classic"] {
+    --bg-page: #0F172A; --bg-card: #1E293B; --bg-input: #334155;
+    --bg-hover: #334155; --text-primary: #F1F5F9; --text-secondary: #94A3B8;
+    --text-muted: #64748B; --border: #334155; --border-light: #1E293B;
+    --accent: #60A5FA; --navbar-bg: #1E293B; --navbar-border: #334155;
+    --p: 217 91% 68%; --pf: 217 91% 60%; --pc: 217 33% 10%;
+}
+
+/* --- Dollar (orange + white) --- */
+[data-theme-color="dollar"] {
+    --bg-page: #FFFBF5; --bg-card: #FFF7ED; --bg-input: #FFEDD5;
+    --bg-hover: #FED7AA; --text-primary: #1C1210; --text-secondary: #6B4423;
+    --text-muted: #9A7B5A; --border: #FDBA74; --border-light: #FED7AA;
+    --accent: #EA580C; --navbar-bg: #FFFBF5; --navbar-border: #FED7AA;
+    --p: 21 90% 48%; --pf: 21 90% 38%; --pc: 30 40% 96%;
+}
+[data-theme="dark"][data-theme-color="dollar"] {
+    --bg-page: #1A0E05; --bg-card: #2A1A0D; --bg-input: #3A2515;
+    --bg-hover: #3A2515; --text-primary: #FDE8D0; --text-secondary: #C49A70;
+    --text-muted: #7A5A3A; --border: #4A3020; --border-light: #3A2515;
+    --accent: #FB923C; --navbar-bg: #2A1A0D; --navbar-border: #4A3020;
+    --p: 27 96% 61%; --pf: 21 90% 48%; --pc: 21 30% 8%;
+}
+
+/* --- Coral (Monzo-inspired warm red-orange) --- */
+[data-theme-color="coral"] {
+    --bg-page: #FDF6F3; --bg-card: #FFF1EC; --bg-input: #FFE4DB;
+    --bg-hover: #FFD4C7; --text-primary: #1C1210; --text-secondary: #6B3A2A;
+    --text-muted: #9A7068; --border: #FFBAA8; --border-light: #FFD4C7;
+    --accent: #E8522A; --navbar-bg: #FDF6F3; --navbar-border: #FFD4C7;
+    --p: 12 78% 54%; --pf: 12 78% 44%; --pc: 12 20% 96%;
+}
+[data-theme="dark"][data-theme-color="coral"] {
+    --bg-page: #1C1210; --bg-card: #2A1C18; --bg-input: #3A2820;
+    --bg-hover: #3A2820; --text-primary: #FFE4DB; --text-secondary: #C49080;
+    --text-muted: #7A5A50; --border: #4A3028; --border-light: #3A2820;
+    --accent: #FF7B52; --navbar-bg: #2A1C18; --navbar-border: #4A3028;
+    --p: 15 100% 66%; --pf: 12 78% 54%; --pc: 12 30% 8%;
+}
+
+/* --- Violet (Zelle-inspired purple) --- */
+[data-theme-color="violet"] {
+    --bg-page: #FAFAFE; --bg-card: #F5F3FF; --bg-input: #EDE9FE;
+    --bg-hover: #DDD6FE; --text-primary: #1E1033; --text-secondary: #5B4A8A;
+    --text-muted: #8B7FB8; --border: #C4B5FD; --border-light: #DDD6FE;
+    --accent: #7C3AED; --navbar-bg: #FAFAFE; --navbar-border: #DDD6FE;
+    --p: 263 70% 58%; --pf: 263 70% 48%; --pc: 263 20% 96%;
+}
+[data-theme="dark"][data-theme-color="violet"] {
+    --bg-page: #0F0A1A; --bg-card: #1A1230; --bg-input: #2A1E48;
+    --bg-hover: #2A1E48; --text-primary: #EDE9FE; --text-secondary: #A78BFA;
+    --text-muted: #6D5BA0; --border: #3B2D60; --border-light: #2A1E48;
+    --accent: #A78BFA; --navbar-bg: #1A1230; --navbar-border: #3B2D60;
+    --p: 263 86% 76%; --pf: 263 70% 58%; --pc: 263 30% 8%;
+}
+
+/* --- Midnight (Revolut-inspired deep blue) --- */
+[data-theme-color="midnight"] {
+    --bg-page: #F1F5F9; --bg-card: #FFFFFF; --bg-input: #E2E8F0;
+    --bg-hover: #CBD5E1; --text-primary: #0F172A; --text-secondary: #475569;
+    --text-muted: #94A3B8; --border: #CBD5E1; --border-light: #E2E8F0;
+    --accent: #1E40AF; --navbar-bg: #FFFFFF; --navbar-border: #E2E8F0;
+    --p: 217 72% 40%; --pf: 217 72% 30%; --pc: 210 40% 98%;
+}
+[data-theme="dark"][data-theme-color="midnight"] {
+    --bg-page: #0D1117; --bg-card: #161B22; --bg-input: #21262D;
+    --bg-hover: #21262D; --text-primary: #E6EDF3; --text-secondary: #8B949E;
+    --text-muted: #484F58; --border: #30363D; --border-light: #21262D;
+    --accent: #60A5FA; --navbar-bg: #161B22; --navbar-border: #30363D;
+    --p: 217 91% 68%; --pf: 217 72% 40%; --pc: 217 33% 6%;
+}
+
 /* Dark mode overrides — elevation through lighter surfaces, not shadows */
 [data-theme="dark"] .card {
     background: #1C1A17 !important;

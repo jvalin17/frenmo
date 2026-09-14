@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color if user else 'copper' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,10 +23,12 @@
     <meta name="theme-color" content="#C07A45">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <script>
-    // Dark mode: restore preference before paint
+    // Restore theme preferences before paint
     (function() {
         var t = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', t);
+        var tc = localStorage.getItem('theme_color');
+        if (tc) document.documentElement.setAttribute('data-theme-color', tc);
     })();
     function toggleTheme() {
         var current = document.documentElement.getAttribute('data-theme');

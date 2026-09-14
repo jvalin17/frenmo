@@ -14,4 +14,5 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     default_currency: Mapped[str] = mapped_column(String(3), default="USD")
+    theme_color: Mapped[str] = mapped_column(String(20), default="copper")
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
