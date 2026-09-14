@@ -115,3 +115,46 @@ class TestUpdateExpense:
             currency="EUR",
         )
         assert updated.currency == "EUR"
+
+    async def test_update_to_shares_split(self, db_session, group_with_expense):
+        """Changing split_type to 'shares' should recompute proportionally."""
+        group, alice, bob, expense = group_with_expense
+        updated = await update_expense(
+            db=db_session,
+            expense_id=expense.id,
+            user_id=alice.id,
+            split_type="shares",
+            member_ids=[alice.id, bob.id],
+            member_values={alice.id: 3.0, bob.id: 1.0},
+        )
+        assert updated.split_type == "shares"
+
+        from sqlalchemy import select
+        splits_result = await db_session.execute(
+            select(ExpenseSplit).where(ExpenseSplit.expense_id == expense.id)
+        )
+        splits = {s.user_id: s for s in splits_result.scalars().all()}
+        assert splits[alice.id].owed_amount == 7500  # 3/4 of 10000
+        assert splits[bob.id].owed_amount == 2500  # 1/4 of 10000
+        assert splits[alice.id].paid_amount == 10000  # alice paid
+
+    async def test_update_to_full_split(self, db_session, group_with_expense):
+        """Changing split_type to 'full' should assign all owed to one person."""
+        group, alice, bob, expense = group_with_expense
+        updated = await update_expense(
+            db=db_session,
+            expense_id=expense.id,
+            user_id=alice.id,
+            split_type="full",
+            member_ids=[alice.id, bob.id],
+            member_values={"full_owes": float(bob.id)},
+        )
+        assert updated.split_type == "full"
+
+        from sqlalchemy import select
+        splits_result = await db_session.execute(
+            select(ExpenseSplit).where(ExpenseSplit.expense_id == expense.id)
+        )
+        splits = {s.user_id: s for s in splits_result.scalars().all()}
+        assert splits[bob.id].owed_amount == 10000  # bob owes all
+        assert splits[alice.id].owed_amount == 0  # alice owes nothing

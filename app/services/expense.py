@@ -84,6 +84,85 @@ def compute_full_split(amount_paise: int, owes_user_id: int, member_ids: list[in
     return splits
 
 
+async def recalculate_group_splits(
+    db: AsyncSession,
+    group_id: int,
+    member_shares: dict[int, int],
+) -> int:
+    """Recalculate splits for all 'equal' expenses in a group using new share weights.
+
+    Only affects non-deleted, non-settlement expenses with split_type='equal'.
+    Does NOT commit — caller controls the transaction boundary.
+    Returns the number of expenses recalculated.
+    """
+    # Fetch all equal expenses in the group, with row-level lock for thread safety
+    result = await db.execute(
+        select(Expense)
+        .where(
+            Expense.group_id == group_id,
+            Expense.split_type == "equal",
+            Expense.expense_type == "expense",
+            Expense.deleted_at.is_(None),
+        )
+        .with_for_update()
+    )
+    expenses = result.scalars().all()
+
+    if not expenses:
+        return 0
+
+    # Batch-load all splits for these expenses (single query, no N+1)
+    expense_ids = [e.id for e in expenses]
+    all_splits_result = await db.execute(
+        select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(expense_ids))
+    )
+    splits_by_expense: dict[int, list[ExpenseSplit]] = {}
+    for s in all_splits_result.scalars().all():
+        splits_by_expense.setdefault(s.expense_id, []).append(s)
+
+    count = 0
+    for expense in expenses:
+        old_splits = splits_by_expense.get(expense.id, [])
+        participant_ids = [s.user_id for s in old_splits]
+
+        if not participant_ids:
+            continue
+
+        # Build per-expense shares from group defaults
+        expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in participant_ids}
+
+        # Compute new splits
+        new_owed = compute_shares_splits(expense.amount, expense_shares)
+
+        # Delete old splits
+        for old_split in old_splits:
+            await db.delete(old_split)
+        await db.flush()
+
+        # Create new splits
+        for uid, owed_amount in new_owed.items():
+            db.add(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=uid,
+                paid_amount=expense.amount if uid == expense.paid_by else 0,
+                owed_amount=owed_amount,
+            ))
+
+        # If payer not in participants, still record their payment
+        if expense.paid_by not in new_owed:
+            db.add(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=expense.paid_by,
+                paid_amount=expense.amount,
+                owed_amount=0,
+            ))
+
+        count += 1
+
+    await db.flush()
+    return count
+
+
 async def create_expense_with_splits(
     db: AsyncSession,
     group_id: int,
@@ -230,6 +309,10 @@ async def update_expense(
             owed_splits = compute_exact_splits(current_amount, member_values)
         elif current_split_type == "percent" and member_values:
             owed_splits = compute_percent_splits(current_amount, member_values)
+        elif current_split_type == "shares" and member_values:
+            owed_splits = compute_shares_splits(current_amount, member_values)
+        elif current_split_type == "full" and member_values and "full_owes" in member_values:
+            owed_splits = compute_full_split(current_amount, int(member_values["full_owes"]), member_ids)
         else:
             owed_splits = compute_equal_splits(current_amount, member_ids)
 

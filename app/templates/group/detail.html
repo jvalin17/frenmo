@@ -288,6 +288,13 @@ function toggleSection(id) {
                     {% endif %}
                 </div>
             </div>
+            <!-- Split breakdown -->
+            {% set splits = expense_splits.get(expense.id, []) %}
+            {% if splits|length > 1 %}
+            <div class="text-xs mt-1 ml-10" style="color: #86868B;">
+                → {% for s in splits %}{% if s.owed_amount > 0 %}{{ member_names.get(s.user_id, '?') }}({{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}){% if not loop.last %}, {% endif %}{% endif %}{% endfor %}
+            </div>
+            {% endif %}
             <!-- Comments -->
             {% set comments = expense_comments.get(expense.id, []) %}
             <div class="mt-2 ml-10 rounded-xl p-2.5" style="background: linear-gradient(180deg, {{ color_light }}80 0%, #FFFFFF 100%); border: 1px solid {{ color_border }}60;">

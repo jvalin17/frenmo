@@ -88,6 +88,18 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
     expenses = expenses_result.scalars().all()
 
+    # Get splits for all expenses (single query, no N+1)
+    from app.models.expense import ExpenseSplit
+
+    expense_ids = [e.id for e in expenses]
+    expense_splits = {}
+    if expense_ids:
+        splits_result = await db.execute(
+            select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(expense_ids))
+        )
+        for s in splits_result.scalars().all():
+            expense_splits.setdefault(s.expense_id, []).append(s)
+
     # Get balances
     from app.services.balance import get_group_balances, simplify_debts
 
@@ -131,6 +143,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "expense_comments": expense_comments,
             "rates": rates,
             "member_shares": member_shares,
+            "expense_splits": expense_splits,
         },
     )
 
@@ -164,12 +177,18 @@ async def update_group_settings(request: Request, group_id: int, db: AsyncSessio
     all_members = await db.execute(
         select(GroupMember).where(GroupMember.group_id == group_id)
     )
+    member_shares = {}
     for gm in all_members.scalars().all():
         shares_val = form_data.get(f"shares_{gm.user_id}", "1")
         try:
-            gm.default_shares = max(1, int(shares_val))
+            gm.default_shares = max(1, min(int(shares_val), 99))
         except ValueError:
             gm.default_shares = 1
+        member_shares[gm.user_id] = gm.default_shares
+
+    # Recalculate existing equal-split expenses with new shares
+    from app.services.expense import recalculate_group_splits
+    await recalculate_group_splits(db, group_id, member_shares)
 
     await db.commit()
     logger.info("Group settings updated: group=%d by user=%d", group_id, user_id)
