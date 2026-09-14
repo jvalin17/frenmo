@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% block title %}New Group — Frenmo{% endblock %}
 {% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">Create Group</h2>
+    <a href="/" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: var(--bg-input); color: var(--text-primary); text-decoration: none;">← Home</a>
+</div>
 <div class="card bg-base-100 shadow-md">
     <div class="card-body">
-        <h2 class="card-title text-2xl mb-4">Create Group</h2>
         <form method="POST" action="/groups/new">
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Group Name</span></label>

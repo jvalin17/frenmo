@@ -252,7 +252,7 @@
 }
 
 /* Card color variants */
-.card-blue { background: linear-gradient(180deg, #F5E6D8 0%, #F2EFEA 40%) !important; border-color: #DDB896 !important; }
+.card-blue { background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 40%) !important; border-color: var(--border) !important; }
 .card-green { background: linear-gradient(180deg, #D1FAE5 0%, #FFFFFF 40%) !important; border-color: #A7F3D0 !important; }
 .card-orange { background: linear-gradient(180deg, #FED7AA 0%, #FFFFFF 40%) !important; border-color: #FDBA74 !important; }
 .card-yellow { background: linear-gradient(180deg, #FEF3C7 0%, #FFFFFF 40%) !important; border-color: #FDE68A !important; }

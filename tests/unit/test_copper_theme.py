@@ -403,6 +403,30 @@ class TestNoHardcodedThemeColors:
             "group/detail.html has background: #FFFFFF — should be var(--bg-card)"
 
 
+class TestCardClassesUseVars:
+    """CSS card classes should use variables, not hardcoded hex."""
+
+    def test_card_blue_uses_vars(self):
+        css = Path("app/static/style.css").read_text()
+        # Find the light-mode .card-blue rule (not the dark override)
+        import re
+        match = re.search(r'^\.card-blue\s*\{[^}]+\}', css, re.MULTILINE)
+        assert match, "card-blue class should exist"
+        section = match.group(0)
+        assert "#F5E6D8" not in section, "card-blue should not have hardcoded #F5E6D8"
+        assert "#DDB896" not in section, "card-blue should not have hardcoded #DDB896"
+        assert "var(--" in section, "card-blue should use CSS variables"
+
+
+class TestNavigationBackButton:
+    """Pages should have a back or home button for navigation."""
+
+    def test_create_group_has_back(self):
+        html = Path("app/templates/group/new.html").read_text()
+        assert 'href="/"' in html or "Back" in html or "Home" in html, \
+            "Create group page should have a back/home link"
+
+
 class TestThemeRouteValidation:
     """Theme route should validate against allow-list."""
 
