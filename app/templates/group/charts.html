@@ -84,15 +84,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-/* Theme-aware colors */
-const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-const colors = isDark
-    ? ['#D4925C','#E0A872','#C07A45','#A8672D','#8B6F4E','#DDB896','#B05030','#F5E6D8']
-    : ['#C07A45','#A8672D','#8B6F4E','#D4925C','#5E3D1E','#B05030','#C89060','#DDB896'];
-const gridColor = isDark ? '#38383A' : '#EAE5DE';
-const tickColor = isDark ? '#636366' : '#8C8076';
-const tooltipBg = isDark ? '#2C2C2E' : '#1D1D1F';
-const tooltipColor = isDark ? '#E5E5E7' : '#FFFFFF';
+/* Theme-aware colors — read from CSS variables */
+const cs = getComputedStyle(document.documentElement);
+const accent = cs.getPropertyValue('--accent').trim();
+const gridColor = cs.getPropertyValue('--border').trim();
+const tickColor = cs.getPropertyValue('--text-muted').trim();
+const tooltipBg = cs.getPropertyValue('--bg-card').trim();
+const tooltipColor = cs.getPropertyValue('--text-primary').trim();
+/* Generate chart palette from accent with opacity variations */
+const colors = [accent, accent+'CC', accent+'99', accent+'66', accent+'44', accent+'BB', accent+'88', accent+'55'];
 
 {% if category_data %}
 new Chart(document.getElementById('categoryChart'), {

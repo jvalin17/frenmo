@@ -326,11 +326,11 @@
     box-shadow: none !important;
 }
 .input::placeholder {
-    color: #8C8076 !important;
+    color: var(--text-muted) !important;
 }
 
 .checkbox {
-    border-color: #C5BFB6 !important;
+    border-color: var(--border) !important;
 }
 .checkbox:checked {
     background-color: var(--accent) !important;
@@ -365,11 +365,11 @@
     font-size: 3rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: #1A1410;
+    color: var(--text-primary);
 }
 .hero-positive { color: #34C759 !important; }
 .hero-negative { color: #FF3B30 !important; }
-.hero-zero { color: #8E8E93 !important; }
+.hero-zero { color: var(--text-muted) !important; }
 
 /* Quick action circles — Apple style */
 .quick-action {
@@ -390,18 +390,18 @@
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    background: #EAE5DE;
+    background: var(--bg-input);
     display: grid;
     place-items: center;
     font-size: 1.25rem;
     transition: all 0.15s ease;
 }
 .quick-action:hover .icon-circle {
-    background: #DDD8D0;
+    background: var(--bg-hover);
 }
 .quick-action .icon-label {
     font-size: 0.7rem;
-    color: #5E5549;
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -428,7 +428,7 @@ h2, h3, .card-title, .hero-balance {
 }
 h2 {
     font-weight: 700;
-    color: #1A1410;
+    color: var(--text-primary);
 }
 
 /* Smooth transitions — no lag */
