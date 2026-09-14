@@ -5,11 +5,11 @@ from pathlib import Path
 class TestGroupDetailButtons:
     """Group detail toolbar buttons should meet WCAG tap target minimums."""
 
-    def test_import_button_uses_daisyui_btn_class(self):
-        """Import button should use DaisyUI btn system, not custom inline styling."""
+    def test_import_button_uses_pill_style(self):
+        """Import button should use pill-style rounded-full for fintech toolbar."""
         template = Path("app/templates/group/detail.html").read_text()
-        assert 'btn btn-ghost btn-sm' in template or 'btn btn-sm' in template, \
-            "Import button should use DaisyUI btn classes for consistent sizing"
+        assert 'rounded-full' in template, \
+            "Import button should use rounded-full pill style"
 
     def test_import_button_label(self):
         """Import button should say 'Import Expenses' for clarity."""

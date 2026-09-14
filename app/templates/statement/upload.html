@@ -5,44 +5,44 @@
 
 <div class="flex justify-between items-center mb-4">
     <h2 class="text-2xl font-bold">Import from Statement</h2>
-    <a href="/groups/{{ group.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #F2F2F7; color: var(--text-primary); text-decoration: none;">← Back</a>
+    <a href="/groups/{{ group.id }}" class="text-sm font-medium px-3 py-1.5 rounded-lg" style="background: #EAE5DE; color: var(--text-primary); text-decoration: none;">← Back</a>
 </div>
 
 <!-- Upload Card -->
 <div class="card card-blue mb-4">
     <div class="card-body">
-        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #86868B;">Upload Bank Statement</h3>
-        <p class="text-xs mb-4" style="color: #AEAEB2;">Supports Discover, Chase, Bank of America, Amex, Apple Card, HDFC, SBI. Your file is processed securely and never stored.</p>
+        <h3 class="font-semibold text-sm uppercase mb-3" style="color: #5E5549;">Upload Bank Statement</h3>
+        <p class="text-xs mb-4" style="color: #8C8076;">Supports Discover, Chase, Bank of America, Amex, Apple Card, HDFC, SBI. Your file is processed securely and never stored.</p>
 
         <form method="POST" action="/statement/{{ group.id }}/parse" enctype="multipart/form-data">
             <!-- Date Range -->
             <div class="flex gap-3 mb-4">
                 <div class="flex-1">
-                    <label class="text-xs font-medium" style="color: #86868B;">From date</label>
+                    <label class="text-xs font-medium" style="color: #5E5549;">From date</label>
                     <input type="text" name="date_from" placeholder="MM/DD" class="input input-bordered input-sm w-full mt-1">
                 </div>
                 <div class="flex-1">
-                    <label class="text-xs font-medium" style="color: #86868B;">To date</label>
+                    <label class="text-xs font-medium" style="color: #5E5549;">To date</label>
                     <input type="text" name="date_to" placeholder="MM/DD" class="input input-bordered input-sm w-full mt-1">
                 </div>
             </div>
 
             <!-- Drop Zone -->
-            <div id="drop-zone" class="rounded-2xl p-8 text-center cursor-pointer" style="border: 2px dashed #BFDBFE; background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%); transition: all 0.2s;"
+            <div id="drop-zone" class="rounded-2xl p-8 text-center cursor-pointer" style="border: 2px dashed #DDB896; background: linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%); transition: all 0.2s;"
                  onclick="document.getElementById('file-input').click()"
-                 ondragover="event.preventDefault(); this.style.borderColor='#007AFF'; this.style.background='#DBEAFE';"
-                 ondragleave="this.style.borderColor='#BFDBFE'; this.style.background='linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%)';"
+                 ondragover="event.preventDefault(); this.style.borderColor='#C07A45'; this.style.background='#F5E6D8';"
+                 ondragleave="this.style.borderColor='#DDB896'; this.style.background='linear-gradient(180deg, #F5E6D8 0%, #FFFFFF 100%)';"
                  ondrop="event.preventDefault(); document.getElementById('file-input').files = event.dataTransfer.files; document.getElementById('file-name').textContent = event.dataTransfer.files[0].name; this.style.borderColor='#34C759'; this.style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)';">
                 <div class="text-3xl mb-2">📄</div>
                 <p class="text-sm font-medium" style="color: var(--text-primary);">Drop your PDF here or click to browse</p>
-                <p class="text-xs mt-1" style="color: #AEAEB2;">PDF only, max 10MB</p>
-                <p id="file-name" class="text-xs mt-2 font-medium" style="color: #007AFF;"></p>
+                <p class="text-xs mt-1" style="color: #8C8076;">PDF only, max 10MB</p>
+                <p id="file-name" class="text-xs mt-2 font-medium" style="color: #C07A45;"></p>
             </div>
             <input type="file" id="file-input" name="file" accept=".pdf" style="display: none;"
                    onchange="document.getElementById('file-name').textContent = this.files[0]?.name || ''; if(this.files[0]) { document.getElementById('drop-zone').style.borderColor='#34C759'; document.getElementById('drop-zone').style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)'; }">
 
             <button type="submit" id="extract-btn" class="btn btn-primary btn-lg w-full mt-4" onclick="this.textContent='Processing...'; this.disabled=true; this.form.submit();">Extract Transactions</button>
-            <p class="text-xs text-center mt-2" style="color: #AEAEB2;">🔒 Your statement is private — only you can see it. Only expenses you select will be added to the group.</p>
+            <p class="text-xs text-center mt-2" style="color: #8C8076;">🔒 Your statement is private — only you can see it. Only expenses you select will be added to the group.</p>
         </form>
     </div>
 </div>
@@ -60,26 +60,26 @@
 <div class="card card-green mb-4">
     <div class="card-body">
         <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-sm uppercase" style="color: #86868B;">
+            <h3 class="font-semibold text-sm uppercase" style="color: #5E5549;">
                 Found {{ transactions|length }} transactions
                 {% if bank %}<span class="text-xs font-normal ml-1">({{ bank|title }})</span>{% endif %}
             </h3>
         </div>
-        <p class="text-xs mb-4" style="color: #AEAEB2;">Review and select which expenses to add to <strong>{{ group.name }}</strong>. They'll be split equally among all members.</p>
+        <p class="text-xs mb-4" style="color: #8C8076;">Review and select which expenses to add to <strong>{{ group.name }}</strong>. They'll be split equally among all members.</p>
 
         <form method="POST" action="/statement/{{ group.id }}/import">
             <div class="space-y-2">
                 {% for tx in transactions %}
-                <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style="background: #F9FAFB; border: 1px solid #E5E7EB; transition: all 0.15s;"
-                       onmouseover="this.style.background='#ECFDF5'; this.style.borderColor='#A7F3D0';"
-                       onmouseout="this.style.background='#F9FAFB'; this.style.borderColor='#E5E7EB';">
+                <label class="flex items-center gap-3 p-3 rounded-xl cursor-pointer" style="background: #F2EFEA; border: 1px solid #C5BFB6; transition: all 0.15s;"
+                       onmouseover="this.style.background='#F5E6D8'; this.style.borderColor='#DDB896';"
+                       onmouseout="this.style.background='#F2EFEA'; this.style.borderColor='#C5BFB6';">
                     <input type="checkbox" name="tx_{{ loop.index0 }}" class="checkbox checkbox-sm" checked>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ tx.description }}</p>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs" style="color: #AEAEB2;">{{ tx.date }}</span>
+                            <span class="text-xs" style="color: #8C8076;">{{ tx.date }}</span>
                             {% if tx.category %}
-                            <span class="text-xs px-1.5 py-0.5 rounded-md" style="background: #EEF2FF; color: #3B82F6;">{{ tx.category }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded-md" style="background: #F5E6D8; color: #A8672D;">{{ tx.category }}</span>
                             {% endif %}
                         </div>
                     </div>

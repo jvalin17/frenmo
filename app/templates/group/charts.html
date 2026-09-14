@@ -9,7 +9,7 @@
 {% if not category_data and not monthly_data %}
 <div class="text-center py-16">
     <div class="text-4xl mb-3">📊</div>
-    <p style="color: #86868B;">No expenses yet. Add some to see charts.</p>
+    <p style="color: #5E5549;">No expenses yet. Add some to see charts.</p>
 </div>
 {% else %}
 
@@ -26,7 +26,7 @@
             {% set total_cat = category_data.values()|sum %}
             {% for cat, amount in category_data.items() %}
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm" style="background: #F2F2F7;">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center text-sm" style="background: #EAE5DE;">
                     {{ cat_emojis.get(cat, "💳") }}
                 </div>
                 <div class="flex-1">
@@ -34,8 +34,8 @@
                         <span class="text-sm font-medium capitalize">{{ cat }}</span>
                         <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                     </div>
-                    <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
-                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: linear-gradient(90deg, #3C3B6E, #5C5B8E);"></div>
+                    <div class="w-full rounded-full h-1.5 mt-1" style="background: #EAE5DE;">
+                        <div class="h-1.5 rounded-full" style="width: {{ (amount / total_cat * 100)|round }}%; background: linear-gradient(90deg, #C07A45, #8B6F4E);"></div>
                     </div>
                 </div>
             </div>
@@ -50,7 +50,7 @@
 <div class="card card-blue mb-4">
     <div class="card-body">
         <h3 class="font-semibold text-sm uppercase mb-2">Monthly Spending</h3>
-        <p class="text-xs mb-4" style="color: #AEAEB2;">Total: ${{ "%.2f"|format(monthly_data.values()|sum / 100) }}</p>
+        <p class="text-xs mb-4" style="color: #8C8076;">Total: ${{ "%.2f"|format(monthly_data.values()|sum / 100) }}</p>
         <canvas id="monthlyChart" height="180"></canvas>
     </div>
 </div>
@@ -64,7 +64,7 @@
         <h3 class="font-semibold text-sm uppercase mb-4">Who Paid What</h3>
         {% for uid, amount in member_data.items() %}
         <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #3C3B6E, #B22234);">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #C07A45, #A8672D);">
                 {{ member_names.get(uid, '?')[0]|upper }}
             </div>
             <div class="flex-1">
@@ -72,8 +72,8 @@
                     <span class="text-sm font-medium">{{ member_names.get(uid, '?') }}</span>
                     <span class="text-sm font-semibold">${{ "%.2f"|format(amount / 100) }}</span>
                 </div>
-                <div class="w-full rounded-full h-1.5 mt-1" style="background: #F2F2F7;">
-                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: linear-gradient(90deg, #B22234, #D44A5C);"></div>
+                <div class="w-full rounded-full h-1.5 mt-1" style="background: #EAE5DE;">
+                    <div class="h-1.5 rounded-full" style="width: {{ (amount / total_member * 100)|round }}%; background: linear-gradient(90deg, #A8672D, #D4925C);"></div>
                 </div>
             </div>
         </div>
@@ -87,10 +87,10 @@
 /* Theme-aware colors */
 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 const colors = isDark
-    ? ['#5C5BDE','#E04456','#6B8AFF','#8B7ADE','#FF7A85','#7C9BFF','#E88A92','#A3A2FF']
-    : ['#3C3B6E','#B22234','#FFFFFF','#5C5B8E','#D44A5C','#8B8AAE','#E07380','#A3A2C6'];
-const gridColor = isDark ? '#38383A' : '#F2F2F7';
-const tickColor = isDark ? '#636366' : '#AEAEB2';
+    ? ['#D4925C','#E0A872','#C07A45','#A8672D','#8B6F4E','#DDB896','#B05030','#F5E6D8']
+    : ['#C07A45','#A8672D','#8B6F4E','#D4925C','#5E3D1E','#B05030','#C89060','#DDB896'];
+const gridColor = isDark ? '#38383A' : '#EAE5DE';
+const tickColor = isDark ? '#636366' : '#8C8076';
 const tooltipBg = isDark ? '#2C2C2E' : '#1D1D1F';
 const tooltipColor = isDark ? '#E5E5E7' : '#FFFFFF';
 
@@ -134,8 +134,8 @@ new Chart(document.getElementById('monthlyChart'), {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: isDark ? 'rgba(92, 91, 222, 0.4)' : 'rgba(60, 59, 110, 0.15)',
-            hoverBackgroundColor: isDark ? 'rgba(92, 91, 222, 0.6)' : 'rgba(60, 59, 110, 0.3)',
+            backgroundColor: isDark ? 'rgba(212,146,92,0.4)' : 'rgba(192,122,69,0.15)',
+            hoverBackgroundColor: isDark ? 'rgba(212,146,92,0.6)' : 'rgba(192,122,69,0.3)',
             borderRadius: 8,
             borderSkipped: false,
         }]
