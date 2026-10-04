@@ -114,6 +114,12 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
         else:
             expenses_by_date.setdefault(date_key, []).append(expense)
 
+    # Lazy repair: add missing members to equal-split expenses
+    from app.services.expense import repair_missing_splits
+
+    await repair_missing_splits(db, group_id)
+    await db.commit()
+
     # Get balances
     from app.services.balance import get_group_balances, simplify_debts
 
@@ -234,7 +240,11 @@ async def group_charts(request: Request, group_id: int, db: AsyncSession = Depen
     if group is None:
         return RedirectResponse(url="/", status_code=303)
 
-    from app.services.charts import get_category_breakdown, get_member_spending, get_monthly_spending
+    from app.services.charts import (
+        get_category_breakdown,
+        get_member_spending,
+        get_monthly_spending,
+    )
 
     category_data = await get_category_breakdown(db, group_id)
     monthly_data = await get_monthly_spending(db, group_id)
@@ -277,9 +287,34 @@ async def invite_page(request: Request, group_id: int, db: AsyncSession = Depend
     )
 
 
-@router.get("/join/{token}")
+@router.get("/join/{token}", response_class=HTMLResponse)
+@login_required
+async def join_group_confirm(request: Request, token: str, db: AsyncSession = Depends(get_db)):
+    """Show confirmation page before joining a group via invite link."""
+    result = await db.execute(select(Group).where(Group.invite_token == token))
+    group = result.scalar_one_or_none()
+    if group is None:
+        return RedirectResponse(url="/", status_code=303)
+
+    # If already a member, just redirect to group
+    existing = await db.execute(
+        select(GroupMember).where(
+            GroupMember.group_id == group.id, GroupMember.user_id == request.state.user_id
+        )
+    )
+    if existing.scalar_one_or_none() is not None:
+        return RedirectResponse(url=f"/groups/{group.id}", status_code=303)
+
+    user = await db.get(User, request.state.user_id)
+    return templates.TemplateResponse(
+        request, "group/join_confirm.html", {"user": user, "group": group, "token": token}
+    )
+
+
+@router.post("/join/{token}")
 @login_required
 async def join_group(request: Request, token: str, db: AsyncSession = Depends(get_db)):
+    """Actually join the group after user confirms."""
     result = await db.execute(select(Group).where(Group.invite_token == token))
     group = result.scalar_one_or_none()
     if group is None:
@@ -294,6 +329,12 @@ async def join_group(request: Request, token: str, db: AsyncSession = Depends(ge
     if existing.scalar_one_or_none() is None:
         member = GroupMember(group_id=group.id, user_id=request.state.user_id)
         db.add(member)
+        await db.flush()
+
+        # Recalculate existing equal-split expenses to include new member
+        from app.services.expense import recalculate_splits_for_new_member
+
+        await recalculate_splits_for_new_member(db, group.id, request.state.user_id)
         await db.commit()
         logger.info(
             "User %d joined group %d via invite", request.state.user_id, group.id

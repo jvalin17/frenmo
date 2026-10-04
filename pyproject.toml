@@ -40,7 +40,7 @@ exclude = [".agent-toolkit", ".gate", ".gates", ".scratch"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "S", "B", "A", "C4", "SIM"]
-ignore = ["S101", "S105", "B008"]  # S101: assert in tests, S105: pydantic defaults from env, B008: FastAPI Depends pattern
+ignore = ["S101", "S105", "S106", "B008"]  # S101: assert in tests, S105/S106: pydantic/test fixture passwords, B008: FastAPI Depends pattern
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

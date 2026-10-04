@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Join {{ group.name }} — Frenmo{% endblock %}
+{% block content %}
+<div class="card bg-base-100 shadow-md">
+    <div class="card-body text-center">
+        <h2 class="card-title text-2xl mb-2 justify-center">Join Group</h2>
+        <p class="text-sm mb-4" style="color: var(--text-secondary);">You've been invited to join:</p>
+        <p class="text-xl font-bold mb-1" style="color: var(--text-primary);">{{ group.name }}</p>
+        <p class="text-xs mb-6" style="color: var(--text-muted);">{{ group.currency }}</p>
+        <form method="POST" action="/groups/join/{{ token }}">
+            <button type="submit" class="btn btn-primary btn-block mb-2">Join Group</button>
+        </form>
+        <a href="/" class="btn btn-ghost btn-block">Cancel</a>
+    </div>
+</div>
+{% endblock %}

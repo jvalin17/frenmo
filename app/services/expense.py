@@ -163,6 +163,222 @@ async def recalculate_group_splits(
     return count
 
 
+async def recalculate_splits_for_new_member(
+    db: AsyncSession,
+    group_id: int,
+    new_member_id: int,
+) -> int:
+    """Add a new member to all equal/shares-split expenses in a group and recalculate.
+
+    Called when a user joins a group (invite or add-friend).
+    Only affects non-deleted, non-settlement, equal or shares-split expenses.
+    Does NOT commit — caller controls the transaction boundary.
+    Returns the number of expenses recalculated.
+    """
+    from app.models.group import GroupMember
+
+    # Get all member shares for the group (including the new member)
+    shares_result = await db.execute(
+        select(GroupMember.user_id, GroupMember.default_shares)
+        .where(GroupMember.group_id == group_id)
+    )
+    member_shares = {row[0]: row[1] for row in shares_result.all()}
+
+    # Fetch all equal/shares expenses in the group, with row-level lock
+    result = await db.execute(
+        select(Expense)
+        .where(
+            Expense.group_id == group_id,
+            Expense.split_type.in_(["equal", "shares"]),
+            Expense.expense_type == "expense",
+            Expense.deleted_at.is_(None),
+        )
+        .with_for_update()
+    )
+    expenses = result.scalars().all()
+
+    if not expenses:
+        return 0
+
+    # Batch-load all splits for these expenses (single query, no N+1)
+    expense_ids = [e.id for e in expenses]
+    all_splits_result = await db.execute(
+        select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(expense_ids))
+    )
+    splits_by_expense: dict[int, list[ExpenseSplit]] = {}
+    for s in all_splits_result.scalars().all():
+        splits_by_expense.setdefault(s.expense_id, []).append(s)
+
+    # Phase 1: compute new splits and collect all deletes
+    to_delete = []
+    to_create = []
+    count = 0
+    for expense in expenses:
+        old_splits = splits_by_expense.get(expense.id, [])
+        participant_ids = [s.user_id for s in old_splits]
+
+        if not participant_ids:
+            continue
+
+        # Add new member to participants
+        if new_member_id not in participant_ids:
+            participant_ids.append(new_member_id)
+
+        # Build per-expense shares from group defaults
+        expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in participant_ids}
+        new_owed = compute_shares_splits(expense.amount, expense_shares)
+
+        to_delete.extend(old_splits)
+
+        for uid, owed_amount in new_owed.items():
+            to_create.append(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=uid,
+                paid_amount=expense.amount if uid == expense.paid_by else 0,
+                owed_amount=owed_amount,
+            ))
+
+        if expense.paid_by not in new_owed:
+            to_create.append(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=expense.paid_by,
+                paid_amount=expense.amount,
+                owed_amount=0,
+            ))
+
+        count += 1
+
+    # Phase 2: flush deletes, then add inserts
+    for old_split in to_delete:
+        await db.delete(old_split)
+    await db.flush()
+
+    for new_split in to_create:
+        db.add(new_split)
+    await db.flush()
+
+    return count
+
+
+async def repair_missing_splits(
+    db: AsyncSession,
+    group_id: int,
+) -> int:
+    """Detect and fix group members missing from equal/shares-split expenses.
+
+    Lazy self-repair: called on group detail page load.
+    Fast pre-check without locks — only acquires FOR UPDATE if repair is needed.
+    Returns the number of expenses repaired.
+    """
+    from app.models.group import GroupMember
+
+    # Get all current group members and their shares
+    members_result = await db.execute(
+        select(GroupMember.user_id, GroupMember.default_shares)
+        .where(GroupMember.group_id == group_id)
+    )
+    member_shares = {row[0]: row[1] for row in members_result.all()}
+    member_ids = set(member_shares.keys())
+
+    if not member_ids:
+        return 0
+
+    # Fast pre-check: read-only scan to find expenses needing repair
+    result = await db.execute(
+        select(Expense.id)
+        .where(
+            Expense.group_id == group_id,
+            Expense.split_type.in_(["equal", "shares"]),
+            Expense.expense_type == "expense",
+            Expense.deleted_at.is_(None),
+        )
+    )
+    candidate_ids = [row[0] for row in result.all()]
+
+    if not candidate_ids:
+        return 0
+
+    # Check which expenses are missing members (read-only, no lock)
+    all_splits_result = await db.execute(
+        select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(candidate_ids))
+    )
+    splits_by_expense: dict[int, list[ExpenseSplit]] = {}
+    for s in all_splits_result.scalars().all():
+        splits_by_expense.setdefault(s.expense_id, []).append(s)
+
+    needs_repair_ids = []
+    for expense_id in candidate_ids:
+        old_splits = splits_by_expense.get(expense_id, [])
+        split_user_ids = {s.user_id for s in old_splits}
+        if member_ids - split_user_ids:
+            needs_repair_ids.append(expense_id)
+
+    if not needs_repair_ids:
+        return 0
+
+    # Only now lock the specific expenses that need repair
+    locked_result = await db.execute(
+        select(Expense)
+        .where(Expense.id.in_(needs_repair_ids))
+        .with_for_update()
+    )
+    expenses = locked_result.scalars().all()
+
+    # Re-fetch splits for locked expenses (state may have changed)
+    repair_splits_result = await db.execute(
+        select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(needs_repair_ids))
+    )
+    splits_by_expense = {}
+    for s in repair_splits_result.scalars().all():
+        splits_by_expense.setdefault(s.expense_id, []).append(s)
+
+    # Phase 1: compute new splits and collect all deletes
+    to_delete = []
+    to_create = []
+    count = 0
+    for expense in expenses:
+        old_splits = splits_by_expense.get(expense.id, [])
+        split_user_ids = {s.user_id for s in old_splits}
+
+        missing = member_ids - split_user_ids
+        if not missing:
+            continue
+
+        all_participant_ids = list(split_user_ids | member_ids)
+        expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in all_participant_ids}
+        new_owed = compute_shares_splits(expense.amount, expense_shares)
+
+        to_delete.extend(old_splits)
+
+        for uid, owed_amount in new_owed.items():
+            to_create.append(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=uid,
+                paid_amount=expense.amount if uid == expense.paid_by else 0,
+                owed_amount=owed_amount,
+            ))
+
+        if expense.paid_by not in new_owed:
+            to_create.append(ExpenseSplit(
+                expense_id=expense.id,
+                user_id=expense.paid_by,
+                paid_amount=expense.amount,
+                owed_amount=0,
+            ))
+
+        count += 1
+
+    # Phase 2: flush deletes, then add inserts
+    for old_split in to_delete:
+        await db.delete(old_split)
+    await db.flush()
+
+    for new_split in to_create:
+        db.add(new_split)
+    await db.flush()
+    return count
+
+
 async def create_expense_with_splits(
     db: AsyncSession,
     group_id: int,

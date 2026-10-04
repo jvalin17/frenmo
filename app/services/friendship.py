@@ -122,6 +122,20 @@ async def get_pending_requests(db: AsyncSession, user_id: int) -> list[Friendshi
     return list(result.scalars().all())
 
 
+async def is_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
+    """Check if two users have an accepted friendship (either direction)."""
+    result = await db.execute(
+        select(Friendship).where(
+            or_(
+                and_(Friendship.user_id == user_id, Friendship.friend_id == friend_id),
+                and_(Friendship.user_id == friend_id, Friendship.friend_id == user_id),
+            ),
+            Friendship.status == "accepted",
+        )
+    )
+    return result.scalar_one_or_none() is not None
+
+
 async def remove_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
     """Remove an accepted friendship (either direction)."""
     result = await db.execute(

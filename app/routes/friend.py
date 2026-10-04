@@ -13,6 +13,7 @@ from app.services.friendship import (
     accept_friend_request,
     get_friend_list,
     get_pending_requests,
+    is_friend,
     reject_friend_request,
     remove_friend,
     search_users_by_email,
@@ -128,6 +129,10 @@ async def add_friend_to_group(
     if membership.scalar_one_or_none() is None:
         return RedirectResponse(url="/", status_code=303)
 
+    # Verify the target is actually an accepted friend
+    if not await is_friend(db, request.state.user_id, friend_id):
+        return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
+
     # Check friend is not already a member
     existing = await db.execute(
         select(GroupMember).where(
@@ -138,7 +143,16 @@ async def add_friend_to_group(
     if existing.scalar_one_or_none() is None:
         new_member = GroupMember(group_id=group_id, user_id=friend_id)
         db.add(new_member)
+        await db.flush()
+
+        # Recalculate existing equal-split expenses to include new member
+        from app.services.expense import recalculate_splits_for_new_member
+
+        await recalculate_splits_for_new_member(db, group_id, friend_id)
         await db.commit()
-        logger.info("Friend %d added to group %d by user %d", friend_id, group_id, request.state.user_id)
+        logger.info(
+            "Friend %d added to group %d by user %d",
+            friend_id, group_id, request.state.user_id,
+        )
 
     return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
