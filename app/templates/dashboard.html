@@ -48,9 +48,9 @@
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
                     {{ balance_names.get(other_id, '?')[0]|upper }}
                 </div>
-                <span class="text-sm font-medium">{{ balance_names.get(other_id, '?') }}</span>
+                <span class="text-sm font-medium truncate max-w-[120px]">{{ balance_names.get(other_id, '?') }}</span>
             </div>
-            <span class="font-semibold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% endif %}">
+            <span class="font-semibold text-sm shrink-0 {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% endif %}">
                 {% if net > 0 %}owes you ${{ "%.2f"|format(net / 100) }}
                 {% elif net < 0 %}you owe ${{ "%.2f"|format((-net) / 100) }}
                 {% endif %}
@@ -69,12 +69,12 @@
         {% for group in groups %}
         {% set net = group_balances.get(group.id, 0) %}
         <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: var(--border);">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-input);">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background: var(--bg-input);">
                     {% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}
                 </div>
-                <div>
-                    <p class="font-semibold text-sm" style="color: var(--text-primary);">{{ group.name }}</p>
+                <div class="min-w-0">
+                    <p class="font-semibold text-sm truncate" style="color: var(--text-primary);">{{ group.name }}</p>
                     <p class="text-xs" style="color: var(--text-muted);">{{ group.type }}</p>
                 </div>
             </div>

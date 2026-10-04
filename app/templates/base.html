@@ -40,7 +40,7 @@
     </script>
 </head>
 <body class="min-h-screen font-sans" style="background: var(--bg-page); color: var(--text-primary); -webkit-font-smoothing: antialiased;">
-    <div class="navbar px-6" style="background: var(--navbar-bg); border-bottom: 1px solid var(--navbar-border); min-height: 52px;">
+    <div class="navbar px-3 sm:px-6" style="background: var(--navbar-bg); border-bottom: 1px solid var(--navbar-border); min-height: 52px;">
         <div class="flex-1">
             <a href="/" class="text-2xl font-extrabold" style="text-decoration: none; letter-spacing: -0.03em;"><span>💰</span><span style="color: var(--accent);"> Frenmo</span></a>
         </div>
@@ -49,8 +49,8 @@
                 <span id="theme-icon">🌙</span>
             </button>
             {% if user %}
-                <a href="/" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Home</a>
-                <a href="/friends" class="text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Friends</a>
+                <a href="/" class="hidden sm:inline text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Home</a>
+                <a href="/friends" class="hidden sm:inline text-sm font-medium px-3 py-1.5 rounded-full" style="color: var(--text-secondary); text-decoration: none;">Friends</a>
                 <a href="/account" style="text-decoration: none;">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--accent), var(--accent)); cursor: pointer;">
                         {{ user.name[0]|upper }}

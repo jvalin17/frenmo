@@ -12,7 +12,7 @@ from app.middleware.auth import login_required
 from app.models.expense import Expense
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.expense import create_expense_with_splits, soft_delete_expense
+from app.services.expense import create_expense_with_splits
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -34,10 +34,17 @@ async def new_expense_page(request: Request, group_id: int, db: AsyncSession = D
 
     from datetime import date
 
+    from app.services.currency import get_exchange_rates
+
+    rates = await get_exchange_rates()
+
     return templates.TemplateResponse(
         request,
         "expense/new.html",
-        {"user": user, "group": group, "members": members, "today": date.today().isoformat()},
+        {
+            "user": user, "group": group, "members": members,
+            "today": date.today().isoformat(), "rates": rates,
+        },
     )
 
 
@@ -166,10 +173,14 @@ async def edit_expense_page(request: Request, expense_id: int, db: AsyncSession 
     )
     members = members_result.scalars().all()
 
+    from app.services.currency import get_exchange_rates
+
+    rates = await get_exchange_rates()
+
     return templates.TemplateResponse(
         request,
         "expense/edit.html",
-        {"user": user, "group": group, "expense": expense, "members": members},
+        {"user": user, "group": group, "expense": expense, "members": members, "rates": rates},
     )
 
 

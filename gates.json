@@ -18,20 +18,40 @@
   "report_protect": true,
   "profiles": {
     "minimal": {
-      "commit_requires": ["precommit"],
+      "commit_requires": [
+        "precommit"
+      ],
       "push_requires": []
     },
     "standard": {
-      "commit_requires": ["precommit"],
-      "push_requires": ["evaluate"]
+      "commit_requires": [
+        "precommit"
+      ],
+      "push_requires": [
+        "evaluate"
+      ]
     },
     "strict": {
-      "commit_requires": ["precommit", "evaluate"],
-      "push_requires": ["evaluate", "reviewer"]
+      "commit_requires": [
+        "precommit",
+        "evaluate"
+      ],
+      "push_requires": [
+        "evaluate",
+        "reviewer"
+      ]
     },
     "paranoid": {
-      "commit_requires": ["precommit", "evaluate"],
-      "push_requires": ["evaluate", "reviewer", "assess"]
+      "commit_requires": [
+        "precommit",
+        "evaluate"
+      ],
+      "push_requires": [
+        "evaluate",
+        "reviewer",
+        "assess"
+      ]
     }
-  }
+  },
+  "canary": "Hey"
 }

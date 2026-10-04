@@ -1,6 +1,6 @@
 {
-  "toolkit_path": "/tmp/agent-toolkit",
-  "toolkit_version": "90f6666",
+  "toolkit_path": "/Users/jvalin/dev/st5/agent-toolkit",
+  "toolkit_version": "58f8d6e",
   "gate_mode": "legacy",
-  "installed_at": "2026-06-09T00:07:55Z"
+  "installed_at": "2026-10-04T08:22:47Z"
 }

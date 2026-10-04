@@ -54,25 +54,36 @@ def compute_percent_splits(amount_paise: int, member_values: dict[int, float]) -
     return splits
 
 
-def compute_shares_splits(amount_paise: int, member_shares: dict[int, float]) -> dict[int, int]:
-    """Shares/weights split — values are share counts. Distribute proportionally."""
+def compute_shares_splits(
+    amount_paise: int,
+    member_shares: dict[int, float],
+    total_splits: int | None = None,
+) -> dict[int, int]:
+    """Shares/weights split — values are share counts. Distribute proportionally.
+
+    If total_splits is provided, divide by total_splits instead of sum(member_shares).
+    This allows "split by N" where N > current member count — pending shares stay unassigned.
+    """
     if not member_shares:
         return {}
-    total_shares = sum(member_shares.values())
-    if total_shares == 0:
+    denominator = float(total_splits) if total_splits else sum(member_shares.values())
+    if denominator == 0:
         return {}
 
     splits = {}
     total_assigned = 0
     members = list(member_shares.items())
     for member_id, shares in members[:-1]:
-        paise = round(amount_paise * shares / total_shares)
+        paise = round(amount_paise * shares / denominator)
         splits[member_id] = paise
         total_assigned += paise
 
-    # Last member gets the remainder to ensure exact sum
-    last_id = members[-1][0]
-    splits[last_id] = amount_paise - total_assigned
+    # Last member gets their proportional share (NOT remainder when total_splits is set)
+    last_id, last_shares = members[-1]
+    if total_splits:
+        splits[last_id] = round(amount_paise * last_shares / denominator)
+    else:
+        splits[last_id] = amount_paise - total_assigned
     return splits
 
 
@@ -220,13 +231,23 @@ async def recalculate_splits_for_new_member(
         if not participant_ids:
             continue
 
+        # If total_splits is set, check if there's room for the new member
+        if expense.total_splits and new_member_id not in participant_ids:
+            current_share_sum = sum(
+                float(member_shares.get(uid, 1)) for uid in participant_ids
+            )
+            if current_share_sum >= expense.total_splits:
+                continue  # no room — all splits claimed
+
         # Add new member to participants
         if new_member_id not in participant_ids:
             participant_ids.append(new_member_id)
 
         # Build per-expense shares from group defaults
         expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in participant_ids}
-        new_owed = compute_shares_splits(expense.amount, expense_shares)
+        new_owed = compute_shares_splits(
+            expense.amount, expense_shares, total_splits=expense.total_splits,
+        )
 
         to_delete.extend(old_splits)
 
@@ -344,9 +365,35 @@ async def repair_missing_splits(
         if not missing:
             continue
 
+        # If total_splits is set, only add members if there's room
+        if expense.total_splits:
+            current_share_sum = sum(
+                float(member_shares.get(uid, 1)) for uid in split_user_ids
+            )
+            if current_share_sum >= expense.total_splits:
+                continue  # no room
+
         all_participant_ids = list(split_user_ids | member_ids)
+
+        # If total_splits caps the participants, only add as many as fit
+        if expense.total_splits:
+            total_so_far = sum(
+                float(member_shares.get(uid, 1)) for uid in all_participant_ids
+            )
+            # Trim new members if they'd exceed total_splits
+            if total_so_far > expense.total_splits:
+                all_participant_ids = list(split_user_ids)
+                for mid in (member_ids - split_user_ids):
+                    new_sum = sum(
+                        float(member_shares.get(uid, 1)) for uid in all_participant_ids
+                    ) + float(member_shares.get(mid, 1))
+                    if new_sum <= expense.total_splits:
+                        all_participant_ids.append(mid)
+
         expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in all_participant_ids}
-        new_owed = compute_shares_splits(expense.amount, expense_shares)
+        new_owed = compute_shares_splits(
+            expense.amount, expense_shares, total_splits=expense.total_splits,
+        )
 
         to_delete.extend(old_splits)
 
@@ -393,6 +440,7 @@ async def create_expense_with_splits(
     idempotency_key: str | None = None,
     expense_type: str = "expense",
     currency: str = "INR",
+    total_splits: int | None = None,
 ) -> Expense:
     """Create expense + splits atomically."""
     # Check idempotency
@@ -406,13 +454,20 @@ async def create_expense_with_splits(
 
     # Compute splits
     if split_type == "equal":
-        owed_splits = compute_equal_splits(amount_paise, member_ids)
+        # When total_splits is set, use shares logic with 1 share per member
+        if total_splits:
+            equal_shares = dict.fromkeys(member_ids, 1.0)
+            owed_splits = compute_shares_splits(
+                amount_paise, equal_shares, total_splits=total_splits,
+            )
+        else:
+            owed_splits = compute_equal_splits(amount_paise, member_ids)
     elif split_type == "exact" and member_values:
         owed_splits = compute_exact_splits(amount_paise, member_values)
     elif split_type == "percent" and member_values:
         owed_splits = compute_percent_splits(amount_paise, member_values)
     elif split_type == "shares" and member_values:
-        owed_splits = compute_shares_splits(amount_paise, member_values)
+        owed_splits = compute_shares_splits(amount_paise, member_values, total_splits=total_splits)
     elif split_type == "full" and member_values and "full_owes" in member_values:
         owed_splits = compute_full_split(amount_paise, int(member_values["full_owes"]), member_ids)
     else:
@@ -430,6 +485,7 @@ async def create_expense_with_splits(
         paid_by=paid_by,
         created_by=created_by,
         idempotency_key=idempotency_key,
+        total_splits=total_splits,
     )
     db.add(expense)
     await db.flush()

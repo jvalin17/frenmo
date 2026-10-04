@@ -21,6 +21,7 @@ class Expense(Base):
     category: Mapped[str | None] = mapped_column(String(50), nullable=True)
     paid_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    total_splits: Mapped[int | None] = mapped_column(nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, onupdate=datetime.utcnow
