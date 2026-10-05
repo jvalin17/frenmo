@@ -49,30 +49,33 @@
                     </select>
                 </div>
             </div>
-            <!-- Default split shares -->
-            <div class="mb-3">
-                <label class="text-xs" style="color: var(--text-secondary);">Default split shares</label>
-                <p class="text-xs mb-2" style="color: var(--text-muted);">Set how many shares each person covers (e.g., 3 if bringing 2 guests)</p>
-                {% for member in members %}
-                <div class="flex items-center gap-2 mb-1">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">{{ member.name[0]|upper }}</div>
-                    <span class="text-xs flex-1 truncate min-w-0" style="color: var(--text-primary);">{{ member.name }}</span>
-                    <input type="number" name="shares_{{ member.id }}" value="{{ member_shares.get(member.id, 1) }}" min="{{ 0 if group.kid_friendly else 1 }}" max="20" class="text-sm px-2 py-1 rounded-lg w-14 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
-                    <span class="text-xs w-10 shrink-0" style="color: var(--text-muted);">share{{ 's' if member_shares.get(member.id, 1) != 1 }}</span>
-                    {% if group.kid_friendly %}
-                    <span class="text-xs shrink-0" style="color: var(--text-muted);">Kids</span>
-                    <input type="number" name="kid_count_{{ member.id }}" value="{{ member_kid_counts.get(member.id, 0) }}" min="0" max="10" class="text-sm px-2 py-1 rounded-lg w-12 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            <!-- Kid-friendly toggle -->
-            <div class="mb-3 flex items-center justify-between">
+            <!-- Kid-friendly toggle (above shares so it controls visibility) -->
+            <div class="mb-3 flex items-center justify-between p-2 rounded-lg" style="background: var(--bg-hover);">
                 <div>
                     <label class="text-xs font-medium" style="color: var(--text-secondary);">🧒 Kid-friendly splitting</label>
                     <p class="text-xs" style="color: var(--text-muted);">Children count as 0.5 shares on marked expenses</p>
                 </div>
-                <input type="checkbox" name="kid_friendly" class="toggle toggle-sm" style="--tglbg: var(--accent);" {% if group.kid_friendly %}checked{% endif %}>
+                <input type="checkbox" name="kid_friendly" class="toggle toggle-sm" style="--tglbg: #34C759;" {% if group.kid_friendly %}checked{% endif %}>
+            </div>
+            <!-- Default split shares -->
+            <div class="mb-3">
+                <label class="text-xs" style="color: var(--text-secondary);">Members & shares</label>
+                <p class="text-xs mb-2" style="color: var(--text-muted);">Adults = full shares. Kids = 0.5 on kid-friendly expenses, 1.0 on others.</p>
+                {% for member in members %}
+                {% set adults = member_shares.get(member.id, 1) %}
+                {% set kids = member_kid_counts.get(member.id, 0) %}
+                <div class="flex items-center gap-2 mb-1.5">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background: var(--accent);">{{ member.name[0]|upper }}</div>
+                    <span class="text-xs flex-1 truncate min-w-0" style="color: var(--text-primary);">{{ member.name }}</span>
+                    <input type="number" name="shares_{{ member.id }}" value="{{ adults }}" min="{{ 0 if group.kid_friendly else 1 }}" max="20" class="text-sm px-2 py-1 rounded-lg w-12 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
+                    <span class="text-xs shrink-0" style="color: var(--text-muted);">adults</span>
+                    {% if group.kid_friendly %}
+                    <input type="number" name="kid_count_{{ member.id }}" value="{{ kids }}" min="0" max="10" class="text-sm px-2 py-1 rounded-lg w-12 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
+                    <span class="text-xs shrink-0" style="color: var(--text-muted);">kids</span>
+                    <span class="text-xs font-semibold shrink-0" style="color: var(--accent);">= {{ adults + kids * 0.5 }} / {{ adults + kids }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
             <button type="submit" class="text-sm font-semibold px-4 py-2 rounded-lg w-full" style="background: var(--accent); color: #FFFFFF; border: none;">Save Settings</button>
         </form>
