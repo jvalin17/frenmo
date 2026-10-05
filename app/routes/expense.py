@@ -134,6 +134,9 @@ async def create_expense(
         except ValueError:
             pass
 
+    # Kid-friendly flag from form (defaults to ON in kid-friendly groups)
+    kid_friendly = form_data.get("kid_friendly") == "on"
+
     expense = await create_expense_with_splits(
         db=db,
         group_id=group_id,
@@ -147,6 +150,7 @@ async def create_expense(
         member_values=member_values,
         category=category or None,
         idempotency_key=idempotency_key,
+        kid_friendly=kid_friendly,
     )
 
     if created_at and expense:
@@ -215,6 +219,8 @@ async def edit_expense(request: Request, expense_id: int, db: AsyncSession = Dep
             except ValueError:
                 member_values[member_id] = 0
 
+    kid_friendly = form_data.get("kid_friendly") == "on"
+
     expense = await update_expense(
         db=db,
         expense_id=expense_id,
@@ -227,6 +233,7 @@ async def edit_expense(request: Request, expense_id: int, db: AsyncSession = Dep
         category=category or None,
         member_ids=selected_member_ids or None,
         member_values=member_values or None,
+        kid_friendly=kid_friendly,
     )
 
     if expense is None:

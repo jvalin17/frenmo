@@ -16,6 +16,7 @@ from app.services.splits import (  # noqa: F401
     compute_equal_splits,
     compute_exact_splits,
     compute_full_split,
+    compute_kid_aware_splits,
     compute_percent_splits,
     compute_shares_splits,
     compute_splits,
@@ -65,6 +66,39 @@ async def replace_expense_splits(
         new_splits.append(payer_split)
 
     return new_splits
+
+
+# ---------------------------------------------------------------------------
+# Kid-friendly helpers
+# ---------------------------------------------------------------------------
+
+def _build_kid_aware_splits(
+    amount_paise: int,
+    participant_ids: list[int],
+    member_shares: dict[int, int],
+    kid_counts: dict[int, int],
+    is_kid_friendly: bool,
+    total_splits: int | None = None,
+) -> dict[int, int]:
+    """Build effective shares and compute kid-aware splits for an expense.
+
+    Centralizes the kid logic so recalculate/create/update all use one path.
+    """
+    effective_shares = {
+        uid: compute_effective_shares(
+            member_shares.get(uid, 1), kid_counts.get(uid, 0), is_kid_friendly,
+        )
+        for uid in participant_ids
+    }
+    parent_ids = [uid for uid in participant_ids if kid_counts.get(uid, 0) > 0]
+
+    # Kid-friendly expenses ignore total_splits
+    effective_total_splits = None if is_kid_friendly else total_splits
+
+    return compute_kid_aware_splits(
+        amount_paise, effective_shares, parent_ids,
+        total_splits=effective_total_splits,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -143,18 +177,19 @@ async def recalculate_group_splits(
     db: AsyncSession,
     group_id: int,
     member_shares: dict[int, int],
+    kid_data: dict[int, int] | None = None,
+    group_kid_friendly: bool = False,
 ) -> int:
     """Recalculate splits for all equal/shares expenses using new share weights.
 
-    Called when group default_shares change in settings.
+    Called when group settings change (default_shares, kid_count, kid_friendly toggle).
     Does NOT commit — caller controls the transaction boundary.
     """
-    # Only recalculate equal-split expenses (shares-type have custom weights)
     result = await db.execute(
         select(Expense)
         .where(
             Expense.group_id == group_id,
-            Expense.split_type == "equal",
+            Expense.split_type.in_(RECALCABLE_SPLIT_TYPES),
             Expense.expense_type == "expense",
             Expense.deleted_at.is_(None),
         )
@@ -166,6 +201,7 @@ async def recalculate_group_splits(
 
     expense_ids = [e.id for e in expenses]
     splits_by_expense = await _batch_load_splits(db, expense_ids)
+    kid_counts = kid_data or {}
 
     replacements = []
     for expense in expenses:
@@ -174,8 +210,11 @@ async def recalculate_group_splits(
         if not participant_ids:
             continue
 
-        expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in participant_ids}
-        new_owed = compute_shares_splits(expense.amount, expense_shares)
+        is_kid_friendly = group_kid_friendly and expense.kid_friendly
+        new_owed = _build_kid_aware_splits(
+            expense.amount, participant_ids, member_shares, kid_counts,
+            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
+        )
         replacements.append((expense, new_owed))
 
     return await _batch_replace_splits(db, replacements)
@@ -195,13 +234,20 @@ async def recalculate_splits_for_new_member(
     Called when a user joins a group (invite or add-friend).
     Does NOT commit — caller controls the transaction boundary.
     """
-    from app.models.group import GroupMember
+    from app.models.group import Group, GroupMember
 
-    shares_result = await db.execute(
-        select(GroupMember.user_id, GroupMember.default_shares)
+    members_result = await db.execute(
+        select(GroupMember.user_id, GroupMember.default_shares, GroupMember.kid_count)
         .where(GroupMember.group_id == group_id)
     )
-    member_shares = {row[0]: row[1] for row in shares_result.all()}
+    member_shares = {}
+    kid_counts = {}
+    for row in members_result.all():
+        member_shares[row[0]] = row[1]
+        kid_counts[row[0]] = row[2]
+
+    group = await db.get(Group, group_id)
+    group_kid_friendly = group.kid_friendly if group else False
 
     result = await db.execute(
         select(Expense)
@@ -238,9 +284,10 @@ async def recalculate_splits_for_new_member(
         if new_member_id not in participant_ids:
             participant_ids.append(new_member_id)
 
-        expense_shares = {uid: float(member_shares.get(uid, 1)) for uid in participant_ids}
-        new_owed = compute_shares_splits(
-            expense.amount, expense_shares, total_splits=expense.total_splits,
+        is_kid_friendly = group_kid_friendly and expense.kid_friendly
+        new_owed = _build_kid_aware_splits(
+            expense.amount, participant_ids, member_shares, kid_counts,
+            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
         )
         replacements.append((expense, new_owed))
 
@@ -259,16 +306,23 @@ async def repair_missing_splits(
 
     Fast pre-check without locks — only acquires FOR UPDATE if repair is needed.
     """
-    from app.models.group import GroupMember
+    from app.models.group import Group, GroupMember
 
     members_result = await db.execute(
-        select(GroupMember.user_id, GroupMember.default_shares)
+        select(GroupMember.user_id, GroupMember.default_shares, GroupMember.kid_count)
         .where(GroupMember.group_id == group_id)
     )
-    member_shares = {row[0]: row[1] for row in members_result.all()}
+    member_shares = {}
+    kid_counts = {}
+    for row in members_result.all():
+        member_shares[row[0]] = row[1]
+        kid_counts[row[0]] = row[2]
     member_ids = set(member_shares.keys())
     if not member_ids:
         return 0
+
+    group = await db.get(Group, group_id)
+    group_kid_friendly = group.kid_friendly if group else False
 
     # Fast pre-check: read-only scan
     result = await db.execute(
@@ -332,16 +386,16 @@ async def repair_missing_splits(
                 all_participant_ids = list(split_user_ids)
                 for mid in (member_ids - split_user_ids):
                     new_sum = sum(
-                        float(member_shares.get(uid, 1)) for uid in all_participant_ids
+                        float(member_shares.get(uid, 1))
+                        for uid in all_participant_ids
                     ) + float(member_shares.get(mid, 1))
                     if new_sum <= expense.total_splits:
                         all_participant_ids.append(mid)
 
-        expense_shares = {
-            uid: float(member_shares.get(uid, 1)) for uid in all_participant_ids
-        }
-        new_owed = compute_shares_splits(
-            expense.amount, expense_shares, total_splits=expense.total_splits,
+        is_kid_friendly = group_kid_friendly and expense.kid_friendly
+        new_owed = _build_kid_aware_splits(
+            expense.amount, all_participant_ids, member_shares, kid_counts,
+            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
         )
         replacements.append((expense, new_owed))
 
@@ -367,6 +421,7 @@ async def create_expense_with_splits(
     expense_type: str = "expense",
     currency: str = "INR",
     total_splits: int | None = None,
+    kid_friendly: bool = False,
 ) -> Expense:
     """Create expense + splits atomically."""
     if idempotency_key:
@@ -377,9 +432,29 @@ async def create_expense_with_splits(
         if found:
             return found
 
-    owed_splits = compute_splits(
-        amount_paise, split_type, member_ids, member_values, total_splits,
-    )
+    # Kid-friendly: build effective shares from member data
+    from app.models.group import Group, GroupMember
+
+    group = await db.get(Group, group_id)
+    is_expense_kid_friendly = kid_friendly and group and group.kid_friendly
+
+    if is_expense_kid_friendly and split_type in RECALCABLE_SPLIT_TYPES:
+        members_result = await db.execute(
+            select(GroupMember.user_id, GroupMember.default_shares, GroupMember.kid_count)
+            .where(GroupMember.group_id == group_id)
+        )
+        member_data = {row[0]: (row[1], row[2]) for row in members_result.all()}
+        member_shares_map = {uid: data[0] for uid, data in member_data.items()}
+        kid_counts = {uid: data[1] for uid, data in member_data.items()}
+
+        owed_splits = _build_kid_aware_splits(
+            amount_paise, member_ids, member_shares_map, kid_counts,
+            is_kid_friendly=True, total_splits=total_splits,
+        )
+    else:
+        owed_splits = compute_splits(
+            amount_paise, split_type, member_ids, member_values, total_splits,
+        )
 
     expense = Expense(
         group_id=group_id,
@@ -393,6 +468,7 @@ async def create_expense_with_splits(
         created_by=created_by,
         idempotency_key=idempotency_key,
         total_splits=total_splits,
+        kid_friendly=kid_friendly,
     )
     db.add(expense)
     await db.flush()
@@ -434,6 +510,7 @@ async def update_expense(
     paid_by: int | None = None,
     member_ids: list[int] | None = None,
     member_values: dict[int, float] | None = None,
+    kid_friendly: bool | None = None,
 ) -> Expense | None:
     """Update an expense. Only the creator can edit. Recomputes splits if needed."""
     expense = await db.get(Expense, expense_id)
@@ -451,16 +528,26 @@ async def update_expense(
     if split_type is not None:
         expense.split_type = split_type
 
+    kid_friendly_changed = (
+        kid_friendly is not None and kid_friendly != expense.kid_friendly
+    )
+    if kid_friendly is not None:
+        expense.kid_friendly = kid_friendly
+
     amount_changed = amount_paise is not None and amount_paise != expense.amount
     if amount_paise is not None:
         expense.amount = amount_paise
 
     expense.updated_at = datetime.utcnow()
 
-    needs_recompute = amount_changed or split_type is not None or member_ids is not None
+    needs_recompute = (
+        amount_changed or split_type is not None
+        or member_ids is not None or kid_friendly_changed
+    )
     if needs_recompute:
+        from app.models.group import Group, GroupMember
+
         if member_ids is None:
-            from app.models.group import GroupMember
             members_result = await db.execute(
                 select(GroupMember.user_id).where(
                     GroupMember.group_id == expense.group_id
@@ -468,12 +555,37 @@ async def update_expense(
             )
             member_ids = [row[0] for row in members_result.all()]
 
-        owed_splits = compute_splits(
-            expense.amount,
-            split_type or expense.split_type,
-            member_ids,
-            member_values,
+        current_split_type = split_type or expense.split_type
+        group = await db.get(Group, expense.group_id)
+        is_kid = (
+            expense.kid_friendly
+            and group is not None
+            and group.kid_friendly
+            and current_split_type in RECALCABLE_SPLIT_TYPES
         )
+
+        if is_kid:
+            kid_result = await db.execute(
+                select(
+                    GroupMember.user_id,
+                    GroupMember.default_shares,
+                    GroupMember.kid_count,
+                ).where(GroupMember.group_id == expense.group_id)
+            )
+            member_shares_map = {}
+            kid_counts = {}
+            for row in kid_result.all():
+                member_shares_map[row[0]] = row[1]
+                kid_counts[row[0]] = row[2]
+
+            owed_splits = _build_kid_aware_splits(
+                expense.amount, member_ids, member_shares_map, kid_counts,
+                is_kid_friendly=True,
+            )
+        else:
+            owed_splits = compute_splits(
+                expense.amount, current_split_type, member_ids, member_values,
+            )
         await replace_expense_splits(db, expense, owed_splits)
 
     await db.commit()

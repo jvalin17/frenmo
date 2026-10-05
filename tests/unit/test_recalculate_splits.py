@@ -68,8 +68,8 @@ class TestRecalculateGroupSplits:
         assert splits[charlie.id].owed_amount == 5400
         assert count == 1
 
-    async def test_recalculate_ignores_shares_type(self, db_session, trip_group):
-        """Expenses with split_type='shares' should not be recalculated."""
+    async def test_recalculate_includes_shares_type(self, db_session, trip_group):
+        """Expenses with split_type='shares' ARE recalculated (needed for kid-friendly)."""
         group, alice, bob, charlie = trip_group
 
         expense = await create_expense_with_splits(
@@ -79,14 +79,18 @@ class TestRecalculateGroupSplits:
             member_values={alice.id: 2.0, bob.id: 3.0},
         )
 
+        # Before: Alice=4000 (2/5), Bob=6000 (3/5)
         splits_before = await _get_splits(db_session, expense.id)
-        bob_owed_before = splits_before[bob.id].owed_amount
+        assert splits_before[bob.id].owed_amount == 6000
 
+        # Recalculate with new shares: Alice=1, Bob=1, Charlie=3
         await recalculate_group_splits(db_session, group.id, {alice.id: 1, bob.id: 1, charlie.id: 3})
         await db_session.commit()
 
+        # After: only Alice and Bob are participants, so shares={1:1, 1:1} → 5000 each
         splits_after = await _get_splits(db_session, expense.id)
-        assert splits_after[bob.id].owed_amount == bob_owed_before  # unchanged
+        assert splits_after[bob.id].owed_amount == 5000  # recalculated
+        assert sum(s.owed_amount for s in splits_after.values()) == 10000
 
     async def test_recalculate_ignores_exact_type(self, db_session, trip_group):
         """Expenses with split_type='exact' should not be recalculated."""
@@ -180,16 +184,18 @@ class TestRecalculateGroupSplits:
         s2 = await _get_splits(db_session, e2.id)
         assert s2[charlie.id].owed_amount == 3600  # 3/5 of 6000
 
-    async def test_recalculate_no_equal_expenses_is_noop(self, db_session, trip_group):
-        """Group with only non-equal expenses returns 0."""
+    async def test_recalculate_no_recalcable_expenses_is_noop(self, db_session, trip_group):
+        """Group with only exact/percent expenses returns 0."""
         group, alice, bob, charlie = trip_group
 
         await create_expense_with_splits(
             db=db_session, group_id=group.id, description="Custom",
-            amount_paise=10000, split_type="shares", paid_by=alice.id,
+            amount_paise=10000, split_type="exact", paid_by=alice.id,
             created_by=alice.id, member_ids=[alice.id, bob.id],
-            member_values={alice.id: 1.0, bob.id: 1.0},
+            member_values={alice.id: 60.0, bob.id: 40.0},
         )
 
-        count = await recalculate_group_splits(db_session, group.id, {alice.id: 1, bob.id: 1, charlie.id: 3})
+        count = await recalculate_group_splits(
+            db_session, group.id, {alice.id: 1, bob.id: 1, charlie.id: 3},
+        )
         assert count == 0

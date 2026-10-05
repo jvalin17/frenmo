@@ -63,23 +63,58 @@ def compute_shares_splits(
     """
     if not member_shares:
         return {}
-    denominator = float(total_splits) if total_splits else sum(member_shares.values())
-    if denominator == 0:
-        return {}
+    total_effective_shares = float(total_splits) if total_splits else sum(member_shares.values())
+    if total_effective_shares == 0:
+        raise ValueError("Cannot split: total effective shares is zero")
 
     splits = {}
     total_assigned = 0
     members = list(member_shares.items())
     for member_id, shares in members[:-1]:
-        paise = round(amount_paise * shares / denominator)
+        paise = round(amount_paise * shares / total_effective_shares)
         splits[member_id] = paise
         total_assigned += paise
 
     last_id, last_shares = members[-1]
     if total_splits:
-        splits[last_id] = round(amount_paise * last_shares / denominator)
+        splits[last_id] = round(amount_paise * last_shares / total_effective_shares)
     else:
         splits[last_id] = amount_paise - total_assigned
+    return splits
+
+
+def compute_kid_aware_splits(
+    amount_paise: int,
+    member_shares: dict[int, float],
+    parent_user_ids: list[int],
+    total_splits: int | None = None,
+) -> dict[int, int]:
+    """Shares split with remainder assigned to first parent instead of last member.
+
+    Used for kid-friendly expenses where the rounding remainder goes to the
+    first parent (member with kid_count > 0, sorted by user_id ascending).
+    Falls back to last-member remainder if no parents present.
+    """
+    if not member_shares:
+        return {}
+    total_effective_shares = float(total_splits) if total_splits else sum(member_shares.values())
+    if total_effective_shares == 0:
+        raise ValueError("Cannot split: total effective shares is zero")
+
+    # Round all members individually
+    splits = {}
+    for user_id, shares in member_shares.items():
+        splits[user_id] = round(amount_paise * shares / total_effective_shares)
+
+    # When total_splits is set, remainder stays pending (unassigned to future members)
+    # When no total_splits, assign remainder to first parent or last member
+    if not total_splits:
+        remainder = amount_paise - sum(splits.values())
+        if remainder != 0:
+            sorted_parents = sorted(pid for pid in parent_user_ids if pid in splits)
+            target = sorted_parents[0] if sorted_parents else list(splits.keys())[-1]
+            splits[target] += remainder
+
     return splits
 
 

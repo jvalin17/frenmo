@@ -71,12 +71,16 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
     members = members_result.scalars().all()
 
-    # Get default shares per member
+    # Get default shares and kid counts per member
     shares_result = await db.execute(
-        select(GroupMember.user_id, GroupMember.default_shares)
+        select(GroupMember.user_id, GroupMember.default_shares, GroupMember.kid_count)
         .where(GroupMember.group_id == group_id)
     )
-    member_shares = {row[0]: row[1] for row in shares_result.all()}
+    member_shares = {}
+    member_kid_counts = {}
+    for row in shares_result.all():
+        member_shares[row[0]] = row[1]
+        member_kid_counts[row[0]] = row[2]
 
     # Get expenses (non-deleted)
     from app.models.expense import Expense
@@ -167,6 +171,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "expense_comments": expense_comments,
             "rates": rates,
             "member_shares": member_shares,
+            "member_kid_counts": member_kid_counts,
             "expense_splits": expense_splits,
             "expenses_by_date": expenses_by_date,
             "no_date_expenses": no_date_expenses,
@@ -199,22 +204,38 @@ async def update_group_settings(request: Request, group_id: int, db: AsyncSessio
         group.name = new_name
     group.currency = new_currency
 
-    # Update default shares per member
+    # Update kid-friendly toggle
+    new_kid_friendly = form_data.get("kid_friendly") == "on"
+    group.kid_friendly = new_kid_friendly
+
+    # Update default shares and kid counts per member
     all_members = await db.execute(
         select(GroupMember).where(GroupMember.group_id == group_id)
     )
     member_shares = {}
+    kid_data = {}
+    min_shares = 0 if new_kid_friendly else 1
     for gm in all_members.scalars().all():
         shares_val = form_data.get(f"shares_{gm.user_id}", "1")
         try:
-            gm.default_shares = max(1, min(int(shares_val), 99))
+            gm.default_shares = max(min_shares, min(int(shares_val), 99))
         except ValueError:
             gm.default_shares = 1
         member_shares[gm.user_id] = gm.default_shares
 
-    # Recalculate existing equal-split expenses with new shares
+        kid_val = form_data.get(f"kid_count_{gm.user_id}", "0")
+        try:
+            gm.kid_count = max(0, min(int(kid_val), 20))
+        except ValueError:
+            gm.kid_count = 0
+        kid_data[gm.user_id] = gm.kid_count
+
+    # Recalculate existing expenses with new shares + kid data
     from app.services.expense import recalculate_group_splits
-    await recalculate_group_splits(db, group_id, member_shares)
+    await recalculate_group_splits(
+        db, group_id, member_shares,
+        kid_data=kid_data, group_kid_friendly=new_kid_friendly,
+    )
 
     await db.commit()
     logger.info("Group settings updated: group=%d by user=%d", group_id, user_id)

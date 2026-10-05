@@ -37,6 +37,15 @@
                     {% endfor %}
                 </select>
             </div>
+            {% if group.kid_friendly %}
+            <div class="form-control mb-3">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="checkbox" name="kid_friendly" class="toggle toggle-sm" style="--tglbg: var(--accent);" checked>
+                    <span class="label-text">🧒 Kid-friendly expense</span>
+                </label>
+                <p class="text-xs" style="color: var(--text-muted);">Children count as 0.5 shares</p>
+            </div>
+            {% endif %}
             <div class="form-control mb-3">
                 <label class="label"><span class="label-text">Split type</span></label>
                 <select name="split_type" class="select select-bordered" id="split-type"
