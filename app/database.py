@@ -52,7 +52,8 @@ def migrate_schema(connection) -> None:
                 col_type = column.type.compile(dialect=connection.dialect)
                 default_clause = ""
                 if column.server_default is not None:
-                    default_val = column.server_default.arg.text
+                    arg = column.server_default.arg
+                    default_val = arg.text if hasattr(arg, "text") else str(arg)
                     default_clause = f" DEFAULT {default_val}"
                 stmt = f"ALTER TABLE {table_name} ADD COLUMN {column.name} {col_type}{default_clause}"
                 logger.info("Auto-migration: %s", stmt)
