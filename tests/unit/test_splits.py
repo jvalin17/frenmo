@@ -1,12 +1,12 @@
 """Tests for expense split calculations — the core financial logic."""
-from app.services.expense import (
+from app.services.splits import (
     compute_equal_splits,
     compute_exact_splits,
     compute_percent_splits,
 )
 
 
-def test_equal_split_divides_evenly():
+def test_compute_equal_splits_divides_evenly():
     splits = compute_equal_splits(30000, [1, 2, 3])  # ₹300 / 3
     assert splits == {1: 10000, 2: 10000, 3: 10000}
 
@@ -29,7 +29,7 @@ def test_equal_split_empty():
     assert splits == {}
 
 
-def test_exact_split_sums_correctly():
+def test_compute_exact_splits_sums_correctly():
     splits = compute_exact_splits(10000, {1: 60.00, 2: 40.00})
     assert splits[1] == 6000
     assert splits[2] == 4000
@@ -42,7 +42,7 @@ def test_exact_split_adjusts_rounding():
     assert sum(splits.values()) == 10000
 
 
-def test_percent_split_basic():
+def test_compute_percent_splits_basic():
     splits = compute_percent_splits(10000, {1: 50, 2: 30, 3: 20})
     assert splits[1] == 5000
     assert splits[2] == 3000
@@ -57,10 +57,10 @@ def test_percent_split_handles_rounding():
 
 
 # --- Shares split tests ---
-from app.services.expense import compute_shares_splits, compute_full_split
+from app.services.splits import compute_shares_splits, compute_full_split
 
 
-def test_shares_split_parents_case():
+def test_compute_shares_splits_parents_case():
     """jj has 3 shares (self + 2 parents), Alice and Bob have 1 each. $100 dinner."""
     splits = compute_shares_splits(10000, {1: 3, 2: 1, 3: 1})  # 5 total shares
     assert splits[1] == 6000  # 3/5 of $100
@@ -97,7 +97,7 @@ def test_shares_split_empty():
 
 
 # --- Full split tests ---
-def test_full_split_one_person_owes_all():
+def test_compute_full_split_one_person_owes_all():
     """Alice paid, Bob owes the full amount."""
     splits = compute_full_split(10000, owes_user_id=2, member_ids=[1, 2])
     assert splits[2] == 10000
@@ -126,3 +126,35 @@ def test_shares_split_group_default_uneven():
     assert splits[2] == 5000   # 3/6
     assert splits[3] == 3333   # remainder adjustment
     assert sum(splits.values()) == 10000
+
+
+# --- compute_effective_shares tests ---
+from app.services.splits import compute_effective_shares, compute_splits
+
+
+def test_compute_effective_shares_non_kid():
+    """Non-kid: kids count as full shares (additive)."""
+    assert compute_effective_shares(2, 1, is_kid_friendly=False) == 3.0
+
+
+def test_compute_effective_shares_kid_friendly():
+    """Kid-friendly: kids count as 0.5."""
+    assert compute_effective_shares(2, 1, is_kid_friendly=True) == 2.5
+
+
+def test_compute_effective_shares_zero_adults():
+    """0 adults + 1 kid, kid-friendly → 0.5."""
+    assert compute_effective_shares(0, 1, is_kid_friendly=True) == 0.5
+
+
+def test_compute_splits_dispatches_equal():
+    """compute_splits with equal type uses equal logic."""
+    result = compute_splits(10000, "equal", [1, 2])
+    assert result == {1: 5000, 2: 5000}
+
+
+def test_compute_splits_dispatches_shares():
+    """compute_splits with shares type uses shares logic."""
+    result = compute_splits(10000, "shares", [1, 2], member_values={1: 3.0, 2: 1.0})
+    assert result[1] == 7500
+    assert result[2] == 2500

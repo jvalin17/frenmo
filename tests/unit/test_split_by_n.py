@@ -8,11 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.expense import ExpenseSplit
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.expense import (
-    compute_shares_splits,
-    create_expense_with_splits,
-    recalculate_splits_for_new_member,
-)
+from app.services.expense import create_expense_with_splits, recalculate_splits_for_new_member
+from app.services.splits import compute_shares_splits
 
 
 class TestComputeSharesSplitsWithTotalShares:
