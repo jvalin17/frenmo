@@ -468,3 +468,14 @@ h2 {
     background: var(--bg-input); transition: all 0.2s ease;
 }
 .theme-toggle:hover { background: var(--bg-hover); }
+
+/* Kid-friendly toggle: green when ON, muted when OFF */
+.toggle.kid-toggle {
+    --tglbg: var(--bg-input);
+    border-color: var(--border);
+}
+.toggle.kid-toggle:checked {
+    --tglbg: #34C759;
+    border-color: #34C759;
+    background-color: #34C759;
+}
