@@ -38,7 +38,7 @@
                 </select>
             </div>
             {% if group.kid_friendly %}
-            <div class="form-control mb-3">
+            <div class="form-control mb-3" id="kid-friendly-section">
                 <label class="label cursor-pointer justify-start gap-3 items-center">
                     <label class="kid-toggle-wrap">
                         <input type="checkbox" name="kid_friendly" checked>
@@ -57,6 +57,8 @@
                             document.getElementById('exact-fields').style.display = (v === 'exact' || v === 'percent') ? 'block' : 'none';
                             document.getElementById('shares-fields').style.display = v === 'shares' ? 'block' : 'none';
                             document.getElementById('full-fields').style.display = v === 'full' ? 'block' : 'none';
+                            var kidSec = document.getElementById('kid-friendly-section');
+                            if (kidSec) kidSec.style.display = (v === 'equal' || v === 'shares') ? '' : 'none';
                             document.getElementById('split-with').style.display = (v === 'full') ? 'none' : 'block';
                         ">
                     <option value="equal">Equal</option>
@@ -69,19 +71,6 @@
             <div id="split-with" class="form-control mb-3">
                 <label class="label"><span class="label-text">Who's splitting?</span></label>
                 <p class="text-xs mb-2" style="color: var(--text-muted);">Tap to exempt someone from this expense</p>
-                <style>
-                .person-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-radius: 14px; opacity: 0.45; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
-                .person-row:has(:checked) { opacity: 1; background: rgba(var(--accent-rgb, 192, 122, 69), 0.04); }
-                .person-row .p-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; padding: 2px; background: transparent; transition: background 0.3s ease; filter: grayscale(60%); }
-                .person-row:has(:checked) .p-avatar { filter: grayscale(0%); background: var(--accent); }
-                .person-row .p-name { font-weight: 500; font-size: 14px; color: var(--text-primary); flex: 1; }
-                .person-row .p-status { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); transition: all 0.2s ease; flex-shrink: 0; }
-                .person-row:has(:checked) .p-status { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(192,122,69,0.3); }
-                .person-row:not(:has(:checked)):hover { opacity: 0.65; }
-                .person-row:active { transform: scale(0.98); transition-duration: 0.1s; }
-                .person-row .p-exempt { display: none; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #FEF2F2; color: #DC2626; }
-                .person-row:not(:has(:checked)) .p-exempt { display: inline; }
-                </style>
                 {% for m in members %}
                 <label class="person-row">
                     <input type="checkbox" name="split_with" value="{{ m.id }}" hidden checked>

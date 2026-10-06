@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/expenses", tags=["expenses"])
 templates = Jinja2Templates(directory="app/templates")
 
+VALID_SPLIT_TYPES = {"equal", "shares", "exact", "percent", "full"}
+
 
 @router.get("/new/{group_id}", response_class=HTMLResponse)
 @login_required
@@ -59,10 +61,19 @@ async def create_expense(
     description = form_data.get("description", "").strip()
     amount_str = form_data.get("amount", "0")
     split_type = form_data.get("split_type", "equal")
+    if split_type not in VALID_SPLIT_TYPES:
+        split_type = "equal"
     paid_by = int(form_data.get("paid_by", request.state.user_id))
     category = form_data.get("category", "")
     currency = form_data.get("currency", "USD")
     expense_date = form_data.get("expense_date", "")
+
+    # Validate paid_by is a group member
+    paid_by_check = await db.execute(
+        select(GroupMember).where(GroupMember.group_id == group_id, GroupMember.user_id == paid_by)
+    )
+    if paid_by_check.scalar_one_or_none() is None:
+        paid_by = request.state.user_id
 
     # Convert amount to smallest unit (cents/paise) — input is in main unit
     try:
@@ -197,9 +208,20 @@ async def edit_expense(request: Request, expense_id: int, db: AsyncSession = Dep
     description = form_data.get("description", "").strip()
     amount_str = form_data.get("amount", "0")
     split_type = form_data.get("split_type", "equal")
+    if split_type not in VALID_SPLIT_TYPES:
+        split_type = "equal"
     paid_by = int(form_data.get("paid_by", request.state.user_id))
     category = form_data.get("category", "")
     currency = form_data.get("currency", "USD")
+
+    # Validate paid_by is a group member
+    expense_obj = await db.get(Expense, expense_id)
+    if expense_obj:
+        paid_by_check = await db.execute(
+            select(GroupMember).where(GroupMember.group_id == expense_obj.group_id, GroupMember.user_id == paid_by)
+        )
+        if paid_by_check.scalar_one_or_none() is None:
+            paid_by = request.state.user_id
 
     try:
         amount_paise = round(float(amount_str) * 100)

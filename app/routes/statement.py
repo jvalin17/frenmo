@@ -178,6 +178,7 @@ async def import_expenses(request: Request, group_id: int, db: AsyncSession = De
                 member_ids=member_ids,
                 category=category,
                 idempotency_key=str(uuid.uuid4()),
+                kid_friendly=False,
             )
 
             # Set the original transaction date from bank statement

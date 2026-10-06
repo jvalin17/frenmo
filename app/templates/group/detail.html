@@ -34,7 +34,7 @@
             <button onclick="document.getElementById('group-edit').style.display = document.getElementById('group-edit').style.display === 'none' ? 'block' : 'none'" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary); border: none; cursor: pointer;">✏️ Edit</button>
         </div>
         <!-- Inline edit form -->
-        <form id="group-edit" method="POST" action="/groups/{{ group.id }}/settings" style="display: none; border-top: 1px solid var(--border);" class="mt-3 pt-3">
+        <form id="group-edit" method="POST" action="/groups/{{ group.id }}/settings" style="display: none; border-top: 1px solid var(--border);" class="mt-3 pt-3" onsubmit="return confirm('This will recalculate expenses with updated shares. Existing settlements are not affected — only remaining balances will change. Continue?')"
             <div class="flex gap-2 items-end mb-3">
                 <div class="flex-1">
                     <label class="text-xs" style="color: var(--text-secondary);">Name</label>
@@ -65,23 +65,58 @@
                 <label class="text-xs" style="color: var(--text-secondary);">Members & shares</label>
                 <p class="text-xs mb-2" style="color: var(--text-muted);">Adults = full shares. Kids = 0.5 on kid-friendly expenses, 1.0 on others.</p>
                 {% for member in members %}
-                {% set adults = member_shares.get(member.id, 1) %}
-                {% set kids = member_kid_counts.get(member.id, 0) %}
-                <div class="flex items-center gap-2 mb-1.5">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background: var(--accent);">{{ member.name[0]|upper }}</div>
-                    <span class="text-xs flex-1 truncate min-w-0" style="color: var(--text-primary);">{{ member.name }}</span>
-                    <input type="number" name="shares_{{ member.id }}" value="{{ adults }}" min="{{ 0 if group.kid_friendly else 1 }}" max="20" class="text-sm px-2 py-1 rounded-lg w-12 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
-                    <span class="text-xs shrink-0" style="color: var(--text-muted);">adults</span>
-                    {% if group.kid_friendly %}
-                    <input type="number" name="kid_count_{{ member.id }}" value="{{ kids }}" min="0" max="10" class="text-sm px-2 py-1 rounded-lg w-12 text-center shrink-0" style="background: var(--bg-card); border: 1px solid var(--border);">
-                    <span class="text-xs shrink-0" style="color: var(--text-muted);">kids</span>
-                    <span class="text-xs font-semibold shrink-0" style="color: var(--accent);">= {{ adults + kids * 0.5 }} / {{ adults + kids }}</span>
-                    {% endif %}
+                {% set default_shares = member_shares.get(member.id, 1) %}
+                {% set kid_count = member_kid_counts.get(member.id, 0) %}
+                <div class="member-shares-card">
+                    <div class="member-avatar">{{ member.name[0]|upper }}</div>
+                    <span class="member-name">{{ member.name }}</span>
+                    <div class="member-fields">
+                        <input type="number" name="shares_{{ member.id }}" value="{{ default_shares }}" min="{{ 0 if group.kid_friendly else 1 }}" max="20" data-shares>
+                        <span class="field-label">adults</span>
+                        <input type="number" name="kid_count_{{ member.id }}" value="{{ kid_count }}" min="0" max="10" class="kid-col" style="{% if not group.kid_friendly %}display:none;{% endif %}" data-kids>
+                        <span class="kid-col field-label" style="{% if not group.kid_friendly %}display:none;{% endif %}">kids</span>
+                        <span class="kid-col effective-shares" style="{% if not group.kid_friendly %}display:none;{% endif %}" data-effective>= {{ default_shares + kid_count * 0.5 }} / {{ default_shares + kid_count }}</span>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
             <button type="submit" class="text-sm font-semibold px-4 py-2 rounded-lg w-full" style="background: var(--accent); color: #FFFFFF; border: none;">Save Settings</button>
         </form>
+        <script>
+        (function() {
+            var kidToggle = document.querySelector('#group-edit input[name="kid_friendly"]');
+            if (!kidToggle) return;
+            function updateKidColumns() {
+                var on = kidToggle.checked;
+                var cards = document.querySelectorAll('.member-shares-card');
+                cards.forEach(function(card) {
+                    var kidCols = card.querySelectorAll('.kid-col');
+                    kidCols.forEach(function(el) { el.style.display = on ? '' : 'none'; });
+                    var sharesInput = card.querySelector('[data-shares]');
+                    if (sharesInput) { sharesInput.min = on ? '0' : '1'; }
+                });
+                updateEffectiveShares();
+            }
+            function updateEffectiveShares() {
+                var cards = document.querySelectorAll('.member-shares-card');
+                cards.forEach(function(card) {
+                    var sharesInput = card.querySelector('[data-shares]');
+                    var kidsInput = card.querySelector('[data-kids]');
+                    var display = card.querySelector('[data-effective]');
+                    if (!sharesInput || !kidsInput || !display) return;
+                    var adults = parseInt(sharesInput.value) || 0;
+                    var kids = parseInt(kidsInput.value) || 0;
+                    var kidShares = adults + kids * 0.5;
+                    var fullShares = adults + kids;
+                    display.textContent = '= ' + kidShares.toFixed(1) + ' / ' + fullShares;
+                });
+            }
+            kidToggle.addEventListener('change', updateKidColumns);
+            document.querySelectorAll('[data-shares], [data-kids]').forEach(function(input) {
+                input.addEventListener('input', updateEffectiveShares);
+            });
+        })();
+        </script>
     </div>
 </div>
 

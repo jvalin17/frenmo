@@ -4,6 +4,8 @@ Strategy dispatch replaces if/elif chains. All functions take amounts
 in integer paise/cents and return {user_id: owed_amount_paise}.
 """
 
+KID_SHARE_WEIGHT: float = 0.5
+
 
 def compute_equal_splits(amount_paise: int, member_ids: list[int]) -> dict[int, int]:
     """Split amount equally. Distribute remainder paise to first N members."""
@@ -134,7 +136,7 @@ def compute_effective_shares(
     Kid-friendly expense: kids count as 0.5 shares each.
     """
     if is_kid_friendly:
-        return default_shares + (kid_count * 0.5)
+        return default_shares + (kid_count * KID_SHARE_WEIGHT)
     return float(default_shares + kid_count)
 
 

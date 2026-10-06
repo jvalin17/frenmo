@@ -469,7 +469,7 @@ h2 {
 }
 .theme-toggle:hover { background: var(--bg-hover); }
 
-/* Kid-friendly toggle — custom iOS-style, no DaisyUI .toggle */
+/* Kid-friendly toggle — custom iOS-style, theme-aware */
 .kid-toggle-wrap {
     position: relative;
     display: inline-flex;
@@ -489,8 +489,8 @@ h2 {
     width: 36px;
     height: 20px;
     border-radius: 10px;
-    background: #C5BFB6;
-    border: 1.5px solid #ADA7A0;
+    background: var(--border);
+    border: 1.5px solid var(--text-muted);
     cursor: pointer;
     position: relative;
     transition: background 0.2s ease, border-color 0.2s ease;
@@ -509,19 +509,111 @@ h2 {
     transition: transform 0.2s ease;
 }
 .kid-toggle-wrap input:checked + .kid-toggle-track {
-    background: #16a34a;
-    border-color: #16a34a;
+    background: var(--accent);
+    border-color: var(--accent);
 }
 .kid-toggle-wrap input:checked + .kid-toggle-track::after {
     transform: translateX(16px);
 }
+.kid-toggle-wrap input:focus-visible + .kid-toggle-track {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
 
-/* Dark mode — more visible OFF state */
-[data-theme="dark"] .kid-toggle-track {
-    background: #4A4540;
-    border-color: #6A6560;
+/* Member shares — table-like layout: name fills left, fixed-width inputs on right */
+.member-shares-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
 }
-[data-theme="dark"] .kid-toggle-wrap input:checked + .kid-toggle-track {
-    background: #16a34a;
-    border-color: #16a34a;
+.member-shares-card .member-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--accent);
+    flex-shrink: 0;
 }
+.member-shares-card .member-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+/* Fixed-width right section — identical across ALL rows so inputs line up perfectly */
+.member-shares-card .member-fields {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    /* Width: adults input(40) + "adults" label(32) + gap(4) + kids input(40) + "kids" label(26) + gap(4) + effective(60) + gap(4) */
+    width: 214px;
+}
+.member-shares-card .member-fields input[type="number"] {
+    width: 40px;
+    text-align: center;
+    font-size: 13px;
+    padding: 4px 2px;
+    border-radius: 8px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    -moz-appearance: textfield;
+    flex-shrink: 0;
+}
+.member-shares-card .member-fields input[type="number"]::-webkit-inner-spin-button,
+.member-shares-card .member-fields input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.member-shares-card .field-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.member-shares-card .effective-shares {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+/* On very narrow screens, allow the fixed section to wrap below the name */
+@media (max-width: 380px) {
+    .member-shares-card {
+        flex-wrap: wrap;
+    }
+    .member-shares-card .member-name {
+        flex: 1 1 0;
+    }
+    .member-shares-card .member-fields {
+        width: 100%;
+        margin-left: 36px; /* align with name (avatar 28px + gap 8px) */
+    }
+}
+
+/* Person row — split-with member selector (used in expense new/edit) */
+.person-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; border-radius: 14px; opacity: 0.45; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
+.person-row:has(:checked) { opacity: 1; background: rgba(var(--accent-rgb, 192, 122, 69), 0.04); }
+.person-row .p-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; padding: 2px; background: transparent; transition: background 0.3s ease; filter: grayscale(60%); }
+.person-row:has(:checked) .p-avatar { filter: grayscale(0%); background: var(--accent); }
+.person-row .p-name { font-weight: 500; font-size: 14px; color: var(--text-primary); flex: 1; }
+.person-row .p-status { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); transition: all 0.2s ease; flex-shrink: 0; }
+.person-row:has(:checked) .p-status { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(192,122,69,0.3); }
+.person-row:not(:has(:checked)):hover { opacity: 0.65; }
+.person-row:active { transform: scale(0.98); transition-duration: 0.1s; }
+.person-row .p-exempt { display: none; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #FEF2F2; color: #DC2626; }
+.person-row:not(:has(:checked)) .p-exempt { display: inline; }
