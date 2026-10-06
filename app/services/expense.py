@@ -580,7 +580,7 @@ async def update_expense(
 
             owed_splits = _build_kid_aware_splits(
                 expense.amount, member_ids, member_shares_map, kid_counts,
-                is_kid_friendly=True,
+                is_kid_friendly=True, total_splits=expense.total_splits,
             )
         else:
             owed_splits = compute_splits(

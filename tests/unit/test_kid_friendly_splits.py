@@ -97,7 +97,10 @@ class TestComputeKidAwareSplits:
         shares = {10: 1.5, 20: 1.5}  # both are parents
         result = compute_kid_aware_splits(10001, shares, parent_user_ids=[20, 10])
         assert sum(result.values()) == 10001
-        # User 10 is the first parent (sorted by id)
+        # User 10 (lowest id) should get the remainder, not user 20
+        base_per_unit = round(10001 * 1.5 / 3.0)  # 5001
+        assert result[10] != result[20]  # they shouldn't be equal with odd amount
+        assert result[10] > result[20] or result[10] == base_per_unit + 1  # user 10 gets +1
 
     def test_kid_friendly_ignores_total_splits(self):
         """Kid-friendly should NOT use total_splits — just sum of effective shares."""
