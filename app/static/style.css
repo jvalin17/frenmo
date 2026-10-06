@@ -469,13 +469,59 @@ h2 {
 }
 .theme-toggle:hover { background: var(--bg-hover); }
 
-/* Kid-friendly toggle: green when ON, muted when OFF */
-.toggle.kid-toggle {
-    --tglbg: var(--bg-input);
-    border-color: var(--border);
+/* Kid-friendly toggle — custom iOS-style, no DaisyUI .toggle */
+.kid-toggle-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    align-self: center;
 }
-.toggle.kid-toggle:checked {
-    --tglbg: #34C759;
-    border-color: #34C759;
-    background-color: #34C759;
+.kid-toggle-wrap input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.kid-toggle-track {
+    display: block;
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: #C5BFB6;
+    border: 1.5px solid #ADA7A0;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+.kid-toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.30), 0 0 0 0.5px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+.kid-toggle-wrap input:checked + .kid-toggle-track {
+    background: #16a34a;
+    border-color: #16a34a;
+}
+.kid-toggle-wrap input:checked + .kid-toggle-track::after {
+    transform: translateX(16px);
+}
+
+/* Dark mode — more visible OFF state */
+[data-theme="dark"] .kid-toggle-track {
+    background: #4A4540;
+    border-color: #6A6560;
+}
+[data-theme="dark"] .kid-toggle-wrap input:checked + .kid-toggle-track {
+    background: #16a34a;
+    border-color: #16a34a;
 }

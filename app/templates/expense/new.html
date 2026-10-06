@@ -39,8 +39,11 @@
             </div>
             {% if group.kid_friendly %}
             <div class="form-control mb-3">
-                <label class="label cursor-pointer justify-start gap-3">
-                    <input type="checkbox" name="kid_friendly" class="toggle toggle-sm kid-toggle" checked>
+                <label class="label cursor-pointer justify-start gap-3 items-center">
+                    <label class="kid-toggle-wrap">
+                        <input type="checkbox" name="kid_friendly" checked>
+                        <span class="kid-toggle-track"></span>
+                    </label>
                     <span class="label-text">🧒 Kid-friendly expense</span>
                 </label>
                 <p class="text-xs" style="color: var(--text-muted);">Children count as 0.5 shares</p>

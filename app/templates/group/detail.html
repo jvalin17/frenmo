@@ -55,7 +55,10 @@
                     <label class="text-xs font-medium" style="color: var(--text-secondary);">🧒 Kid-friendly splitting</label>
                     <p class="text-xs" style="color: var(--text-muted);">Children count as 0.5 shares on marked expenses</p>
                 </div>
-                <input type="checkbox" name="kid_friendly" class="toggle toggle-sm kid-toggle" {% if group.kid_friendly %}checked{% endif %}>
+                <label class="kid-toggle-wrap">
+                    <input type="checkbox" name="kid_friendly" {% if group.kid_friendly %}checked{% endif %}>
+                    <span class="kid-toggle-track"></span>
+                </label>
             </div>
             <!-- Default split shares -->
             <div class="mb-3">
