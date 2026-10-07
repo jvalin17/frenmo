@@ -32,14 +32,14 @@
                  onclick="document.getElementById('file-input').click()"
                  ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--bg-hover)';"
                  ondragleave="this.style.borderColor='var(--border)'; this.style.background='linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%)';"
-                 ondrop="event.preventDefault(); document.getElementById('file-input').files = event.dataTransfer.files; document.getElementById('file-name').textContent = event.dataTransfer.files[0].name; this.style.borderColor='#34C759'; this.style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)';">
+                 ondrop="event.preventDefault(); document.getElementById('file-input').files = event.dataTransfer.files; document.getElementById('file-name').textContent = event.dataTransfer.files[0].name; this.style.borderColor='var(--accent)'; this.style.background='linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%)';">
                 <div class="text-3xl mb-2">📄</div>
                 <p class="text-sm font-medium" style="color: var(--text-primary);">Drop your PDF here or click to browse</p>
                 <p class="text-xs mt-1" style="color: var(--text-muted);">PDF only, max 10MB</p>
                 <p id="file-name" class="text-xs mt-2 font-medium" style="color: var(--accent);"></p>
             </div>
             <input type="file" id="file-input" name="file" accept=".pdf" style="display: none;"
-                   onchange="document.getElementById('file-name').textContent = this.files[0]?.name || ''; if(this.files[0]) { document.getElementById('drop-zone').style.borderColor='#34C759'; document.getElementById('drop-zone').style.background='linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%)'; }">
+                   onchange="document.getElementById('file-name').textContent = this.files[0]?.name || ''; if(this.files[0]) { document.getElementById('drop-zone').style.borderColor='var(--accent)'; document.getElementById('drop-zone').style.background='linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%)'; }">
 
             <button type="submit" id="extract-btn" class="btn btn-primary btn-lg w-full mt-4" onclick="this.textContent='Processing...'; this.disabled=true; this.form.submit();">Extract Transactions</button>
             <p class="text-xs text-center mt-2" style="color: var(--text-muted);">🔒 Your statement is private — only you can see it. Only expenses you select will be added to the group.</p>

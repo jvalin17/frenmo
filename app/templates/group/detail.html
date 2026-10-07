@@ -154,7 +154,7 @@
             {% for friend in available_friends %}
             <div class="flex items-center justify-between p-1.5 rounded-lg mb-1">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: #34C759;">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
                         {{ friend.name[0]|upper }}
                     </div>
                     <span class="text-xs">{{ friend.name }}</span>
@@ -246,7 +246,7 @@ function toggleSection(id) {
                     <span class="font-medium text-sm">{{ expense.description }}</span>
                     <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-input); color: var(--text-muted);">{{ member_names.get(expense.paid_by, '?') }}</span>
                     {% if expense.kid_friendly and group.kid_friendly %}
-                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: #FEF3C7; color: #92400E;">🧒 kid-friendly</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-hover); color: var(--accent);">🧒 kid-friendly</span>
                     {% endif %}
                 </div>
             </div>

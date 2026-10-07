@@ -1,143 +1,250 @@
-/* Frenmo — Copper Theme with Dark Mode */
+/* Frenmo — Sand Theme (default) with Dark Mode */
 
+/* ============================================================
+ * BASE / DEFAULT = Sand theme
+ * Warm neutral, Wise/YNAB earthy — dark goldenrod accent
+ * ============================================================ */
 :root {
-    --bg-page: #FAF9F7;
-    --bg-card: #F2EFEA;
-    --bg-input: #EAE5DE;
-    --bg-hover: #DDD8D0;
-    --text-primary: #1A1410;
-    --text-secondary: #5E5549;
-    --text-muted: #8C8076;
-    --border: #C5BFB6;
-    --border-light: #DDD8D0;
-    --accent: #C07A45;
-    --navbar-bg: #FAF9F7;
-    --navbar-border: #DDD8D0;
+    --bg-page: #FAFAF8;
+    --bg-card: #F5F4F0;
+    --bg-input: #EDECEA;
+    --bg-hover: #E5E3DF;
+    --text-primary: #1C1B18;
+    --text-secondary: #5C5A52;
+    --text-muted: #908D82;
+    --border: #D4D1C8;
+    --border-light: #E5E3DF;
+    --accent: #B8860B;
+    --navbar-bg: #FAFAF8;
+    --navbar-border: #E5E3DF;
+    --accent-rgb: 184, 134, 11;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    /* DaisyUI primary color override — copper HSL */
-    --p: 27 49% 51%;
-    --pf: 27 52% 41%;
-    --pc: 30 40% 96%;
+    /* DaisyUI primary — dark goldenrod HSL: ~43° 89% 38% */
+    --p: 43 89% 38%;
+    --pf: 43 89% 28%;
+    --pc: 43 40% 96%;
 }
 
 [data-theme="dark"] {
-    --bg-page: #0E0C09;
-    --bg-card: #1C1A17;
-    --bg-input: #242018;
-    --bg-hover: #242018;
-    --text-primary: #EBE3CC;
-    --text-secondary: #A39880;
-    --text-muted: #6B6255;
-    --border: #3D3830;
-    --border-light: #2A251E;
-    --accent: #D4925C;
-    --navbar-bg: #1C1A17;
-    --navbar-border: #3D3830;
+    --bg-page: #121210;
+    --bg-card: #1C1B18;
+    --bg-input: #252420;
+    --bg-hover: #2E2D28;
+    --text-primary: #E8E6DF;
+    --text-secondary: #A8A59A;
+    --text-muted: #6E6B60;
+    --border: #3A3830;
+    --border-light: #2E2D28;
+    --accent: #D4A843;
+    --navbar-bg: #1C1B18;
+    --navbar-border: #3A3830;
+    --accent-rgb: 212, 168, 67;
     --card-shadow: none;
-    /* DaisyUI primary color override — bright copper for dark mode */
-    --p: 27 56% 60%;
-    --pf: 27 49% 51%;
-    --pc: 30 20% 5%;
+    /* DaisyUI primary — brightened goldenrod for dark: ~43° 68% 55% */
+    --p: 43 68% 55%;
+    --pf: 43 89% 38%;
+    --pc: 43 30% 8%;
 }
 
 /* ============================================================
    THEME COLOR SYSTEM — each theme overrides CSS variables only
    ============================================================ */
 
-/* --- Classic (blue + white) --- */
-[data-theme-color="classic"] {
-    --bg-page: #F8FAFC; --bg-card: #FFFFFF; --bg-input: #F1F5F9;
-    --bg-hover: #E2E8F0; --text-primary: #0F172A; --text-secondary: #475569;
-    --text-muted: #94A3B8; --border: #CBD5E1; --border-light: #E2E8F0;
-    --accent: #2563EB; --navbar-bg: #FFFFFF; --navbar-border: #E2E8F0;
-    --p: 217 91% 60%; --pf: 217 91% 50%; --pc: 210 40% 98%;
+/* --- Slate (Cool professional, Stripe dashboard) --- */
+/* Accent: #6366F1 indigo-500 — HSL ~239° 84% 67% */
+[data-theme-color="slate"] {
+    --bg-page: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-input: #F1F5F9;
+    --bg-hover: #E8EDF5;
+    --text-primary: #0D1424;
+    --text-secondary: #445269;
+    --text-muted: #8896AA;
+    --border: #CBD5E4;
+    --border-light: #E8EDF5;
+    --accent: #6366F1;
+    --navbar-bg: #FFFFFF;
+    --navbar-border: #E8EDF5;
+    --accent-rgb: 99, 102, 241;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 239 84% 67%; --pf: 239 84% 57%; --pc: 240 80% 97%;
 }
-[data-theme="dark"][data-theme-color="classic"] {
-    --bg-page: #0F172A; --bg-card: #1E293B; --bg-input: #334155;
-    --bg-hover: #334155; --text-primary: #F1F5F9; --text-secondary: #94A3B8;
-    --text-muted: #64748B; --border: #334155; --border-light: #1E293B;
-    --accent: #60A5FA; --navbar-bg: #1E293B; --navbar-border: #334155;
-    --p: 217 91% 68%; --pf: 217 91% 60%; --pc: 217 33% 10%;
-}
-
-/* --- Dollar (orange + white) --- */
-[data-theme-color="dollar"] {
-    --bg-page: #FFFBF5; --bg-card: #FFF7ED; --bg-input: #FFEDD5;
-    --bg-hover: #FED7AA; --text-primary: #1C1210; --text-secondary: #6B4423;
-    --text-muted: #9A7B5A; --border: #FDBA74; --border-light: #FED7AA;
-    --accent: #EA580C; --navbar-bg: #FFFBF5; --navbar-border: #FED7AA;
-    --p: 21 90% 48%; --pf: 21 90% 38%; --pc: 30 40% 96%;
-}
-[data-theme="dark"][data-theme-color="dollar"] {
-    --bg-page: #1A0E05; --bg-card: #2A1A0D; --bg-input: #3A2515;
-    --bg-hover: #3A2515; --text-primary: #FDE8D0; --text-secondary: #C49A70;
-    --text-muted: #7A5A3A; --border: #4A3020; --border-light: #3A2515;
-    --accent: #FB923C; --navbar-bg: #2A1A0D; --navbar-border: #4A3020;
-    --p: 27 96% 61%; --pf: 21 90% 48%; --pc: 21 30% 8%;
-}
-
-/* --- Coral (Monzo-inspired warm red-orange) --- */
-[data-theme-color="coral"] {
-    --bg-page: #FDF6F3; --bg-card: #FFF1EC; --bg-input: #FFE4DB;
-    --bg-hover: #FFD4C7; --text-primary: #1C1210; --text-secondary: #6B3A2A;
-    --text-muted: #9A7068; --border: #FFBAA8; --border-light: #FFD4C7;
-    --accent: #E8522A; --navbar-bg: #FDF6F3; --navbar-border: #FFD4C7;
-    --p: 12 78% 54%; --pf: 12 78% 44%; --pc: 12 20% 96%;
-}
-[data-theme="dark"][data-theme-color="coral"] {
-    --bg-page: #1C1210; --bg-card: #2A1C18; --bg-input: #3A2820;
-    --bg-hover: #3A2820; --text-primary: #FFE4DB; --text-secondary: #C49080;
-    --text-muted: #7A5A50; --border: #4A3028; --border-light: #3A2820;
-    --accent: #FF7B52; --navbar-bg: #2A1C18; --navbar-border: #4A3028;
-    --p: 15 100% 66%; --pf: 12 78% 54%; --pc: 12 30% 8%;
+[data-theme="dark"][data-theme-color="slate"] {
+    --bg-page: #0F1219;
+    --bg-card: #181E2A;
+    --bg-input: #222B3A;
+    --bg-hover: #2C3648;
+    --text-primary: #E8EDF5;
+    --text-secondary: #8896AA;
+    --text-muted: #5A6678;
+    --border: #2C3648;
+    --border-light: #222B3A;
+    --accent: #818CF8;
+    --navbar-bg: #181E2A;
+    --navbar-border: #2C3648;
+    --accent-rgb: 129, 140, 248;
+    --card-shadow: none;
+    --p: 239 87% 74%; --pf: 239 84% 67%; --pc: 239 40% 8%;
 }
 
-/* --- Violet (Zelle-inspired purple) --- */
-[data-theme-color="violet"] {
-    --bg-page: #FAFAFE; --bg-card: #F5F3FF; --bg-input: #EDE9FE;
-    --bg-hover: #DDD6FE; --text-primary: #1E1033; --text-secondary: #5B4A8A;
-    --text-muted: #8B7FB8; --border: #C4B5FD; --border-light: #DDD6FE;
-    --accent: #7C3AED; --navbar-bg: #FAFAFE; --navbar-border: #DDD6FE;
-    --p: 263 70% 58%; --pf: 263 70% 48%; --pc: 263 20% 96%;
+/* --- Ocean (Deep trust, Revolut blue) --- */
+/* Accent: #0EA5E9 sky-500 — HSL ~199° 89% 48% */
+[data-theme-color="ocean"] {
+    --bg-page: #F0F7FF;
+    --bg-card: #FAFCFF;
+    --bg-input: #E6F2FC;
+    --bg-hover: #D6EAF8;
+    --text-primary: #0B1929;
+    --text-secondary: #3A5A72;
+    --text-muted: #7A9AB0;
+    --border: #BDD6E8;
+    --border-light: #D6EAF8;
+    --accent: #0EA5E9;
+    --navbar-bg: #FAFCFF;
+    --navbar-border: #D6EAF8;
+    --accent-rgb: 14, 165, 233;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 199 89% 48%; --pf: 199 89% 38%; --pc: 199 80% 97%;
 }
-[data-theme="dark"][data-theme-color="violet"] {
-    --bg-page: #0F0A1A; --bg-card: #1A1230; --bg-input: #2A1E48;
-    --bg-hover: #2A1E48; --text-primary: #EDE9FE; --text-secondary: #A78BFA;
-    --text-muted: #6D5BA0; --border: #3B2D60; --border-light: #2A1E48;
-    --accent: #A78BFA; --navbar-bg: #1A1230; --navbar-border: #3B2D60;
-    --p: 263 86% 76%; --pf: 263 70% 58%; --pc: 263 30% 8%;
+[data-theme="dark"][data-theme-color="ocean"] {
+    --bg-page: #0B1929;
+    --bg-card: #132336;
+    --bg-input: #1C3048;
+    --bg-hover: #243C58;
+    --text-primary: #D6EAF8;
+    --text-secondary: #7AAAC8;
+    --text-muted: #4A6E88;
+    --border: #243C58;
+    --border-light: #1C3048;
+    --accent: #38BDF8;
+    --navbar-bg: #132336;
+    --navbar-border: #243C58;
+    --accent-rgb: 56, 189, 248;
+    --card-shadow: none;
+    --p: 199 95% 60%; --pf: 199 89% 48%; --pc: 199 50% 6%;
 }
 
-/* --- Midnight (Revolut-inspired deep blue) --- */
-[data-theme-color="midnight"] {
-    --bg-page: #F1F5F9; --bg-card: #FFFFFF; --bg-input: #E2E8F0;
-    --bg-hover: #CBD5E1; --text-primary: #0F172A; --text-secondary: #475569;
-    --text-muted: #94A3B8; --border: #CBD5E1; --border-light: #E2E8F0;
-    --accent: #1E40AF; --navbar-bg: #FFFFFF; --navbar-border: #E2E8F0;
-    --p: 217 72% 40%; --pf: 217 72% 30%; --pc: 210 40% 98%;
+/* --- Rose (Soft modern, Monzo-inspired) --- */
+/* Accent: #E11D48 rose-600 — HSL ~347° 77% 50% */
+[data-theme-color="rose"] {
+    --bg-page: #FFF5F5;
+    --bg-card: #FFFAFA;
+    --bg-input: #FFE8EC;
+    --bg-hover: #FFD6DD;
+    --text-primary: #1A0A10;
+    --text-secondary: #6B3040;
+    --text-muted: #A07080;
+    --border: #F0C0C8;
+    --border-light: #FFD6DD;
+    --accent: #E11D48;
+    --navbar-bg: #FFFAFA;
+    --navbar-border: #FFD6DD;
+    --accent-rgb: 225, 29, 72;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 347 77% 50%; --pf: 347 77% 40%; --pc: 347 60% 97%;
 }
-[data-theme="dark"][data-theme-color="midnight"] {
-    --bg-page: #0D1117; --bg-card: #161B22; --bg-input: #21262D;
-    --bg-hover: #21262D; --text-primary: #E6EDF3; --text-secondary: #8B949E;
-    --text-muted: #484F58; --border: #30363D; --border-light: #21262D;
-    --accent: #60A5FA; --navbar-bg: #161B22; --navbar-border: #30363D;
-    --p: 217 91% 68%; --pf: 217 72% 40%; --pc: 217 33% 6%;
+[data-theme="dark"][data-theme-color="rose"] {
+    --bg-page: #1A1015;
+    --bg-card: #261820;
+    --bg-input: #33202A;
+    --bg-hover: #402835;
+    --text-primary: #F8E4EA;
+    --text-secondary: #C8909A;
+    --text-muted: #8A5A68;
+    --border: #4D3040;
+    --border-light: #33202A;
+    --accent: #FB7185;
+    --navbar-bg: #261820;
+    --navbar-border: #4D3040;
+    --accent-rgb: 251, 113, 133;
+    --card-shadow: none;
+    --p: 350 96% 71%; --pf: 350 81% 50%; --pc: 350 30% 8%;
+}
+
+/* --- Mint (Fresh finance, Cash App/Acorns) --- */
+/* Accent: #10B981 emerald-500 — HSL ~160° 84% 39% */
+[data-theme-color="mint"] {
+    --bg-page: #F0FDF4;
+    --bg-card: #FAFFFE;
+    --bg-input: #E0F7EC;
+    --bg-hover: #CCEDDE;
+    --text-primary: #091A12;
+    --text-secondary: #2D5A40;
+    --text-muted: #6A9A7A;
+    --border: #B0D8C0;
+    --border-light: #CCEDDE;
+    --accent: #10B981;
+    --navbar-bg: #FAFFFE;
+    --navbar-border: #CCEDDE;
+    --accent-rgb: 16, 185, 129;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 160 84% 39%; --pf: 160 84% 30%; --pc: 160 60% 97%;
+}
+[data-theme="dark"][data-theme-color="mint"] {
+    --bg-page: #0A1612;
+    --bg-card: #13221A;
+    --bg-input: #1C3026;
+    --bg-hover: #253C30;
+    --text-primary: #D0F0E0;
+    --text-secondary: #60A878;
+    --text-muted: #3C6A50;
+    --border: #253C30;
+    --border-light: #1C3026;
+    --accent: #34D399;
+    --navbar-bg: #13221A;
+    --navbar-border: #253C30;
+    --accent-rgb: 52, 211, 153;
+    --card-shadow: none;
+    --p: 160 84% 56%; --pf: 160 84% 39%; --pc: 160 50% 5%;
+}
+
+/* --- Night (Dark-first, Revolut dark mode) --- */
+/* Accent: #8B5CF6 violet-500 — HSL ~258° 90% 66% */
+[data-theme-color="night"] {
+    --bg-page: #F1F5F9;
+    --bg-card: #FFFFFF;
+    --bg-input: #E8EEF5;
+    --bg-hover: #D8E2EE;
+    --text-primary: #0C0E18;
+    --text-secondary: #48506A;
+    --text-muted: #8890A8;
+    --border: #CAD2E0;
+    --border-light: #D8E2EE;
+    --accent: #7C3AED;
+    --navbar-bg: #FFFFFF;
+    --navbar-border: #D8E2EE;
+    --accent-rgb: 124, 58, 237;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 263 83% 58%; --pf: 263 83% 48%; --pc: 263 70% 97%;
+}
+[data-theme="dark"][data-theme-color="night"] {
+    --bg-page: #0A0A0F;
+    --bg-card: #15131F;
+    --bg-input: #1F1C2E;
+    --bg-hover: #2A263D;
+    --text-primary: #E8E4F5;
+    --text-secondary: #A89DC8;
+    --text-muted: #6E6490;
+    --border: #3B3455;
+    --border-light: #1F1C2E;
+    --accent: #A78BFA;
+    --navbar-bg: #15131F;
+    --navbar-border: #3B3455;
+    --accent-rgb: 167, 139, 250;
+    --card-shadow: none;
+    --p: 263 86% 76%; --pf: 263 70% 66%; --pc: 263 30% 8%;
 }
 
 /* Dark mode overrides — elevation through lighter surfaces, not shadows */
 [data-theme="dark"] .card {
-    background: #1C1A17 !important;
-    border: 1px solid #3D3830 !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
     box-shadow: none !important;
 }
-[data-theme="dark"] .card-blue { background: #1C1A17 !important; }
-[data-theme="dark"] .card-green { background: #1C1A17 !important; }
-[data-theme="dark"] .card-orange { background: #1C1A17 !important; }
-[data-theme="dark"] .card-yellow { background: #1C1A17 !important; }
 
 [data-theme="dark"] .hero-card {
-    background: linear-gradient(135deg, #241810 0%, #1C1A17 100%) !important;
-    border: 1px solid #3D3830 !important;
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15) 0%, var(--bg-card) 100%) !important;
+    border: 1px solid var(--border) !important;
     box-shadow: none !important;
 }
 
@@ -176,66 +283,16 @@
 
 /* Dark mode people selector */
 [data-theme="dark"] .person-row { opacity: 0.5; }
-[data-theme="dark"] .person-row:has(:checked) { opacity: 1; background: rgba(212, 146, 92, 0.08); }
-[data-theme="dark"] .person-row .p-name { color: #EBE3CC; }
-[data-theme="dark"] .person-row .p-status { border-color: #3D3830; }
+[data-theme="dark"] .person-row:has(:checked) { opacity: 1; background: rgba(var(--accent-rgb), 0.08); }
+[data-theme="dark"] .person-row .p-name { color: var(--text-primary); }
+[data-theme="dark"] .person-row .p-status { border-color: var(--border); }
 
-/* Dark mode — universal overrides for ALL light backgrounds */
-/* Solid backgrounds */
-[data-theme="dark"] [style*="background: #FFFFFF"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="background: #F2EFEA"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="background: #FAF9F7"] { background: #0E0C09 !important; }
-[data-theme="dark"] [style*="background: #EAE5DE"] { background: #242018 !important; }
-[data-theme="dark"] [style*="background: #F5E6D8"] { background: #241810 !important; }
-[data-theme="dark"] [style*="background: #F2F2F7"] { background: #242018 !important; }
-[data-theme="dark"] [style*="background: #F9FAFB"] { background: #242018 !important; }
-[data-theme="dark"] [style*="background: #ECFDF5"] { background: #1A2E1A !important; }
-[data-theme="dark"] [style*="background: #FEF2F2"] { background: #3A1C1E !important; }
-
-/* Gradient backgrounds — override ALL light gradients */
-[data-theme="dark"] [style*="linear-gradient(180deg, #F5E6D8"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #EFF6FF"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #F0FDF4"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #D1FAE5"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #FED7AA"] { background: #1C1A17 !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #BBF7D0"] { background: #1A2E1A !important; }
-[data-theme="dark"] [style*="linear-gradient(180deg, #FEF2F2"] { background: #3A1C1E !important; }
-[data-theme="dark"] [style*="linear-gradient(135deg, #FFFFFF"] { background: #1C1A17 !important; }
-
-/* Hero card balance variants */
-[data-theme="dark"] .hero-card { background: #1C1A17 !important; border: 1px solid #3D3830 !important; }
-
-/* Rounded containers (sidebar, converter, etc) */
-[data-theme="dark"] .rounded-2xl[style*="background"] { background: #1C1A17 !important; border-color: #3D3830 !important; }
-[data-theme="dark"] .rounded-xl[style*="background"] { background: #1C1A17 !important; border-color: #3D3830 !important; }
-
-/* Text colors */
-[data-theme="dark"] [style*="color: #5E5549"] { color: #A39880 !important; }
-[data-theme="dark"] [style*="color: #8C8076"] { color: #6B6255 !important; }
-[data-theme="dark"] [style*="color: #86868B"] { color: #A39880 !important; }
-[data-theme="dark"] [style*="color: #AEAEB2"] { color: #6B6255 !important; }
-[data-theme="dark"] [style*="color: #6E6E73"] { color: #A39880 !important; }
-[data-theme="dark"] [style*="color: #78716C"] { color: #6B6255 !important; }
-
-/* Borders */
-[data-theme="dark"] [style*="border: 1px solid #C5BFB6"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 1px solid #DDB896"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 1px solid #E5E7EB"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 1px solid #BBF7D0"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 1px solid #A7F3D0"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 1px solid #FECACA"] { border-color: #5C2C2E !important; }
-[data-theme="dark"] [style*="border: 1px solid #FDE68A"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border-color: #E3E8EE"] { border-color: #3D3830 !important; }
-[data-theme="dark"] [style*="border: 2px dashed #DDB896"] { border-color: #3D3830 !important; }
-
-/* Inputs in dark mode */
+/* Dark mode — inputs and hover states */
 [data-theme="dark"] input[style*="background"], [data-theme="dark"] select[style*="background"] {
-    background: #242018 !important; color: #EBE3CC !important; border-color: #3D3830 !important;
+    background: var(--bg-input) !important; color: var(--text-primary) !important; border-color: var(--border) !important;
 }
-
-/* Hover states on dark */
-[data-theme="dark"] .hover\:bg-gray-50:hover { background: #242018 !important; }
-[data-theme="dark"] .hover\:bg-blue-50:hover { background: #241810 !important; }
+[data-theme="dark"] .hover\:bg-gray-50:hover { background: var(--bg-hover) !important; }
+[data-theme="dark"] .hover\:bg-blue-50:hover { background: var(--bg-hover) !important; }
 
 /* Balance colors */
 .balance-positive { color: #34C759; font-weight: 600; }
@@ -253,9 +310,9 @@
 
 /* Card color variants */
 .card-blue { background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 40%) !important; border-color: var(--border) !important; }
-.card-green { background: linear-gradient(180deg, #D1FAE5 0%, #FFFFFF 40%) !important; border-color: #A7F3D0 !important; }
-.card-orange { background: linear-gradient(180deg, #FED7AA 0%, #FFFFFF 40%) !important; border-color: #FDBA74 !important; }
-.card-yellow { background: linear-gradient(180deg, #FEF3C7 0%, #FFFFFF 40%) !important; border-color: #FDE68A !important; }
+.card-green { background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 40%) !important; border-color: var(--border) !important; }
+.card-orange { background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 40%) !important; border-color: var(--border) !important; }
+.card-yellow { background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 40%) !important; border-color: var(--border) !important; }
 
 /* Hero card */
 .hero-card {
@@ -263,7 +320,24 @@
     border-radius: 20px !important;
     padding: 2rem;
     color: #FFFFFF;
-    box-shadow: 0 8px 30px rgba(192,122,69,0.2);
+    box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.2);
+}
+
+/* Hero card state variants — configurable, theme-aware */
+.hero-card--positive {
+    background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 30%, var(--bg-page) 100%);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.12);
+}
+.hero-card--negative {
+    background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 30%, var(--bg-page) 100%);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.12);
+}
+.hero-card--settled {
+    background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 30%, var(--bg-page) 100%);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.12);
 }
 
 /* Primary buttons — Copper */
@@ -612,7 +686,7 @@ h2 {
 .person-row:has(:checked) .p-avatar { filter: grayscale(0%); background: var(--accent); }
 .person-row .p-name { font-weight: 500; font-size: 14px; color: var(--text-primary); flex: 1; }
 .person-row .p-status { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); transition: all 0.2s ease; flex-shrink: 0; }
-.person-row:has(:checked) .p-status { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(192,122,69,0.3); }
+.person-row:has(:checked) .p-status { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.3); }
 .person-row:not(:has(:checked)):hover { opacity: 0.65; }
 .person-row:active { transform: scale(0.98); transition-duration: 0.1s; }
 .person-row .p-exempt { display: none; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #FEF2F2; color: #DC2626; }

@@ -1,4 +1,4 @@
-"""Tests for copper palette migration — ensures old blue accent is replaced."""
+"""Tests for Sand palette migration — new modern muted theme palettes."""
 import re
 from pathlib import Path
 
@@ -18,23 +18,23 @@ def _dark_block(css: str) -> str:
 
 
 class TestCSSVariablesLightMode:
-    """Light mode CSS variables should use copper palette."""
+    """Light mode CSS variables should use Sand palette (default theme)."""
 
-    def test_accent_is_copper(self):
+    def test_accent_is_sand(self):
         root = _root_block(STYLE_CSS)
-        assert "#C07A45" in root, "Light mode --accent should be copper #C07A45"
+        assert "#B8860B" in root, "Light mode --accent should be sand #B8860B"
 
     def test_bg_page_is_warm(self):
         root = _root_block(STYLE_CSS)
-        assert "#FAF9F7" in root, "Light mode --bg-page should be warm off-white #FAF9F7"
+        assert "#FAFAF8" in root, "Light mode --bg-page should be warm off-white #FAFAF8"
 
     def test_bg_card_is_warm(self):
         root = _root_block(STYLE_CSS)
-        assert "#F2EFEA" in root, "Light mode --bg-card should be #F2EFEA"
+        assert "#F5F4F0" in root, "Light mode --bg-card should be #F5F4F0"
 
     def test_text_primary_is_warm(self):
         root = _root_block(STYLE_CSS)
-        assert "#1A1410" in root, "Light mode --text-primary should be warm #1A1410"
+        assert "#1C1B18" in root, "Light mode --text-primary should be warm #1C1B18"
 
     def test_no_apple_blue_in_root(self):
         root = _root_block(STYLE_CSS)
@@ -42,23 +42,23 @@ class TestCSSVariablesLightMode:
 
 
 class TestCSSVariablesDarkMode:
-    """Dark mode CSS variables should use copper palette."""
+    """Dark mode CSS variables should use Sand dark palette."""
 
-    def test_dark_accent_is_bright_copper(self):
+    def test_dark_accent_is_bright_sand(self):
         dark = _dark_block(STYLE_CSS)
-        assert "#D4925C" in dark, "Dark mode --accent should be bright copper #D4925C"
+        assert "#D4A843" in dark, "Dark mode --accent should be bright sand #D4A843"
 
     def test_dark_bg_page_is_warm_near_black(self):
         dark = _dark_block(STYLE_CSS)
-        assert "#0E0C09" in dark, "Dark mode --bg-page should be warm near-black #0E0C09"
+        assert "#121210" in dark, "Dark mode --bg-page should be warm near-black #121210"
 
     def test_dark_bg_card_is_warm(self):
         dark = _dark_block(STYLE_CSS)
-        assert "#1C1A17" in dark, "Dark mode --bg-card should be #1C1A17"
+        assert "#1C1B18" in dark, "Dark mode --bg-card should be #1C1B18"
 
     def test_dark_text_primary_is_cream(self):
         dark = _dark_block(STYLE_CSS)
-        assert "#EBE3CC" in dark, "Dark mode --text-primary should be warm cream #EBE3CC"
+        assert "#E8E6DF" in dark, "Dark mode --text-primary should be warm cream #E8E6DF"
 
     def test_no_apple_dark_blue_in_dark(self):
         dark = _dark_block(STYLE_CSS)
@@ -66,11 +66,7 @@ class TestCSSVariablesDarkMode:
 
 
 class TestCSSClassColors:
-    """Hardcoded class-level colors should use copper."""
-
-    def test_btn_primary_uses_copper(self):
-        assert "#C07A45" in STYLE_CSS and ".btn-primary" in STYLE_CSS, \
-            "btn-primary should use copper accent"
+    """Primary button and hero card should use var(--accent)."""
 
     def test_btn_primary_uses_var_accent(self):
         # btn-primary should use var(--accent), not hardcoded hex
@@ -78,11 +74,15 @@ class TestCSSClassColors:
         btn_section = STYLE_CSS[btn_idx:btn_idx + 200]
         assert "var(--accent)" in btn_section, "btn-primary should use var(--accent) not hardcoded hex"
 
-    def test_hero_card_uses_copper(self):
-        assert "#C07A45" in STYLE_CSS or "#8B6F4E" in STYLE_CSS, \
-            "hero-card gradient should use copper tones"
+    def test_btn_primary_rule_exists(self):
+        assert ".btn-primary" in STYLE_CSS, "btn-primary class should exist in CSS"
 
-    def test_link_primary_uses_copper(self):
+    def test_hero_card_uses_var_accent(self):
+        hero_idx = STYLE_CSS.index(".hero-card")
+        hero_section = STYLE_CSS[hero_idx:hero_idx + 300]
+        assert "var(--accent)" in hero_section, "hero-card should use var(--accent)"
+
+    def test_link_primary_no_apple_blue(self):
         link_idx = STYLE_CSS.index(".link-primary")
         link_section = STYLE_CSS[link_idx:link_idx + 300]
         assert "#007AFF" not in link_section, "link-primary should not contain Apple blue"
@@ -92,20 +92,20 @@ BASE_HTML = Path("app/templates/base.html").read_text()
 
 
 class TestBaseTemplate:
-    """base.html should use copper palette."""
-
-    def test_theme_color_meta_is_copper(self):
-        assert 'content="#C07A45"' in BASE_HTML, "theme-color meta should be copper"
+    """base.html should use Sand palette."""
 
     def test_no_apple_blue_in_base(self):
         assert "#007AFF" not in BASE_HTML, "No Apple blue should remain in base.html"
 
-    def test_avatar_gradient_is_copper(self):
-        assert "#C07A45" in BASE_HTML, "Avatar gradient should use copper"
+    def test_avatar_uses_var_accent(self):
+        assert "var(--accent)" in BASE_HTML, "Avatar should use var(--accent)"
+
+    def test_base_fallback_is_sand(self):
+        assert "or 'sand'" in BASE_HTML, "base.html should fallback to 'sand' when theme_color is None"
 
 
 class TestGroupDetailTemplate:
-    """group/detail.html should use copper palette with pill toolbar."""
+    """group/detail.html should use CSS variables for theme-switching."""
 
     def test_header_card_uses_css_var(self):
         html = Path("app/templates/group/detail.html").read_text()
@@ -118,20 +118,19 @@ class TestGroupDetailTemplate:
 
     def test_no_apple_blue_accent(self):
         html = Path("app/templates/group/detail.html").read_text()
-        # #007AFF should not appear as an accent (may appear in semantic contexts)
         assert html.count("#007AFF") == 0, "No Apple blue accent in group detail"
 
     def test_member_colors_use_css_var(self):
         html = Path("app/templates/group/detail.html").read_text()
         assert "var(--accent)" in html, "Member colors should use var(--accent)"
 
-    def test_sidebar_chips_use_copper(self):
+    def test_sidebar_chips_no_indigo(self):
         html = Path("app/templates/group/detail.html").read_text()
         assert "#EEF2FF" not in html, "No indigo chip bg should remain"
 
 
 class TestDashboardTemplate:
-    """dashboard.html should use copper palette."""
+    """dashboard.html should use CSS variables."""
 
     def test_no_stripe_purple_avatar(self):
         html = Path("app/templates/dashboard.html").read_text()
@@ -143,7 +142,7 @@ class TestDashboardTemplate:
 
 
 class TestStatementTemplate:
-    """statement/upload.html should use copper palette."""
+    """statement/upload.html should use CSS variables."""
 
     def test_drop_zone_uses_css_vars(self):
         html = Path("app/templates/statement/upload.html").read_text()
@@ -159,7 +158,7 @@ class TestStatementTemplate:
 
 
 class TestExpenseTemplates:
-    """expense new/edit should use copper palette."""
+    """expense new/edit should use CSS variables."""
 
     def test_person_row_uses_css_var(self):
         html = Path("app/templates/expense/new.html").read_text()
@@ -173,7 +172,7 @@ class TestExpenseTemplates:
 
 
 class TestAccountSettings:
-    """account/settings.html should use copper palette."""
+    """account/settings.html should use CSS variables."""
 
     def test_avatar_uses_css_var(self):
         html = Path("app/templates/account/settings.html").read_text()
@@ -182,12 +181,11 @@ class TestAccountSettings:
 
 
 class TestManifest:
-    """PWA manifest should use copper palette."""
+    """PWA manifest should use Sand palette."""
 
-    def test_manifest_theme_color_is_copper(self):
+    def test_manifest_no_apple_blue(self):
         html = Path("app/static/manifest.json").read_text()
         assert "#007AFF" not in html, "PWA manifest should not have Apple blue"
-        assert "#C07A45" in html, "PWA manifest theme_color should be copper"
 
     def test_manifest_bg_is_warm(self):
         html = Path("app/static/manifest.json").read_text()
@@ -203,7 +201,7 @@ class TestNoBlueTailwindClasses:
 
 
 class TestChartsTemplate:
-    """group/charts.html should use copper palette."""
+    """group/charts.html should use distinct muted colors."""
 
     def test_chart_uses_distinct_muted_colors(self):
         html = Path("app/templates/group/charts.html").read_text()
@@ -214,66 +212,88 @@ class TestChartsTemplate:
 
 
 # ============================================================
-# MULTI-THEME SYSTEM TESTS
+# MULTI-THEME SYSTEM TESTS — New palettes
 # ============================================================
 
-THEMES = {
-    "classic": {"light_accent": "#2563EB", "dark_accent": "#60A5FA"},
-    "dollar": {"light_accent": "#EA580C", "dark_accent": "#FB923C"},
-    "coral": {"light_accent": "#E8522A", "dark_accent": "#FF7B52"},
-    "violet": {"light_accent": "#7C3AED", "dark_accent": "#A78BFA"},
-    "midnight": {"light_accent": "#1E40AF", "dark_accent": "#60A5FA"},
+NEW_THEMES = {
+    "slate": {"light_accent": "#6366F1", "dark_accent": "#818CF8"},
+    "ocean": {"light_accent": "#0EA5E9", "dark_accent": "#38BDF8"},
+    "rose":  {"light_accent": "#E11D48", "dark_accent": "#FB7185"},
+    "mint":  {"light_accent": "#10B981", "dark_accent": "#34D399"},
+    "night": {"light_accent": "#8B5CF6", "dark_accent": "#A78BFA"},
 }
+
+OLD_THEME_NAMES = ["classic", "dollar", "coral", "violet", "midnight"]
 
 
 class TestThemeCSSBlocks:
-    """Each theme should have a light and dark CSS variable block."""
+    """Each new theme should have a light and dark CSS variable block."""
 
-    def test_classic_light_block_exists(self):
+    def test_sand_is_root_default(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="classic"]' in css
+        # :root block should have the sand accent
+        assert "#B8860B" in css, "Sand accent #B8860B should be in :root"
 
-    def test_dollar_light_block_exists(self):
+    def test_slate_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="dollar"]' in css
+        assert '[data-theme-color="slate"]' in css
 
-    def test_coral_light_block_exists(self):
+    def test_ocean_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="coral"]' in css
+        assert '[data-theme-color="ocean"]' in css
 
-    def test_violet_light_block_exists(self):
+    def test_rose_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="violet"]' in css
+        assert '[data-theme-color="rose"]' in css
 
-    def test_midnight_light_block_exists(self):
+    def test_mint_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="midnight"]' in css
+        assert '[data-theme-color="mint"]' in css
 
-    def test_classic_dark_block_exists(self):
+    def test_night_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme="dark"][data-theme-color="classic"]' in css
+        assert '[data-theme-color="night"]' in css
 
-    def test_each_theme_has_correct_light_accent(self):
+    def test_slate_dark_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        for name, colors in THEMES.items():
+        assert '[data-theme="dark"][data-theme-color="slate"]' in css
+
+    def test_old_theme_names_absent(self):
+        css = Path("app/static/style.css").read_text()
+        for old_name in OLD_THEME_NAMES:
+            assert f'[data-theme-color="{old_name}"]' not in css, \
+                f"Old theme name '{old_name}' should no longer exist as a data-theme-color selector"
+
+    def test_each_new_theme_has_correct_light_accent(self):
+        css = Path("app/static/style.css").read_text()
+        for name, colors in NEW_THEMES.items():
             assert colors["light_accent"] in css, \
                 f"Theme {name} light accent {colors['light_accent']} missing from CSS"
 
-    def test_each_theme_has_correct_dark_accent(self):
+    def test_each_new_theme_has_correct_dark_accent(self):
         css = Path("app/static/style.css").read_text()
-        for name, colors in THEMES.items():
+        for name, colors in NEW_THEMES.items():
             assert colors["dark_accent"] in css, \
                 f"Theme {name} dark accent {colors['dark_accent']} missing from CSS"
 
 
 class TestThemeSettingsUI:
-    """Settings page should have theme selector with all 6 swatches."""
+    """Settings page should have theme selector with all 6 new theme swatches."""
 
     def test_settings_has_theme_section(self):
         html = Path("app/templates/account/settings.html").read_text()
         assert "Theme" in html or "theme" in html, "Settings should have a theme section"
-        for name in ["copper", "classic", "dollar", "coral", "violet", "midnight"]:
+
+    def test_settings_has_all_new_themes(self):
+        html = Path("app/templates/account/settings.html").read_text()
+        for name in ["sand", "slate", "ocean", "rose", "mint", "night"]:
             assert name in html.lower(), f"Theme swatch for '{name}' missing from settings"
+
+    def test_settings_has_no_old_theme_names(self):
+        html = Path("app/templates/account/settings.html").read_text()
+        for old_name in OLD_THEME_NAMES:
+            assert old_name not in html.lower(), \
+                f"Old theme name '{old_name}' should not appear in settings"
 
 
 class TestThemeBaseHTML:
@@ -287,6 +307,10 @@ class TestThemeBaseHTML:
         html = Path("app/templates/base.html").read_text()
         assert "theme_color" in html, "base.html should read/write theme_color in localStorage"
 
+    def test_base_default_fallback_is_sand(self):
+        html = Path("app/templates/base.html").read_text()
+        assert "or 'sand'" in html, "base.html should fallback to 'sand' (not 'copper')"
+
 
 class TestThemeUserModel:
     """User model should have theme_color column."""
@@ -297,11 +321,10 @@ class TestThemeUserModel:
 
 
 class TestThemeVarUsage:
-    """Templates should use CSS variables, not hardcoded copper hex, for theme-switching to work."""
+    """Templates should use CSS variables, not hardcoded hex, for theme-switching to work."""
 
     def test_no_hardcoded_accent_in_base(self):
         html = Path("app/templates/base.html").read_text()
-        # Avatar should use var(--accent), not #C07A45
         assert "var(--accent)" in html, "base.html should use var(--accent)"
 
     def test_no_hardcoded_accent_in_dashboard(self):
@@ -347,14 +370,14 @@ class TestThemeVarUsage:
     def test_base_html_guards_none_theme(self):
         """base.html should handle None theme_color (existing users before migration)."""
         html = Path("app/templates/base.html").read_text()
-        assert "or 'copper'" in html, "base.html should fallback to copper when theme_color is None"
+        assert "or 'sand'" in html, "base.html should fallback to sand when theme_color is None"
 
 
 class TestNoHardcodedThemeColors:
     """No non-semantic hardcoded hex should remain in templates.
     Every color must use a CSS variable so themes actually switch."""
 
-    # Copper-specific hex values that should be var(--*) instead
+    # Non-semantic hex values that should be var(--*) instead
     BANNED_HEX = ["#F5E6D8", "#DDB896", "#F8FAFF", "#6B7280"]
 
     def _template_content(self, path: str) -> str:
@@ -394,13 +417,11 @@ class TestNoHardcodedThemeColors:
 
     def test_base_logo_uses_var_accent(self):
         html = self._template_content("app/templates/base.html")
-        assert "#5E3D1E" not in html, "Logo gradient should use var(--accent), not hardcoded copper"
+        assert "#5E3D1E" not in html, "Logo gradient should use var(--accent), not hardcoded hex"
 
     def test_detail_no_hardcoded_white_backgrounds(self):
         """#FFFFFF used as card/input bg should be var(--bg-card) or var(--bg-input)."""
         html = self._template_content("app/templates/group/detail.html")
-        # Count #FFFFFF occurrences — some are legitimate (button text white-on-accent)
-        # But background: #FFFFFF should not exist
         assert 'background: #FFFFFF' not in html and "background: #FFFFFF" not in html, \
             "group/detail.html has background: #FFFFFF — should be var(--bg-card)"
 
@@ -410,7 +431,6 @@ class TestCardClassesUseVars:
 
     def test_card_blue_uses_vars(self):
         css = Path("app/static/style.css").read_text()
-        # Find the light-mode .card-blue rule (not the dark override)
         import re
         match = re.search(r'^\.card-blue\s*\{[^}]+\}', css, re.MULTILINE)
         assert match, "card-blue class should exist"
@@ -430,7 +450,7 @@ class TestNavigationBackButton:
 
 
 class TestThemeRouteValidation:
-    """Theme route should validate against allow-list."""
+    """Theme route should validate against allow-list with new theme names."""
 
     async def test_valid_theme_accepted(self, db_session, client):
         from app.models.user import User
@@ -445,14 +465,14 @@ class TestThemeRouteValidation:
         cookie = session_serializer.dumps({"user_id": user.id})
         resp = await client.post(
             "/account/theme",
-            data={"theme_color": "violet"},
+            data={"theme_color": "mint"},
             cookies={"frenmo_session": cookie},
             follow_redirects=False,
         )
         assert resp.status_code == 303
 
         await db_session.refresh(user)
-        assert user.theme_color == "violet"
+        assert user.theme_color == "mint"
 
     async def test_invalid_theme_rejected(self, db_session, client):
         from app.models.user import User

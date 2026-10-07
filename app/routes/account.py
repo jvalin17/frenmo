@@ -52,7 +52,7 @@ async def update_profile(request: Request, db: AsyncSession = Depends(get_db)):
     )
 
 
-VALID_THEMES = {"copper", "classic", "dollar", "coral", "violet", "midnight"}
+VALID_THEMES = {"sand", "slate", "ocean", "rose", "mint", "night"}
 
 
 @router.post("/theme")
@@ -60,7 +60,7 @@ VALID_THEMES = {"copper", "classic", "dollar", "coral", "violet", "midnight"}
 async def update_theme(request: Request, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, request.state.user_id)
     form_data = await request.form()
-    theme_color = form_data.get("theme_color", "copper").strip().lower()
+    theme_color = form_data.get("theme_color", "sand").strip().lower()
 
     if theme_color in VALID_THEMES:
         user.theme_color = theme_color

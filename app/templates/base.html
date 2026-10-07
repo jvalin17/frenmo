@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color or 'copper' if user else 'copper' }}">
+<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color or 'sand' if user else 'sand' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +20,7 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#C07A45">
+    <meta name="theme-color" content="#B8860B">
     <link rel="apple-touch-icon" href="/static/icon-192.png">
     <script>
     // Restore theme preferences before paint
@@ -28,6 +28,9 @@
         var t = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', t);
         var tc = localStorage.getItem('theme_color');
+        // Migrate old theme names to new names for existing users
+        var themeMap = {"copper":"sand","classic":"slate","dollar":"ocean","coral":"rose","violet":"mint","midnight":"night"};
+        if (tc && themeMap[tc]) { tc = themeMap[tc]; localStorage.setItem('theme_color', tc); }
         if (tc) document.documentElement.setAttribute('data-theme-color', tc);
     })();
     function toggleTheme() {

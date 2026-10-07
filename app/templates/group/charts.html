@@ -130,14 +130,15 @@ new Chart(document.getElementById('categoryChart'), {
 {% endif %}
 
 {% if monthly_data %}
+var accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '192,122,69';
 new Chart(document.getElementById('monthlyChart'), {
     type: 'bar',
     data: {
         labels: {{ monthly_data.keys()|list|tojson }},
         datasets: [{
             data: {{ monthly_data.values()|list|tojson }}.map(v => v / 100),
-            backgroundColor: isDark ? 'rgba(212,146,92,0.4)' : 'rgba(192,122,69,0.15)',
-            hoverBackgroundColor: isDark ? 'rgba(212,146,92,0.6)' : 'rgba(192,122,69,0.3)',
+            backgroundColor: 'rgba(' + accentRgb + ', 0.4)',
+            hoverBackgroundColor: 'rgba(' + accentRgb + ', 0.6)',
             borderRadius: 8,
             borderSkipped: false,
         }]
