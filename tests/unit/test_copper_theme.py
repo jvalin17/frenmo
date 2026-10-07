@@ -216,11 +216,11 @@ class TestChartsTemplate:
 # ============================================================
 
 NEW_THEMES = {
-    "slate": {"light_accent": "#6366F1", "dark_accent": "#818CF8"},
-    "ocean": {"light_accent": "#0EA5E9", "dark_accent": "#38BDF8"},
-    "rose":  {"light_accent": "#E11D48", "dark_accent": "#FB7185"},
-    "mint":  {"light_accent": "#10B981", "dark_accent": "#34D399"},
-    "night": {"light_accent": "#8B5CF6", "dark_accent": "#A78BFA"},
+    "navy":   {"light_accent": "#1E3A5F", "dark_accent": "#4A7EB5"},
+    "teal":   {"light_accent": "#1A5C5A", "dark_accent": "#3DA8A4"},
+    "maroon": {"light_accent": "#6B1D2A", "dark_accent": "#B84D5E"},
+    "sunset": {"light_accent": "#8B5E1A", "dark_accent": "#C8923A"},
+    "purple": {"light_accent": "#4A2072", "dark_accent": "#8B5CBF"},
 }
 
 OLD_THEME_NAMES = ["classic", "dollar", "coral", "violet", "midnight"]
@@ -234,29 +234,29 @@ class TestThemeCSSBlocks:
         # :root block should have the sand accent
         assert "#B8860B" in css, "Sand accent #B8860B should be in :root"
 
-    def test_slate_light_block_exists(self):
+    def test_navy_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="slate"]' in css
+        assert '[data-theme-color="navy"]' in css
 
-    def test_ocean_light_block_exists(self):
+    def test_teal_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="ocean"]' in css
+        assert '[data-theme-color="teal"]' in css
 
-    def test_rose_light_block_exists(self):
+    def test_maroon_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="rose"]' in css
+        assert '[data-theme-color="maroon"]' in css
 
-    def test_mint_light_block_exists(self):
+    def test_sunset_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="mint"]' in css
+        assert '[data-theme-color="sunset"]' in css
 
-    def test_night_light_block_exists(self):
+    def test_purple_light_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme-color="night"]' in css
+        assert '[data-theme-color="purple"]' in css
 
-    def test_slate_dark_block_exists(self):
+    def test_navy_dark_block_exists(self):
         css = Path("app/static/style.css").read_text()
-        assert '[data-theme="dark"][data-theme-color="slate"]' in css
+        assert '[data-theme="dark"][data-theme-color="navy"]' in css
 
     def test_old_theme_names_absent(self):
         css = Path("app/static/style.css").read_text()
@@ -286,7 +286,7 @@ class TestThemeSettingsUI:
 
     def test_settings_has_all_new_themes(self):
         html = Path("app/templates/account/settings.html").read_text()
-        for name in ["sand", "slate", "ocean", "rose", "mint", "night"]:
+        for name in ["sand", "navy", "teal", "maroon", "sunset", "purple"]:
             assert name in html.lower(), f"Theme swatch for '{name}' missing from settings"
 
     def test_settings_has_no_old_theme_names(self):
@@ -465,14 +465,14 @@ class TestThemeRouteValidation:
         cookie = session_serializer.dumps({"user_id": user.id})
         resp = await client.post(
             "/account/theme",
-            data={"theme_color": "mint"},
+            data={"theme_color": "sunset"},
             cookies={"frenmo_session": cookie},
             follow_redirects=False,
         )
         assert resp.status_code == 303
 
         await db_session.refresh(user)
-        assert user.theme_color == "mint"
+        assert user.theme_color == "sunset"
 
     async def test_invalid_theme_rejected(self, db_session, client):
         from app.models.user import User

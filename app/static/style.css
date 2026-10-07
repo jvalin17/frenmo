@@ -50,189 +50,206 @@
    THEME COLOR SYSTEM — each theme overrides CSS variables only
    ============================================================ */
 
-/* --- Slate (Cool professional, Stripe dashboard) --- */
-/* Accent: #6366F1 indigo-500 — HSL ~239° 84% 67% */
-[data-theme-color="slate"] {
-    --bg-page: #F8FAFC;
-    --bg-card: #FFFFFF;
-    --bg-input: #F1F5F9;
-    --bg-hover: #E8EDF5;
-    --text-primary: #0D1424;
-    --text-secondary: #445269;
-    --text-muted: #8896AA;
-    --border: #CBD5E4;
-    --border-light: #E8EDF5;
-    --accent: #6366F1;
-    --navbar-bg: #FFFFFF;
-    --navbar-border: #E8EDF5;
-    --accent-rgb: 99, 102, 241;
+/* --- Sand (explicit selector, mirrors :root for when JS sets data-theme-color="sand") --- */
+[data-theme-color="sand"] {
+    --bg-page: #FAFAF8; --bg-card: #F5F4F0; --bg-input: #EDECEA; --bg-hover: #E5E3DF;
+    --text-primary: #1C1B18; --text-secondary: #5C5A52; --text-muted: #908D82;
+    --border: #D4D1C8; --border-light: #E5E3DF; --accent: #B8860B; --accent-rgb: 184, 134, 11;
+    --navbar-bg: #FAFAF8; --navbar-border: #E5E3DF;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    --p: 239 84% 67%; --pf: 239 84% 57%; --pc: 240 80% 97%;
+    --p: 43 89% 38%; --pf: 43 89% 28%; --pc: 43 40% 96%;
 }
-[data-theme="dark"][data-theme-color="slate"] {
-    --bg-page: #0F1219;
-    --bg-card: #181E2A;
-    --bg-input: #222B3A;
-    --bg-hover: #2C3648;
-    --text-primary: #E8EDF5;
-    --text-secondary: #8896AA;
-    --text-muted: #5A6678;
-    --border: #2C3648;
-    --border-light: #222B3A;
-    --accent: #818CF8;
-    --navbar-bg: #181E2A;
-    --navbar-border: #2C3648;
-    --accent-rgb: 129, 140, 248;
-    --card-shadow: none;
-    --p: 239 87% 74%; --pf: 239 84% 67%; --pc: 239 40% 8%;
+[data-theme="dark"][data-theme-color="sand"] {
+    --bg-page: #121210; --bg-card: #1C1B18; --bg-input: #252420; --bg-hover: #2E2D28;
+    --text-primary: #E8E6DF; --text-secondary: #A8A59A; --text-muted: #6E6B60;
+    --border: #3A3830; --border-light: #2E2D28; --accent: #D4A843; --accent-rgb: 212, 168, 67;
+    --navbar-bg: #1C1B18; --navbar-border: #3A3830; --card-shadow: none;
+    --p: 43 68% 55%; --pf: 43 89% 38%; --pc: 43 30% 8%;
 }
 
-/* --- Ocean (Deep trust, Revolut blue) --- */
-/* Accent: #0EA5E9 sky-500 — HSL ~199° 89% 48% */
-[data-theme-color="ocean"] {
-    --bg-page: #F0F7FF;
-    --bg-card: #FAFCFF;
-    --bg-input: #E6F2FC;
-    --bg-hover: #D6EAF8;
-    --text-primary: #0B1929;
-    --text-secondary: #3A5A72;
-    --text-muted: #7A9AB0;
-    --border: #BDD6E8;
-    --border-light: #D6EAF8;
-    --accent: #0EA5E9;
-    --navbar-bg: #FAFCFF;
-    --navbar-border: #D6EAF8;
-    --accent-rgb: 14, 165, 233;
+/* --- Navy (Deep navy blue, muted cool professional) --- */
+/* Accent: #1E3A5F deep navy — HSL ~210° 51% 24% */
+[data-theme-color="navy"] {
+    --bg-page: #F5F7FA;
+    --bg-card: #EDF1F7;
+    --bg-input: #E0E7F0;
+    --bg-hover: #D0DAE6;
+    --text-primary: #0D1B2A;
+    --text-secondary: #3D5168;
+    --text-muted: #7A8FA5;
+    --border: #D8E0EB;
+    --border-light: #E0E7F0;
+    --accent: #1E3A5F;
+    --navbar-bg: #EDF1F7;
+    --navbar-border: #D0DAE6;
+    --accent-rgb: 30, 58, 95;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    --p: 199 89% 48%; --pf: 199 89% 38%; --pc: 199 80% 97%;
+    --p: 210 51% 24%; --pf: 210 51% 14%; --pc: 210 40% 96%;
 }
-[data-theme="dark"][data-theme-color="ocean"] {
-    --bg-page: #0B1929;
-    --bg-card: #132336;
-    --bg-input: #1C3048;
-    --bg-hover: #243C58;
-    --text-primary: #D6EAF8;
-    --text-secondary: #7AAAC8;
-    --text-muted: #4A6E88;
-    --border: #243C58;
-    --border-light: #1C3048;
-    --accent: #38BDF8;
-    --navbar-bg: #132336;
-    --navbar-border: #243C58;
-    --accent-rgb: 56, 189, 248;
+[data-theme="dark"][data-theme-color="navy"] {
+    --bg-page: #0A1220;
+    --bg-card: #131E2E;
+    --bg-input: #1C2940;
+    --bg-hover: #253550;
+    --text-primary: #D8E4F0;
+    --text-secondary: #8AABC5;
+    --text-muted: #5A7A95;
+    --border: #253550;
+    --border-light: #1C2940;
+    --accent: #4A7EB5;
+    --navbar-bg: #131E2E;
+    --navbar-border: #253550;
+    --accent-rgb: 74, 126, 181;
     --card-shadow: none;
-    --p: 199 95% 60%; --pf: 199 89% 48%; --pc: 199 50% 6%;
+    --p: 210 42% 50%; --pf: 210 51% 24%; --pc: 210 30% 8%;
 }
 
-/* --- Rose (Soft modern, Monzo-inspired) --- */
-/* Accent: #E11D48 rose-600 — HSL ~347° 77% 50% */
-[data-theme-color="rose"] {
-    --bg-page: #FFF5F5;
-    --bg-card: #FFFAFA;
-    --bg-input: #FFE8EC;
-    --bg-hover: #FFD6DD;
-    --text-primary: #1A0A10;
-    --text-secondary: #6B3040;
-    --text-muted: #A07080;
-    --border: #F0C0C8;
-    --border-light: #FFD6DD;
-    --accent: #E11D48;
-    --navbar-bg: #FFFAFA;
-    --navbar-border: #FFD6DD;
-    --accent-rgb: 225, 29, 72;
+/* --- Teal (Dark teal, earthy calm) --- */
+/* Accent: #1A5C5A dark teal — HSL ~179° 55% 23% */
+[data-theme-color="teal"] {
+    --bg-page: #F3F8F7;
+    --bg-card: #E8F2F0;
+    --bg-input: #D8EBE8;
+    --bg-hover: #C5DDD9;
+    --text-primary: #0C1E1C;
+    --text-secondary: #3D5E5C;
+    --text-muted: #7A9A98;
+    --border: #CEDEDA;
+    --border-light: #D8EBE8;
+    --accent: #1A5C5A;
+    --navbar-bg: #E8F2F0;
+    --navbar-border: #C5DDD9;
+    --accent-rgb: 26, 92, 90;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    --p: 347 77% 50%; --pf: 347 77% 40%; --pc: 347 60% 97%;
+    --p: 179 55% 23%; --pf: 179 55% 13%; --pc: 179 40% 96%;
 }
-[data-theme="dark"][data-theme-color="rose"] {
-    --bg-page: #1A1015;
-    --bg-card: #261820;
-    --bg-input: #33202A;
-    --bg-hover: #402835;
-    --text-primary: #F8E4EA;
-    --text-secondary: #C8909A;
-    --text-muted: #8A5A68;
-    --border: #4D3040;
-    --border-light: #33202A;
-    --accent: #FB7185;
-    --navbar-bg: #261820;
-    --navbar-border: #4D3040;
-    --accent-rgb: 251, 113, 133;
+[data-theme="dark"][data-theme-color="teal"] {
+    --bg-page: #0A1614;
+    --bg-card: #132422;
+    --bg-input: #1C3432;
+    --bg-hover: #254442;
+    --text-primary: #D8F0EE;
+    --text-secondary: #8AC5C2;
+    --text-muted: #5A9592;
+    --border: #254442;
+    --border-light: #1C3432;
+    --accent: #3DA8A4;
+    --navbar-bg: #132422;
+    --navbar-border: #254442;
+    --accent-rgb: 61, 168, 164;
     --card-shadow: none;
-    --p: 350 96% 71%; --pf: 350 81% 50%; --pc: 350 30% 8%;
+    --p: 178 46% 45%; --pf: 179 55% 23%; --pc: 179 30% 8%;
 }
 
-/* --- Mint (Fresh finance, Cash App/Acorns) --- */
-/* Accent: #10B981 emerald-500 — HSL ~160° 84% 39% */
-[data-theme-color="mint"] {
-    --bg-page: #F0FDF4;
-    --bg-card: #FAFFFE;
-    --bg-input: #E0F7EC;
-    --bg-hover: #CCEDDE;
-    --text-primary: #091A12;
-    --text-secondary: #2D5A40;
-    --text-muted: #6A9A7A;
-    --border: #B0D8C0;
-    --border-light: #CCEDDE;
-    --accent: #10B981;
-    --navbar-bg: #FAFFFE;
-    --navbar-border: #CCEDDE;
-    --accent-rgb: 16, 185, 129;
+/* --- Maroon (Deep maroon/burgundy, muted warm) --- */
+/* Accent: #6B1D2A deep maroon — HSL ~350° 59% 27% */
+[data-theme-color="maroon"] {
+    --bg-page: #FAF5F5;
+    --bg-card: #F2EAEA;
+    --bg-input: #E8DCDC;
+    --bg-hover: #DBC8C8;
+    --text-primary: #1C1012;
+    --text-secondary: #5E3840;
+    --text-muted: #987078;
+    --border: #E0CCCC;
+    --border-light: #E8DCDC;
+    --accent: #6B1D2A;
+    --navbar-bg: #F2EAEA;
+    --navbar-border: #DBC8C8;
+    --accent-rgb: 107, 29, 42;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    --p: 160 84% 39%; --pf: 160 84% 30%; --pc: 160 60% 97%;
+    --p: 350 59% 27%; --pf: 350 59% 17%; --pc: 350 40% 96%;
 }
-[data-theme="dark"][data-theme-color="mint"] {
-    --bg-page: #0A1612;
-    --bg-card: #13221A;
-    --bg-input: #1C3026;
-    --bg-hover: #253C30;
-    --text-primary: #D0F0E0;
-    --text-secondary: #60A878;
-    --text-muted: #3C6A50;
-    --border: #253C30;
-    --border-light: #1C3026;
-    --accent: #34D399;
-    --navbar-bg: #13221A;
-    --navbar-border: #253C30;
-    --accent-rgb: 52, 211, 153;
+[data-theme="dark"][data-theme-color="maroon"] {
+    --bg-page: #1A0F12;
+    --bg-card: #2A1820;
+    --bg-input: #3A222C;
+    --bg-hover: #4A2C38;
+    --text-primary: #F0D8DD;
+    --text-secondary: #C58090;
+    --text-muted: #955A68;
+    --border: #4A2C38;
+    --border-light: #3A222C;
+    --accent: #B84D5E;
+    --navbar-bg: #2A1820;
+    --navbar-border: #4A2C38;
+    --accent-rgb: 184, 77, 94;
     --card-shadow: none;
-    --p: 160 84% 56%; --pf: 160 84% 39%; --pc: 160 50% 5%;
+    --p: 350 41% 51%; --pf: 350 59% 27%; --pc: 350 30% 8%;
 }
 
-/* --- Night (Dark-first, Revolut dark mode) --- */
-/* Accent: #8B5CF6 violet-500 — HSL ~258° 90% 66% */
-[data-theme-color="night"] {
-    --bg-page: #F1F5F9;
-    --bg-card: #FFFFFF;
-    --bg-input: #E8EEF5;
-    --bg-hover: #D8E2EE;
-    --text-primary: #0C0E18;
-    --text-secondary: #48506A;
-    --text-muted: #8890A8;
-    --border: #CAD2E0;
-    --border-light: #D8E2EE;
-    --accent: #7C3AED;
-    --navbar-bg: #FFFFFF;
-    --navbar-border: #D8E2EE;
-    --accent-rgb: 124, 58, 237;
+/* --- Sunset (Dark amber/burnt sienna, not bright yellow) --- */
+/* Accent: #8B5E1A dark amber — HSL ~34° 67% 32% */
+[data-theme-color="sunset"] {
+    --bg-page: #FAF7F2;
+    --bg-card: #F2ECDF;
+    --bg-input: #E8DFD0;
+    --bg-hover: #DBD0BE;
+    --text-primary: #1C1608;
+    --text-secondary: #5E5030;
+    --text-muted: #988860;
+    --border: #E0D4C0;
+    --border-light: #E8DFD0;
+    --accent: #8B5E1A;
+    --navbar-bg: #F2ECDF;
+    --navbar-border: #DBD0BE;
+    --accent-rgb: 139, 94, 26;
     --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-    --p: 263 83% 58%; --pf: 263 83% 48%; --pc: 263 70% 97%;
+    --p: 34 67% 32%; --pf: 34 67% 22%; --pc: 34 40% 96%;
 }
-[data-theme="dark"][data-theme-color="night"] {
-    --bg-page: #0A0A0F;
-    --bg-card: #15131F;
-    --bg-input: #1F1C2E;
-    --bg-hover: #2A263D;
-    --text-primary: #E8E4F5;
-    --text-secondary: #A89DC8;
-    --text-muted: #6E6490;
-    --border: #3B3455;
-    --border-light: #1F1C2E;
-    --accent: #A78BFA;
-    --navbar-bg: #15131F;
-    --navbar-border: #3B3455;
-    --accent-rgb: 167, 139, 250;
+[data-theme="dark"][data-theme-color="sunset"] {
+    --bg-page: #141008;
+    --bg-card: #221C12;
+    --bg-input: #30281A;
+    --bg-hover: #3E3422;
+    --text-primary: #F0E8D0;
+    --text-secondary: #C5B080;
+    --text-muted: #958058;
+    --border: #3E3422;
+    --border-light: #30281A;
+    --accent: #C8923A;
+    --navbar-bg: #221C12;
+    --navbar-border: #3E3422;
+    --accent-rgb: 200, 146, 58;
     --card-shadow: none;
-    --p: 263 86% 76%; --pf: 263 70% 66%; --pc: 263 30% 8%;
+    --p: 34 52% 51%; --pf: 34 67% 32%; --pc: 34 30% 8%;
+}
+
+/* --- Purple (Deep purple, muted dark) --- */
+/* Accent: #4A2072 deep purple — HSL ~274° 55% 28% */
+[data-theme-color="purple"] {
+    --bg-page: #F7F3FA;
+    --bg-card: #EDE6F2;
+    --bg-input: #DED4E8;
+    --bg-hover: #CFC2DC;
+    --text-primary: #1A0E28;
+    --text-secondary: #4A3860;
+    --text-muted: #8A78A0;
+    --border: #D8CCDE;
+    --border-light: #DED4E8;
+    --accent: #4A2072;
+    --navbar-bg: #EDE6F2;
+    --navbar-border: #CFC2DC;
+    --accent-rgb: 74, 32, 114;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+    --p: 274 55% 28%; --pf: 274 55% 18%; --pc: 274 40% 96%;
+}
+[data-theme="dark"][data-theme-color="purple"] {
+    --bg-page: #10081A;
+    --bg-card: #1C1228;
+    --bg-input: #281C38;
+    --bg-hover: #342648;
+    --text-primary: #E8D8F5;
+    --text-secondary: #B088D0;
+    --text-muted: #7858A0;
+    --border: #342648;
+    --border-light: #281C38;
+    --accent: #8B5CBF;
+    --navbar-bg: #1C1228;
+    --navbar-border: #342648;
+    --accent-rgb: 139, 92, 191;
+    --card-shadow: none;
+    --p: 274 41% 55%; --pf: 274 55% 28%; --pc: 274 30% 8%;
 }
 
 /* Dark mode overrides — elevation through lighter surfaces, not shadows */

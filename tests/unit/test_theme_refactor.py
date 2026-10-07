@@ -33,16 +33,16 @@ THEME_BLOCKS = [
     # (human name, selector)
     ("sand root",          ":root"),
     ("sand dark",          '[data-theme="dark"]'),
-    ("slate light",        '[data-theme-color="slate"]'),
-    ("slate dark",         '[data-theme="dark"][data-theme-color="slate"]'),
-    ("ocean light",        '[data-theme-color="ocean"]'),
-    ("ocean dark",         '[data-theme="dark"][data-theme-color="ocean"]'),
-    ("rose light",         '[data-theme-color="rose"]'),
-    ("rose dark",          '[data-theme="dark"][data-theme-color="rose"]'),
-    ("mint light",         '[data-theme-color="mint"]'),
-    ("mint dark",          '[data-theme="dark"][data-theme-color="mint"]'),
-    ("night light",        '[data-theme-color="night"]'),
-    ("night dark",         '[data-theme="dark"][data-theme-color="night"]'),
+    ("navy light",         '[data-theme-color="navy"]'),
+    ("navy dark",          '[data-theme="dark"][data-theme-color="navy"]'),
+    ("teal light",         '[data-theme-color="teal"]'),
+    ("teal dark",          '[data-theme="dark"][data-theme-color="teal"]'),
+    ("maroon light",       '[data-theme-color="maroon"]'),
+    ("maroon dark",        '[data-theme="dark"][data-theme-color="maroon"]'),
+    ("sunset light",       '[data-theme-color="sunset"]'),
+    ("sunset dark",        '[data-theme="dark"][data-theme-color="sunset"]'),
+    ("purple light",       '[data-theme-color="purple"]'),
+    ("purple dark",        '[data-theme="dark"][data-theme-color="purple"]'),
 ]
 
 

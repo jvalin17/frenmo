@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-theme-color="{{ user.theme_color or 'sand' if user else 'sand' }}">
+{% set theme_map = {"copper":"sand","classic":"navy","slate":"navy","dollar":"teal","ocean":"teal","coral":"maroon","rose":"maroon","violet":"sunset","mint":"sunset","midnight":"purple","night":"purple"} %}
+<html lang="en" data-theme="light" data-theme-color="{{ theme_map.get(user.theme_color, user.theme_color) or 'sand' if user else 'sand' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +30,7 @@
         document.documentElement.setAttribute('data-theme', t);
         var tc = localStorage.getItem('theme_color');
         // Migrate old theme names to new names for existing users
-        var themeMap = {"copper":"sand","classic":"slate","dollar":"ocean","coral":"rose","violet":"mint","midnight":"night"};
+        var themeMap = {"copper":"sand","classic":"navy","slate":"navy","dollar":"teal","ocean":"teal","coral":"maroon","rose":"maroon","violet":"sunset","mint":"sunset","midnight":"purple","night":"purple"};
         if (tc && themeMap[tc]) { tc = themeMap[tc]; localStorage.setItem('theme_color', tc); }
         if (tc) document.documentElement.setAttribute('data-theme-color', tc);
     })();

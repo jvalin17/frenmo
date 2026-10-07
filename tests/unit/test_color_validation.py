@@ -225,21 +225,21 @@ THEME_BLOCKS = [
     # sand (default :root + dark)
     (":root", None, None),
     ("[data-theme=\"dark\"]", None, None),
-    # slate
-    ("[data-theme-color=\"slate\"]", "slate", "light"),
-    ("[data-theme=\"dark\"][data-theme-color=\"slate\"]", "slate", "dark"),
-    # ocean
-    ("[data-theme-color=\"ocean\"]", "ocean", "light"),
-    ("[data-theme=\"dark\"][data-theme-color=\"ocean\"]", "ocean", "dark"),
-    # rose
-    ("[data-theme-color=\"rose\"]", "rose", "light"),
-    ("[data-theme=\"dark\"][data-theme-color=\"rose\"]", "rose", "dark"),
-    # mint
-    ("[data-theme-color=\"mint\"]", "mint", "light"),
-    ("[data-theme=\"dark\"][data-theme-color=\"mint\"]", "mint", "dark"),
-    # night
-    ("[data-theme-color=\"night\"]", "night", "light"),
-    ("[data-theme=\"dark\"][data-theme-color=\"night\"]", "night", "dark"),
+    # navy
+    ("[data-theme-color=\"navy\"]", "navy", "light"),
+    ("[data-theme=\"dark\"][data-theme-color=\"navy\"]", "navy", "dark"),
+    # teal
+    ("[data-theme-color=\"teal\"]", "teal", "light"),
+    ("[data-theme=\"dark\"][data-theme-color=\"teal\"]", "teal", "dark"),
+    # maroon
+    ("[data-theme-color=\"maroon\"]", "maroon", "light"),
+    ("[data-theme=\"dark\"][data-theme-color=\"maroon\"]", "maroon", "dark"),
+    # sunset
+    ("[data-theme-color=\"sunset\"]", "sunset", "light"),
+    ("[data-theme=\"dark\"][data-theme-color=\"sunset\"]", "sunset", "dark"),
+    # purple
+    ("[data-theme-color=\"purple\"]", "purple", "light"),
+    ("[data-theme=\"dark\"][data-theme-color=\"purple\"]", "purple", "dark"),
 ]
 
 

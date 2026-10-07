@@ -14,11 +14,31 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/account", tags=["account"])
 templates = Jinja2Templates(directory="app/templates")
 
+VALID_THEMES = {"sand", "navy", "teal", "maroon", "sunset", "purple"}
+
+OLD_TO_NEW_THEME = {
+    "copper": "sand",
+    "classic": "navy",
+    "slate": "navy",
+    "dollar": "teal",
+    "ocean": "teal",
+    "coral": "maroon",
+    "rose": "maroon",
+    "violet": "sunset",
+    "mint": "sunset",
+    "midnight": "purple",
+    "night": "purple",
+}
+
 
 @router.get("/", response_class=HTMLResponse)
 @login_required
 async def account_page(request: Request, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, request.state.user_id)
+    # Migrate old theme name to new name if needed (one-time DB fix per user)
+    if user.theme_color and user.theme_color in OLD_TO_NEW_THEME:
+        user.theme_color = OLD_TO_NEW_THEME[user.theme_color]
+        await db.commit()
     return templates.TemplateResponse(
         request, "account/settings.html", {"user": user, "success": None, "error": None}
     )
@@ -52,15 +72,15 @@ async def update_profile(request: Request, db: AsyncSession = Depends(get_db)):
     )
 
 
-VALID_THEMES = {"sand", "slate", "ocean", "rose", "mint", "night"}
-
-
 @router.post("/theme")
 @login_required
 async def update_theme(request: Request, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, request.state.user_id)
     form_data = await request.form()
     theme_color = form_data.get("theme_color", "sand").strip().lower()
+
+    # Migrate any old theme name that may arrive from a stale form
+    theme_color = OLD_TO_NEW_THEME.get(theme_color, theme_color)
 
     if theme_color in VALID_THEMES:
         user.theme_color = theme_color
