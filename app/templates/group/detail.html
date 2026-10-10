@@ -26,6 +26,9 @@
             <h2 class="text-xl font-bold" style="color: var(--text-primary);">{{ group.name }}</h2>
             <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--bg-hover); color: var(--accent);">{{ group.currency }}</span>
             <span class="text-xs" style="color: var(--text-secondary);">{{ members|length }} members</span>
+            {% if group.default_split_ways %}
+            <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary);">÷{{ group.default_split_ways }} ways</span>
+            {% endif %}
         </div>
         <div class="flex flex-wrap gap-2 mt-1">
             <a href="/statement/{{ group.id }}" class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full" style="background: var(--bg-hover); color: var(--accent); text-decoration: none;">📥 Import Expenses</a>
@@ -48,6 +51,14 @@
                         {% endfor %}
                     </select>
                 </div>
+            </div>
+            <!-- Split ways — how many ways to divide expenses -->
+            <div class="mb-3 flex items-center justify-between p-2 rounded-lg" style="background: var(--bg-hover);">
+                <div>
+                    <label class="text-xs font-medium" style="color: var(--text-secondary);">📐 Split ways</label>
+                    <p class="text-xs" style="color: var(--text-muted);">Total people sharing expenses (even if not all are on the app)</p>
+                </div>
+                <input type="number" name="default_split_ways" value="{{ group.default_split_ways or '' }}" min="1" max="99" placeholder="auto" class="text-sm px-2 py-1 rounded-lg w-20 text-center" style="background: var(--bg-card); border: 1px solid var(--border);">
             </div>
             <!-- Kid-friendly toggle (above shares so it controls visibility) -->
             <div class="mb-3 flex items-center justify-between p-2 rounded-lg" style="background: var(--bg-hover);">
@@ -245,6 +256,9 @@ function toggleSection(id) {
                 <div class="flex items-center gap-1.5">
                     <span class="font-medium text-sm">{{ expense.description }}</span>
                     <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-input); color: var(--text-muted);">{{ member_names.get(expense.paid_by, '?') }}</span>
+                    {% if expense.split_ways %}
+                    <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-input); color: var(--text-secondary);">÷{{ expense.split_ways }}</span>
+                    {% endif %}
                     {% if expense.kid_friendly and group.kid_friendly %}
                     <span class="text-xs px-1.5 py-0.5 rounded-full" style="background: var(--bg-hover); color: var(--accent);">🧒 kid-friendly</span>
                     {% endif %}

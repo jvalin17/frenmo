@@ -204,6 +204,16 @@ async def update_group_settings(request: Request, group_id: int, db: AsyncSessio
         group.name = new_name
     group.currency = new_currency
 
+    # Update default_split_ways (how many ways to divide expenses)
+    split_ways_val = form_data.get("default_split_ways", "").strip()
+    if split_ways_val:
+        try:
+            group.default_split_ways = max(1, min(int(split_ways_val), 99))
+        except ValueError:
+            pass
+    else:
+        group.default_split_ways = None
+
     # Update kid-friendly toggle
     new_kid_friendly = form_data.get("kid_friendly") == "on"
     group.kid_friendly = new_kid_friendly

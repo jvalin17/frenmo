@@ -22,7 +22,7 @@ class Expense(Base):
     paid_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     kid_friendly: Mapped[bool] = mapped_column(default=False, server_default="false")
-    total_splits: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    split_ways: Mapped[int | None] = mapped_column(nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, onupdate=datetime.utcnow

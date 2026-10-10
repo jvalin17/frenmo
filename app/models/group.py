@@ -19,6 +19,7 @@ class Group(Base):
     )
     currency: Mapped[str] = mapped_column(String(3), default="USD")
     kid_friendly: Mapped[bool] = mapped_column(default=False, server_default="false")
+    default_split_ways: Mapped[int | None] = mapped_column(nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
 

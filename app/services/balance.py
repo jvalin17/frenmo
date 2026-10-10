@@ -76,13 +76,18 @@ def simplify_debts(balances: dict[int, int]) -> list[tuple[int, int, int]]:
 async def get_overall_balances(
     db: AsyncSession, user_id: int
 ) -> dict[int, int]:
-    """Cross-group balances for a user. Returns {other_user_id: net_amount}."""
+    """Cross-group balances for a user.
+
+    Returns {other_user_id: net_amount} where:
+      positive = other person owes you
+      negative = you owe the other person
+    """
     # Get all expenses involving this user (across all groups)
     result = await db.execute(
         select(
             ExpenseSplit.user_id,
-            func.sum(ExpenseSplit.paid_amount).label("total_paid"),
-            func.sum(ExpenseSplit.owed_amount).label("total_owed"),
+            func.sum(ExpenseSplit.paid_amount).label("amount_paid"),
+            func.sum(ExpenseSplit.owed_amount).label("amount_owed"),
         )
         .join(Expense, ExpenseSplit.expense_id == Expense.id)
         .where(
@@ -96,7 +101,12 @@ async def get_overall_balances(
 
     all_balances = {}
     for row in result.all():
-        net = (row.total_paid or 0) - (row.total_owed or 0)
-        if net != 0 and row.user_id != user_id:
-            all_balances[row.user_id] = net
+        # other_net: positive means they paid more than they owe (they're a creditor)
+        # Negate to get current user's perspective:
+        #   other is creditor → you owe them (negative)
+        #   other is debtor → they owe you (positive)
+        other_net = (row.amount_paid or 0) - (row.amount_owed or 0)
+        from_user_perspective = -other_net
+        if from_user_perspective != 0 and row.user_id != user_id:
+            all_balances[row.user_id] = from_user_perspective
     return all_balances

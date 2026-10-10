@@ -78,7 +78,7 @@ def _build_kid_aware_splits(
     member_shares: dict[int, int],
     kid_counts: dict[int, int],
     is_kid_friendly: bool,
-    total_splits: int | None = None,
+    split_ways: int | None = None,
 ) -> dict[int, int]:
     """Build effective shares and compute kid-aware splits for an expense.
 
@@ -92,12 +92,12 @@ def _build_kid_aware_splits(
     }
     parent_ids = [uid for uid in participant_ids if kid_counts.get(uid, 0) > 0]
 
-    # Kid-friendly expenses ignore total_splits
-    effective_total_splits = None if is_kid_friendly else total_splits
+    # Kid-friendly expenses ignore split_ways
+    effective_split_ways = None if is_kid_friendly else split_ways
 
     return compute_kid_aware_splits(
         amount_paise, effective_shares, parent_ids,
-        total_splits=effective_total_splits,
+        split_ways=effective_split_ways,
     )
 
 
@@ -213,7 +213,7 @@ async def recalculate_group_splits(
         is_kid_friendly = group_kid_friendly and expense.kid_friendly
         new_owed = _build_kid_aware_splits(
             expense.amount, participant_ids, member_shares, kid_counts,
-            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
+            is_kid_friendly=is_kid_friendly, split_ways=expense.split_ways,
         )
         replacements.append((expense, new_owed))
 
@@ -273,12 +273,12 @@ async def recalculate_splits_for_new_member(
         if not participant_ids:
             continue
 
-        # Check total_splits cap
-        if expense.total_splits and new_member_id not in participant_ids:
+        # Check split_ways cap
+        if expense.split_ways and new_member_id not in participant_ids:
             current_share_sum = sum(
                 float(member_shares.get(uid, 1)) for uid in participant_ids
             )
-            if current_share_sum >= expense.total_splits:
+            if current_share_sum >= expense.split_ways:
                 continue
 
         if new_member_id not in participant_ids:
@@ -287,7 +287,7 @@ async def recalculate_splits_for_new_member(
         is_kid_friendly = group_kid_friendly and expense.kid_friendly
         new_owed = _build_kid_aware_splits(
             expense.amount, participant_ids, member_shares, kid_counts,
-            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
+            is_kid_friendly=is_kid_friendly, split_ways=expense.split_ways,
         )
         replacements.append((expense, new_owed))
 
@@ -367,35 +367,35 @@ async def repair_missing_splits(
         if not missing:
             continue
 
-        # Check total_splits cap
-        if expense.total_splits:
+        # Check split_ways cap
+        if expense.split_ways:
             current_share_sum = sum(
                 float(member_shares.get(uid, 1)) for uid in split_user_ids
             )
-            if current_share_sum >= expense.total_splits:
+            if current_share_sum >= expense.split_ways:
                 continue
 
         all_participant_ids = list(split_user_ids | member_ids)
 
-        # Trim to fit total_splits
-        if expense.total_splits:
+        # Trim to fit split_ways
+        if expense.split_ways:
             total_so_far = sum(
                 float(member_shares.get(uid, 1)) for uid in all_participant_ids
             )
-            if total_so_far > expense.total_splits:
+            if total_so_far > expense.split_ways:
                 all_participant_ids = list(split_user_ids)
                 for mid in (member_ids - split_user_ids):
                     new_sum = sum(
                         float(member_shares.get(uid, 1))
                         for uid in all_participant_ids
                     ) + float(member_shares.get(mid, 1))
-                    if new_sum <= expense.total_splits:
+                    if new_sum <= expense.split_ways:
                         all_participant_ids.append(mid)
 
         is_kid_friendly = group_kid_friendly and expense.kid_friendly
         new_owed = _build_kid_aware_splits(
             expense.amount, all_participant_ids, member_shares, kid_counts,
-            is_kid_friendly=is_kid_friendly, total_splits=expense.total_splits,
+            is_kid_friendly=is_kid_friendly, split_ways=expense.split_ways,
         )
         replacements.append((expense, new_owed))
 
@@ -420,7 +420,7 @@ async def create_expense_with_splits(
     idempotency_key: str | None = None,
     expense_type: str = "expense",
     currency: str = "INR",
-    total_splits: int | None = None,
+    split_ways: int | None = None,
     kid_friendly: bool = False,
 ) -> Expense:
     """Create expense + splits atomically."""
@@ -436,6 +436,11 @@ async def create_expense_with_splits(
     from app.models.group import Group, GroupMember
 
     group = await db.get(Group, group_id)
+
+    # Inherit group-level default_split_ways if not explicitly set per-expense
+    if split_ways is None and group and group.default_split_ways:
+        split_ways = group.default_split_ways
+
     is_expense_kid_friendly = kid_friendly and group and group.kid_friendly
 
     if is_expense_kid_friendly and split_type in RECALCABLE_SPLIT_TYPES:
@@ -449,11 +454,11 @@ async def create_expense_with_splits(
 
         owed_splits = _build_kid_aware_splits(
             amount_paise, member_ids, member_shares_map, kid_counts,
-            is_kid_friendly=True, total_splits=total_splits,
+            is_kid_friendly=True, split_ways=split_ways,
         )
     else:
         owed_splits = compute_splits(
-            amount_paise, split_type, member_ids, member_values, total_splits,
+            amount_paise, split_type, member_ids, member_values, split_ways,
         )
 
     expense = Expense(
@@ -467,7 +472,7 @@ async def create_expense_with_splits(
         paid_by=paid_by,
         created_by=created_by,
         idempotency_key=idempotency_key,
-        total_splits=total_splits,
+        split_ways=split_ways,
         kid_friendly=kid_friendly,
     )
     db.add(expense)
@@ -580,7 +585,7 @@ async def update_expense(
 
             owed_splits = _build_kid_aware_splits(
                 expense.amount, member_ids, member_shares_map, kid_counts,
-                is_kid_friendly=True, total_splits=expense.total_splits,
+                is_kid_friendly=True, split_ways=expense.split_ways,
             )
         else:
             owed_splits = compute_splits(

@@ -102,10 +102,10 @@ class TestComputeKidAwareSplits:
         assert result[10] != result[20]  # they shouldn't be equal with odd amount
         assert result[10] > result[20] or result[10] == base_per_unit + 1  # user 10 gets +1
 
-    def test_kid_friendly_ignores_total_splits(self):
-        """Kid-friendly should NOT use total_splits — just sum of effective shares."""
+    def test_kid_friendly_ignores_split_ways(self):
+        """Kid-friendly should NOT use split_ways — just sum of effective shares."""
         shares = {1: 1.0, 2: 2.5}
-        # Even if total_splits=10, kid-friendly ignores it
+        # Even if split_ways=10, kid-friendly ignores it
         result = compute_kid_aware_splits(35000, shares, parent_user_ids=[2])
         assert result[1] == 10000  # 1/3.5 * 35000
         assert result[2] == 25000  # 2.5/3.5 * 35000

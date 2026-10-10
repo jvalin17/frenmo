@@ -56,16 +56,16 @@ def compute_percent_splits(amount_paise: int, member_values: dict[int, float]) -
 def compute_shares_splits(
     amount_paise: int,
     member_shares: dict[int, float],
-    total_splits: int | None = None,
+    split_ways: int | None = None,
 ) -> dict[int, int]:
     """Shares/weights split — distribute proportionally by share weights.
 
-    If total_splits is provided, divide by total_splits instead of sum(member_shares).
+    If split_ways is provided, divide by split_ways instead of sum(member_shares).
     This allows "split by N" where N > current member count.
     """
     if not member_shares:
         return {}
-    total_effective_shares = float(total_splits) if total_splits else sum(member_shares.values())
+    total_effective_shares = float(split_ways) if split_ways else sum(member_shares.values())
     if total_effective_shares == 0:
         raise ValueError("Cannot split: total effective shares is zero")
 
@@ -78,7 +78,7 @@ def compute_shares_splits(
         total_assigned += paise
 
     last_id, last_shares = members[-1]
-    if total_splits:
+    if split_ways:
         splits[last_id] = round(amount_paise * last_shares / total_effective_shares)
     else:
         splits[last_id] = amount_paise - total_assigned
@@ -89,7 +89,7 @@ def compute_kid_aware_splits(
     amount_paise: int,
     member_shares: dict[int, float],
     parent_user_ids: list[int],
-    total_splits: int | None = None,
+    split_ways: int | None = None,
 ) -> dict[int, int]:
     """Shares split with remainder assigned to first parent instead of last member.
 
@@ -99,7 +99,7 @@ def compute_kid_aware_splits(
     """
     if not member_shares:
         return {}
-    total_effective_shares = float(total_splits) if total_splits else sum(member_shares.values())
+    total_effective_shares = float(split_ways) if split_ways else sum(member_shares.values())
     if total_effective_shares == 0:
         raise ValueError("Cannot split: total effective shares is zero")
 
@@ -108,9 +108,9 @@ def compute_kid_aware_splits(
     for user_id, shares in member_shares.items():
         splits[user_id] = round(amount_paise * shares / total_effective_shares)
 
-    # When total_splits is set, remainder stays pending (unassigned to future members)
-    # When no total_splits, assign remainder to first parent or last member
-    if not total_splits:
+    # When split_ways is set, remainder stays pending (unassigned to future members)
+    # When no split_ways, assign remainder to first parent or last member
+    if not split_ways:
         remainder = amount_paise - sum(splits.values())
         if remainder != 0:
             sorted_parents = sorted(pid for pid in parent_user_ids if pid in splits)
@@ -146,20 +146,20 @@ def compute_splits(
     split_type: str,
     member_ids: list[int],
     member_values: dict[int, float] | None = None,
-    total_splits: int | None = None,
+    split_ways: int | None = None,
 ) -> dict[int, int]:
     """Dispatch to the right split function based on split_type."""
     if split_type == "equal":
-        if total_splits:
+        if split_ways:
             equal_shares = dict.fromkeys(member_ids, 1.0)
             return compute_shares_splits(
-                amount_paise, equal_shares, total_splits=total_splits,
+                amount_paise, equal_shares, split_ways=split_ways,
             )
         return compute_equal_splits(amount_paise, member_ids)
 
     if split_type == "shares" and member_values:
         return compute_shares_splits(
-            amount_paise, member_values, total_splits=total_splits,
+            amount_paise, member_values, split_ways=split_ways,
         )
 
     if split_type == "exact" and member_values:
