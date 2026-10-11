@@ -298,12 +298,13 @@
 </script>
 {% endif %}
 
-<!-- Total Spent -->
-{% set total_spent = expenses|map(attribute='amount')|sum %}
+<!-- Total Spent (excludes settlements) -->
+{% set real_expenses = expenses|selectattr('expense_type', 'equalto', 'expense')|list %}
+{% set total_spent = real_expenses|map(attribute='amount')|sum %}
 <div class="rounded-xl p-4 mb-4 text-center" style="background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-card) 100%); border: 1px solid var(--border);">
     <p class="text-xs font-medium uppercase" style="color: var(--text-secondary);">Total Spent</p>
     <p class="text-2xl font-bold" style="color: var(--text-primary);">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(total_spent / 100) }}</p>
-    <p class="text-xs" style="color: var(--text-muted);">{{ expenses|length }} expense{{ 's' if expenses|length != 1 }}</p>
+    <p class="text-xs" style="color: var(--text-muted);">{{ real_expenses|length }} expense{{ 's' if real_expenses|length != 1 }}</p>
 </div>
 
 <!-- Add Expense Button -->
