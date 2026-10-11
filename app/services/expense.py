@@ -358,11 +358,23 @@ async def repair_missing_splits(
 
     splits_by_expense = await _batch_load_splits(db, candidate_ids)
 
+    # Also load expenses to check for stale split_ways
+    expenses_result = await db.execute(
+        select(Expense).where(Expense.id.in_(candidate_ids))
+    )
+    expenses_by_id = {e.id: e for e in expenses_result.scalars().all()}
+
     needs_repair_ids = []
     for expense_id in candidate_ids:
         old_splits = splits_by_expense.get(expense_id, [])
         split_user_ids = {s.user_id for s in old_splits}
+        # Repair if members are missing
         if member_ids - split_user_ids:
+            needs_repair_ids.append(expense_id)
+            continue
+        # Repair if expense has no split_ways but group has default_split_ways
+        expense = expenses_by_id.get(expense_id)
+        if expense and expense.split_ways is None and group and group.default_split_ways:
             needs_repair_ids.append(expense_id)
 
     if not needs_repair_ids:
@@ -383,7 +395,10 @@ async def repair_missing_splits(
         split_user_ids = {s.user_id for s in old_splits}
 
         missing = member_ids - split_user_ids
-        if not missing:
+        needs_split_ways_repair = (
+            expense.split_ways is None and group and group.default_split_ways
+        )
+        if not missing and not needs_split_ways_repair:
             continue
 
         # Check split_ways cap

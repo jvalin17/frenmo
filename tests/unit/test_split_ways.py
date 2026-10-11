@@ -235,3 +235,24 @@ class TestRecalculationUsesGroupDefault:
         assert owed[alice.id] == 10000, f"Expected 10000 (1/5), got {owed[alice.id]}"
         assert owed[bob.id] == 20000, f"Expected 20000 (2/5), got {owed[bob.id]}"
         assert owed[charlie.id] == 10000, f"Expected 10000 (1/5), got {owed[charlie.id]}"
+
+    @pytest.mark.asyncio
+    async def test_repair_fixes_stale_split_ways_on_page_load(
+        self, db_session, group_with_old_expense,
+    ):
+        """repair_missing_splits should recalculate when expense.split_ways is NULL
+        but group.default_split_ways is set — auto-fix on page load."""
+        alice, bob, charlie, group, expense = group_with_old_expense
+
+        # All members are present (no missing members), but splits are wrong
+        # because they were computed without split_ways=5
+        await repair_missing_splits(db_session, group.id)
+        await db_session.commit()
+
+        splits_result = await db_session.execute(
+            select(ExpenseSplit).where(ExpenseSplit.expense_id == expense.id)
+        )
+        owed = {s.user_id: s.owed_amount for s in splits_result.scalars().all()}
+        # With split_ways=5: Alice=1/5=10000, Bob=2/5=20000
+        assert owed[alice.id] == 10000, f"Expected 10000 (1/5), got {owed[alice.id]}"
+        assert owed[bob.id] == 20000, f"Expected 20000 (2/5), got {owed[bob.id]}"
