@@ -136,6 +136,34 @@ async def is_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
     return result.scalar_one_or_none() is not None
 
 
+async def ensure_friendship(
+    db: AsyncSession, user_id: int, friend_id: int
+) -> bool:
+    """Create an accepted friendship if none exists. Returns True if created, False if skipped."""
+    if user_id == friend_id:
+        return False
+
+    existing = await db.execute(
+        select(Friendship).where(
+            or_(
+                and_(Friendship.user_id == user_id, Friendship.friend_id == friend_id),
+                and_(Friendship.user_id == friend_id, Friendship.friend_id == user_id),
+            )
+        )
+    )
+    if existing.scalar_one_or_none() is not None:
+        return False
+
+    friendship = Friendship(
+        user_id=user_id,
+        friend_id=friend_id,
+        status="accepted",
+    )
+    db.add(friendship)
+    await db.flush()
+    return True
+
+
 async def remove_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
     """Remove an accepted friendship (either direction)."""
     result = await db.execute(

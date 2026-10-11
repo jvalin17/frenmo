@@ -362,6 +362,18 @@ async def join_group(request: Request, token: str, db: AsyncSession = Depends(ge
         db.add(member)
         await db.flush()
 
+        # Auto-friendship with all existing members
+        from app.services.friendship import ensure_friendship
+
+        existing_members = await db.execute(
+            select(GroupMember.user_id).where(
+                GroupMember.group_id == group.id,
+                GroupMember.user_id != request.state.user_id,
+            )
+        )
+        for row in existing_members.all():
+            await ensure_friendship(db, request.state.user_id, row[0])
+
         # Recalculate existing equal-split expenses to include new member
         from app.services.expense import recalculate_splits_for_new_member
 

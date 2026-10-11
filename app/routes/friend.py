@@ -145,6 +145,18 @@ async def add_friend_to_group(
         db.add(new_member)
         await db.flush()
 
+        # Auto-friendship with all existing members
+        from app.services.friendship import ensure_friendship
+
+        existing_members = await db.execute(
+            select(GroupMember.user_id).where(
+                GroupMember.group_id == group_id,
+                GroupMember.user_id != friend_id,
+            )
+        )
+        for row in existing_members.all():
+            await ensure_friendship(db, friend_id, row[0])
+
         # Recalculate existing equal-split expenses to include new member
         from app.services.expense import recalculate_splits_for_new_member
 
