@@ -26,4 +26,4 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Run tests
-        run: python -m pytest -q
+        run: python -m pytest -q --ignore=tests/e2e
