@@ -137,23 +137,34 @@
 <div class="sidebar">
     <div class="rounded-2xl p-4" style="background: var(--bg-card); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
         <h3 class="font-semibold text-xs uppercase mb-3" style="color: var(--text-secondary); letter-spacing: 0.05em;">Members</h3>
-        <div class="space-y-1">
+        <div class="space-y-0">
             {% for member in members %}
             {% set net = balances.get(member.id, 0) %}
-            <div class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-colors">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
+            {% set shares = member_shares.get(member.id, 1) %}
+            {% set kids = member_kid_counts.get(member.id, 0) %}
+            {% set effective = shares + kids %}
+            <div class="member-card">
+                <div class="member-card__avatar {% if effective > 1 %}member-card__avatar--weighted{% endif %}">
                     {{ member.name[0]|upper }}
+                    {% if effective > 1 %}
+                    <span class="member-card__share-badge">{{ effective }}</span>
+                    {% endif %}
                 </div>
                 <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1">
-                        <p class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ member.name }}</p>
-                        {% if member_shares.get(member.id, 1) > 1 %}
-                        <span class="text-xs px-1 rounded" style="background: var(--bg-hover); color: var(--accent);">×{{ member_shares.get(member.id, 1) }}</span>
-                        {% endif %}
-                    </div>
-                    <p class="text-xs {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
-                        {% if net > 0 %}+${{ "%.2f"|format(net / 100) }}{% elif net < 0 %}-${{ "%.2f"|format((-net) / 100) }}{% else %}settled{% endif %}
+                    <p class="member-card__name">{{ member.name }}</p>
+                    <p class="member-card__meta">
+                        {% if kids > 0 %}{{ shares }} adult{{ 's' if shares != 1 }} · {{ kids }} kid{{ 's' if kids != 1 }}
+                        {% else %}{{ shares }} share{{ 's' if shares != 1 }}{% endif %}
                     </p>
+                </div>
+                <div class="member-card__balance">
+                    {% if net != 0 %}
+                    <span class="member-card__balance-amount">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format((net if net > 0 else -net) / 100) }}</span>
+                    <span class="member-card__balance-label">{% if net > 0 %}gets back{% else %}owes{% endif %}</span>
+                    {% else %}
+                    <span class="member-card__balance-amount" style="color: var(--text-muted);">—</span>
+                    <span class="member-card__balance-label">settled</span>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
@@ -184,34 +195,100 @@
 <!-- RIGHT MAIN CONTENT -->
 <div class="main-content">
 
-<!-- Simplified Debts -->
+<!-- Simplified Debts — Slide to Settle -->
 {% if simplified %}
-<div class="card card-orange mb-4">
-    <div class="card-body py-3">
-        <h3 class="font-semibold text-sm text-gray-500 uppercase mb-2">Settle Up</h3>
-        {% for debtor_id, creditor_id, amount in simplified %}
-        <div class="flex justify-between items-center py-2 border-b last:border-b-0">
-            <span class="text-sm">
-                <span class="font-medium">{{ member_names.get(debtor_id, '?') }}</span>
-                owes
-                <span class="font-medium">{{ member_names.get(creditor_id, '?') }}</span>
-            </span>
-            <span class="font-bold balance-negative">${{ "%.2f"|format(amount / 100) }}</span>
+<div class="mb-4">
+    <h3 class="font-semibold text-xs uppercase mb-3" style="color: var(--text-secondary); letter-spacing: 0.05em;">Settle Up · {{ simplified|length }} transfer{{ 's' if simplified|length != 1 }}</h3>
+    {% for debtor_id, creditor_id, amount in simplified %}
+    {% set debtor = member_names.get(debtor_id, '?') %}
+    {% set creditor = member_names.get(creditor_id, '?') %}
+    <div class="slide-settle__card" data-debtor-id="{{ debtor_id }}" data-creditor-id="{{ creditor_id }}" data-amount="{{ "%.2f"|format(amount / 100) }}" data-group-id="{{ group.id }}">
+        <div class="slide-settle__info">
+            <div class="slide-settle__names"><strong>{{ debtor }}</strong> owes <strong>{{ creditor }}</strong></div>
+            <div class="slide-settle__amount">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(amount / 100) }}</div>
         </div>
-        {% endfor %}
-        <form method="POST" action="/settlements/new/{{ group.id }}" class="mt-3 flex flex-wrap gap-2 items-end">
-            <select name="from_user" class="select select-bordered select-sm flex-1">
-                {% for m in members %}<option value="{{ m.id }}">{{ m.name }}</option>{% endfor %}
-            </select>
-            <span class="text-sm">→</span>
-            <select name="to_user" class="select select-bordered select-sm flex-1">
-                {% for m in members %}<option value="{{ m.id }}">{{ m.name }}</option>{% endfor %}
-            </select>
-            <input type="number" name="amount" step="0.01" min="0.01" placeholder="$" class="input input-bordered input-sm w-24" required>
-            <button type="submit" class="btn btn-success btn-sm">Settle</button>
-        </form>
+        <div class="slide-track">
+            <div class="slide-track__fill"></div>
+            <div class="slide-track__hint">slide to settle →</div>
+            <div class="slide-track__thumb">{{ debtor[0]|upper }}</div>
+            <div class="slide-track__target">{{ creditor[0]|upper }}</div>
+        </div>
     </div>
+    {% endfor %}
 </div>
+<script>
+(function() {
+    document.querySelectorAll('.slide-track').forEach(function(track) {
+        var thumb = track.querySelector('.slide-track__thumb');
+        var fill = track.querySelector('.slide-track__fill');
+        var card = track.closest('.slide-settle__card');
+        var dragging = false;
+        var startX = 0;
+
+        function getMaxLeft() { return track.offsetWidth - thumb.offsetWidth - 8; }
+
+        function setPos(x) {
+            var maxLeft = getMaxLeft();
+            var clamped = Math.max(4, Math.min(x, maxLeft));
+            thumb.style.left = clamped + 'px';
+            fill.style.width = (clamped + thumb.offsetWidth / 2) + 'px';
+            return clamped;
+        }
+
+        function onStart(e) {
+            if (card.classList.contains('slide-settle__card--settled')) return;
+            dragging = true;
+            startX = (e.touches ? e.touches[0].clientX : e.clientX) - thumb.offsetLeft;
+            thumb.style.transition = 'none';
+            fill.style.transition = 'none';
+        }
+
+        function onMove(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            setPos(clientX - startX);
+        }
+
+        function onEnd() {
+            if (!dragging) return;
+            dragging = false;
+            thumb.style.transition = 'left 0.3s ease';
+            fill.style.transition = 'width 0.3s ease';
+            var maxLeft = getMaxLeft();
+
+            if (thumb.offsetLeft >= maxLeft * 0.85) {
+                setPos(maxLeft);
+                card.classList.add('slide-settle__card--settled');
+                track.querySelector('.slide-track__hint').textContent = '✓ Settled!';
+                track.querySelector('.slide-track__hint').style.opacity = '1';
+                track.querySelector('.slide-track__hint').style.color = 'var(--accent)';
+                track.querySelector('.slide-track__hint').style.fontWeight = '700';
+                track.querySelector('.slide-track__hint').style.animation = 'none';
+
+                // Submit settlement
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/settlements/new/' + card.dataset.groupId;
+                form.innerHTML = '<input type="hidden" name="from_user" value="' + card.dataset.debtorId + '">'
+                    + '<input type="hidden" name="to_user" value="' + card.dataset.creditorId + '">'
+                    + '<input type="hidden" name="amount" value="' + card.dataset.amount + '">';
+                document.body.appendChild(form);
+                setTimeout(function() { form.submit(); }, 600);
+            } else {
+                setPos(4);
+            }
+        }
+
+        thumb.addEventListener('mousedown', onStart);
+        thumb.addEventListener('touchstart', onStart, { passive: true });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onEnd);
+        document.addEventListener('touchend', onEnd);
+    });
+})();
+</script>
 {% endif %}
 
 <!-- Total Spent -->

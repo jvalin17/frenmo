@@ -50,11 +50,11 @@
                 </div>
                 <span class="text-sm font-medium truncate max-w-[120px]">{{ balance_names.get(other_id, '?') }}</span>
             </div>
-            <span class="font-semibold text-sm shrink-0 {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% endif %}">
-                {% if net > 0 %}owes you ${{ "%.2f"|format(net / 100) }}
-                {% elif net < 0 %}you owe ${{ "%.2f"|format((-net) / 100) }}
-                {% endif %}
-            </span>
+            {% if net > 0 %}
+            <span class="bal-pill bal-pill--credit">owes you ${{ "%.2f"|format(net / 100) }}</span>
+            {% elif net < 0 %}
+            <span class="bal-pill bal-pill--debit">you owe ${{ "%.2f"|format((-net) / 100) }}</span>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
