@@ -209,10 +209,17 @@
         </div>
         <div class="slide-track">
             <div class="slide-track__fill"></div>
-            <div class="slide-track__hint">slide to settle →</div>
+            <div class="slide-track__hint">slide to settle full amount →</div>
             <div class="slide-track__thumb">{{ debtor[0]|upper }}</div>
             <div class="slide-track__target">{{ creditor[0]|upper }}</div>
         </div>
+        <form method="POST" action="/settlements/new/{{ group.id }}" class="flex items-center gap-2 mt-2">
+            <input type="hidden" name="from_user" value="{{ debtor_id }}">
+            <input type="hidden" name="to_user" value="{{ creditor_id }}">
+            <span class="text-xs" style="color: var(--text-muted);">or pay</span>
+            <input type="number" name="amount" step="0.01" min="0.01" max="{{ "%.2f"|format(amount / 100) }}" placeholder="partial amount" class="text-xs px-2 py-1.5 rounded-lg flex-1" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary);" required>
+            <button type="submit" class="text-xs font-semibold px-3 py-1.5 rounded-lg" style="background: rgba(var(--accent-rgb), 0.12); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.25); cursor: pointer;">Pay</button>
+        </form>
     </div>
     {% endfor %}
 </div>
