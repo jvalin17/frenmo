@@ -39,8 +39,17 @@ def mask_email(email: str) -> str:
 @login_required
 async def friends_page(request: Request, q: str = "", db: AsyncSession = Depends(get_db)):
     user = await db.get(User, request.state.user_id)
+    from app.services.balance import get_friend_balance_detail
+
     friends = await get_friend_list(db, request.state.user_id)
     pending = await get_pending_requests(db, request.state.user_id)
+
+    # Load balance details for each friend
+    friend_balances = {}
+    for friend in friends:
+        friend_balances[friend.id] = await get_friend_balance_detail(
+            db, request.state.user_id, friend.id
+        )
 
     # Resolve sender names for pending requests
     pending_with_names = []
@@ -72,6 +81,7 @@ async def friends_page(request: Request, q: str = "", db: AsyncSession = Depends
         {
             "user": user,
             "friends": friends,
+            "friend_balances": friend_balances,
             "pending": pending_with_names,
             "search_results": search_results,
             "query": q,

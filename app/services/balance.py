@@ -110,3 +110,87 @@ async def get_overall_balances(
         if from_user_perspective != 0 and row.user_id != user_id:
             all_balances[row.user_id] = from_user_perspective
     return all_balances
+
+
+async def get_friend_balance_detail(
+    db: AsyncSession, user_id: int, friend_id: int
+) -> dict:
+    """Per-friend balance with group breakdown and settlement history.
+
+    Returns {
+        net_balance: int (positive = friend owes you),
+        groups: [{group_id, group_name, balance}],
+        settlements: [{amount, paid_by, created_at, group_name}],
+    }
+    """
+    from app.models.group import Group, GroupMember
+
+    # Find shared groups (both users are members)
+    user_groups = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+    friend_groups = select(GroupMember.group_id).where(GroupMember.user_id == friend_id)
+    shared_group_ids = await db.execute(
+        select(Group).where(Group.id.in_(user_groups.intersect(friend_groups)))
+    )
+    shared_groups = shared_group_ids.scalars().all()
+
+    net_balance = 0
+    group_details = []
+
+    for group in shared_groups:
+        balances = await get_group_balances(db, group.id)
+        simplified = simplify_debts(balances)
+
+        # Find bilateral balance from simplified debts
+        group_balance = 0
+        for debtor_id, creditor_id, amount in simplified:
+            if debtor_id == friend_id and creditor_id == user_id:
+                group_balance += amount  # friend owes me
+            elif debtor_id == user_id and creditor_id == friend_id:
+                group_balance -= amount  # I owe friend
+
+        if group_balance != 0:
+            group_details.append({
+                "group_id": group.id,
+                "group_name": group.name,
+                "balance": group_balance,
+            })
+            net_balance += group_balance
+
+    # Settlement history between the two users across all shared groups
+    settlement_result = await db.execute(
+        select(Expense)
+        .where(
+            Expense.expense_type == "settlement",
+            Expense.deleted_at.is_(None),
+            Expense.group_id.in_([g.id for g in shared_groups]),
+        )
+        .order_by(Expense.created_at.desc())
+    )
+    settlements = []
+    for expense in settlement_result.scalars().all():
+        # Only include settlements between these two users
+        if (expense.paid_by == user_id or expense.paid_by == friend_id):
+            # Check if the other user is in the splits
+            split_result = await db.execute(
+                select(ExpenseSplit.user_id).where(
+                    ExpenseSplit.expense_id == expense.id,
+                    ExpenseSplit.user_id.in_([user_id, friend_id]),
+                )
+            )
+            involved_users = {row[0] for row in split_result.all()}
+            if user_id in involved_users and friend_id in involved_users:
+                group_name = next(
+                    (g.name for g in shared_groups if g.id == expense.group_id), "?"
+                )
+                settlements.append({
+                    "amount": expense.amount,
+                    "paid_by": expense.paid_by,
+                    "created_at": expense.created_at,
+                    "group_name": group_name,
+                })
+
+    return {
+        "net_balance": net_balance,
+        "groups": group_details,
+        "settlements": settlements,
+    }
