@@ -78,11 +78,13 @@
                     <p class="text-xs" style="color: var(--text-muted);">{{ group.type }}</p>
                 </div>
             </div>
-            <span class="font-bold text-sm {% if net > 0 %}balance-positive{% elif net < 0 %}balance-negative{% else %}balance-zero{% endif %}">
-                {% if net > 0 %}+${{ "%.2f"|format(net / 100) }}
-                {% elif net < 0 %}-${{ "%.2f"|format((-net) / 100) }}
-                {% else %}settled{% endif %}
-            </span>
+            {% if net > 0 %}
+            <span class="bal-pill bal-pill--credit">gets back ${{ "%.2f"|format(net / 100) }}</span>
+            {% elif net < 0 %}
+            <span class="bal-pill bal-pill--debit">owes ${{ "%.2f"|format((-net) / 100) }}</span>
+            {% else %}
+            <span class="bal-pill bal-pill--zero">✓ settled</span>
+            {% endif %}
         </a>
         {% endfor %}
         {% else %}
