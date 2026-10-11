@@ -100,3 +100,13 @@ async def logout():
     response = RedirectResponse(url="/auth/login", status_code=303)
     clear_session_cookie(response)
     return response
+
+
+@router.post("/logout")
+async def logout_beacon():
+    """POST logout for navigator.sendBeacon on tab/window close."""
+    from fastapi.responses import Response
+
+    response = Response(status_code=204)
+    clear_session_cookie(response)
+    return response

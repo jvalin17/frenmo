@@ -79,6 +79,8 @@
     }
     // Keep server alive — ping /health every 5 min to prevent idle spindown
     setInterval(function() { fetch('/health').catch(function() {}); }, 5 * 60 * 1000);
+    // Auto-logout: session cookie (no max_age) is deleted on browser close.
+    // No beforeunload beacon — it fires on every navigation, not just close.
     </script>
 </body>
 </html>

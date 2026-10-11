@@ -18,11 +18,10 @@ def set_session_cookie(response: Any, user_id: int) -> None:
     response.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=session_data,
-        max_age=SESSION_MAX_AGE,
         httponly=True,
         samesite="lax",
         secure=not settings.debug,
-    )
+    )  # No max_age — browser session cookie, deleted on browser close
 
 
 def clear_session_cookie(response: Any) -> None:
