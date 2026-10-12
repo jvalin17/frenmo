@@ -8,7 +8,7 @@ Free expense splitting app. Split costs with friends, simplify debts, settle up 
 
 - **5 Split Types** — Equal, exact amounts, percentage, shares (e.g., 3 shares for you + parents), and full (one person owes all)
 - **Share Recalculation** — Change default shares in group settings and all existing equal-split expenses recalculate retroactively. Thread-safe with row-level locking.
-- **Split Breakdown** — Per-person owed amounts displayed on every expense (e.g., "Alice($30), Bob($60)")
+- **Split Breakdown** — Per-person owed amounts displayed on every expense as avatar chips (colored initial + name + amount)
 - **Multi-currency** — USD, INR, EUR, GBP, AED, JPY, CAD, AUD. Each group has its own currency. Expenses in any currency auto-convert to group currency with `*` (approximate).
 - **Currency Converter** — Live exchange rates (cached 12h) with converter widget in every group sidebar.
 - **6 Color Themes** — Copper, Classic (blue), Dollar (orange), Coral, Violet, Midnight. Selectable in account settings. Works in both light and dark mode (12 combinations). Config-driven via CSS variables.
