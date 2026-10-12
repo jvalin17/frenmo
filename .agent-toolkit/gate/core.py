@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 import uuid
 from pathlib import Path
@@ -11,6 +12,8 @@ from typing import Any
 
 import jwt
 
+from gate.config import GatesConfigError, find_gates_config  # noqa: F401 — re-exported
+from gate.config import load_gates_config as _load_gates_config
 from gate.keys import load_signing_secret
 
 ISSUER = "https://agent-toolkit.gate/local"
@@ -18,40 +21,81 @@ ALGORITHM = "HS256"
 TOKEN_TYP = "GATE+JWT"
 
 
-def find_gates_config(project_root: Path) -> Path | None:
-    for candidate in (
-        project_root / "gates.json",
-        project_root / ".claude" / "gates.json",
-    ):
-        if candidate.is_file():
-            return candidate
-    return None
+SIGNED_DEFAULT_CONFIG: dict[str, Any] = {
+    "gate_mode": "legacy",
+    "profile": "standard",
+    "eval_threshold": 95,
+    "commit_requires": ["precommit"],
+    "push_requires": ["evaluate"],
+}
 
 
 def load_gates_config(project_root: Path) -> dict[str, Any]:
-    path = find_gates_config(project_root)
-    if not path:
-        return {
-            "gate_mode": "legacy",
-            "profile": "standard",
-            "eval_threshold": 95,
-            "commit_requires": ["precommit"],
-            "push_requires": ["evaluate"],
-        }
-    return json.loads(path.read_text(encoding="utf-8"))
+    """Load gates.json via gate.config; signed defaults when no file exists.
+
+    A corrupt file raises GatesConfigError (fail closed) — callers such as
+    issue_token / verify_gate let it propagate so the gate stays shut.
+    """
+    config = _load_gates_config(project_root)
+    if config is None:
+        return dict(SIGNED_DEFAULT_CONFIG)
+    return config
+
+
+# Built-in signed-mode profiles. A gates.json "profiles" block overrides these.
+DEFAULT_PROFILES: dict[str, dict[str, list[str]]] = {
+    "minimal": {"commit_requires": ["precommit"], "push_requires": []},
+    "standard": {"commit_requires": ["precommit"], "push_requires": ["evaluate"]},
+    "strict": {"commit_requires": ["precommit", "evaluate"], "push_requires": ["evaluate", "reviewer"]},
+    "paranoid": {
+        "commit_requires": ["precommit", "evaluate"],
+        "push_requires": ["evaluate", "reviewer", "assess"],
+    },
+}
+DEFAULT_PROFILE = "standard"
 
 
 def resolve_profile(config: dict[str, Any]) -> str:
-    return config.get("profile") or "standard"
+    """Name recorded in the token: the explicit profile, else the mode, else standard."""
+    if config.get("profile"):
+        return str(config["profile"])
+    if config.get("mode"):
+        return f"mode:{config['mode']}"
+    return DEFAULT_PROFILE
+
+
+def _mode_requires(config: dict[str, Any], action: str) -> list[str] | None:
+    """Skills the legacy `mode` field requires, via hooks/mode_resolver (if present)."""
+    hooks_dir = Path(__file__).resolve().parents[1] / "hooks"
+    if str(hooks_dir) not in sys.path:
+        sys.path.insert(0, str(hooks_dir))
+    try:
+        from mode_resolver import resolve_mode_from_config
+    except ImportError:
+        return None
+    mode = resolve_mode_from_config(config)
+    return list(mode.commit_requires if action == "commit" else mode.push_requires)
 
 
 def required_skills(config: dict[str, Any], action: str) -> list[str]:
-    profile = resolve_profile(config)
-    profiles = config.get("profiles") or {}
-    if profile in profiles:
-        key = f"{action}_requires"
+    """Skills a commit/push needs in signed mode.
+
+    Precedence: explicit `profile` (file profiles override the built-in
+    table) → legacy `mode` via mode_resolver → `<action>_requires` keys →
+    the built-in standard profile.
+    """
+    key = f"{action}_requires"
+    profiles = {**DEFAULT_PROFILES, **(config.get("profiles") or {})}
+    profile = config.get("profile")
+    if profile and profile in profiles:
         return list(profiles[profile].get(key, []))
-    return list(config.get(f"{action}_requires", []))
+    if not profile and config.get("mode"):
+        from_mode = _mode_requires(config, action)
+        if from_mode is not None:
+            return from_mode
+    if key in config:
+        return list(config[key])
+    return list(DEFAULT_PROFILES[DEFAULT_PROFILE][key])
 
 
 def eval_threshold(config: dict[str, Any]) -> int:

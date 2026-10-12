@@ -4,7 +4,7 @@
   "profile": "minimal",
   "test_command": ".venv/bin/python -m pytest -q",
   "lint_command": "true",
-  "mode": "normal",
+  "mode": "safe",
   "eval_threshold": 95,
   "compact_at_minutes": 70,
   "max_session_minutes": 200,
