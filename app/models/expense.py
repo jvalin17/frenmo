@@ -45,7 +45,5 @@ class ExpenseSplit(Base):
     paid_amount: Mapped[int] = mapped_column(nullable=False, default=0)  # cents
     owed_amount: Mapped[int] = mapped_column(nullable=False, default=0)  # cents
 
-    __table_args__ = (
-        UniqueConstraint("expense_id", "user_id"),
-        Index("ix_expense_splits_expense", "expense_id"),
-    )
+    # UniqueConstraint(expense_id, user_id) already indexes expense_id as its leading column
+    __table_args__ = (UniqueConstraint("expense_id", "user_id"),)

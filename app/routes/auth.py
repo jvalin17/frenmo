@@ -80,6 +80,14 @@ async def register(
             status_code=400,
         )
 
+    if not name.strip():
+        return templates.TemplateResponse(
+            request,
+            "auth/register.html",
+            {"user": None, "error": "Name is required"},
+            status_code=400,
+        )
+
     user = User(
         email=email.lower().strip(),
         name=name.strip(),

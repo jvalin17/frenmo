@@ -1,3 +1,4 @@
+import contextlib
 import logging
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -32,7 +33,12 @@ async def create_group(
     group_currency: str = Form("USD"),
     db: AsyncSession = Depends(get_db),
 ):
-    group = Group(name=name.strip(), type=group_type, currency=group_currency, created_by=request.state.user_id)
+    group = Group(
+        name=name.strip(),
+        type=group_type,
+        currency=group_currency,
+        created_by=request.state.user_id,
+    )
     db.add(group)
     await db.flush()
 
@@ -109,27 +115,12 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     )
     settlement_history = settlements_result.scalars().all()
 
-    # Get splits for all expenses (single query, no N+1)
-    from app.models.expense import ExpenseSplit
-
-    expense_ids = [e.id for e in expenses]
-    expense_splits = {}
-    if expense_ids:
-        splits_result = await db.execute(
-            select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(expense_ids))
-        )
-        for s in splits_result.scalars().all():
-            expense_splits.setdefault(s.expense_id, []).append(s)
-
     # Group expenses by date (newest first, no-date at top)
     from collections import OrderedDict
     expenses_by_date = OrderedDict()
     no_date_expenses = []
     for expense in expenses:
-        if expense.created_at:
-            date_key = expense.created_at.strftime('%b %d, %Y')
-        else:
-            date_key = None
+        date_key = expense.created_at.strftime('%b %d, %Y') if expense.created_at else None
         if date_key is None:
             no_date_expenses.append(expense)
         else:
@@ -146,14 +137,32 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     await ensure_group_friendships(db, group_id)
     await db.commit()
 
+    # Get splits for all expenses (single query, no N+1).
+    # Must run AFTER repair_missing_splits so repaired rows show on this load.
+    from app.models.expense import ExpenseSplit
+
+    expense_ids = [e.id for e in expenses]
+    expense_splits = {}
+    if expense_ids:
+        splits_result = await db.execute(
+            select(ExpenseSplit).where(ExpenseSplit.expense_id.in_(expense_ids))
+        )
+        for s in splits_result.scalars().all():
+            expense_splits.setdefault(s.expense_id, []).append(s)
+
     # Get balances
     from app.services.balance import get_group_balances, simplify_debts
 
     balances = await get_group_balances(db, group_id)
     simplified = simplify_debts(balances)
 
-    # Map user IDs to names
+    # Map user IDs to names — include users on splits who are no longer members
     member_names = {m.id: m.name for m in members}
+    split_user_ids = {s.user_id for splits in expense_splits.values() for s in splits}
+    missing_ids = split_user_ids - set(member_names)
+    if missing_ids:
+        former_result = await db.execute(select(User.id, User.name).where(User.id.in_(missing_ids)))
+        member_names.update({row.id: row.name for row in former_result.all()})
 
     # Get friends not already in this group (for "add from friends")
     from app.services.friendship import get_friend_list
@@ -204,7 +213,9 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
 
 @router.post("/{group_id}/settings")
 @login_required
-async def update_group_settings(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
+async def update_group_settings(
+    request: Request, group_id: int, db: AsyncSession = Depends(get_db)
+):
     user_id = request.state.user_id
     # Verify membership
     membership = await db.execute(
@@ -230,10 +241,8 @@ async def update_group_settings(request: Request, group_id: int, db: AsyncSessio
     # Update default_split_ways (how many ways to divide expenses)
     split_ways_val = form_data.get("default_split_ways", "").strip()
     if split_ways_val:
-        try:
+        with contextlib.suppress(ValueError):
             group.default_split_ways = max(1, min(int(split_ways_val), 99))
-        except ValueError:
-            pass
     else:
         group.default_split_ways = None
 

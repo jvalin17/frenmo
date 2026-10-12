@@ -5,6 +5,15 @@
  * Warm neutral, Wise/YNAB earthy — dark goldenrod accent
  * ============================================================ */
 :root {
+    /* Split chip avatar palette; all >= 4.5:1 contrast with white text (WCAG AA) */
+    --chip-0: #4338ca;
+    --chip-1: #be185d;
+    --chip-2: #0f766e;
+    --chip-3: #b45309;
+    --chip-4: #6d28d9;
+    --chip-5: #b91c1c;
+    --chip-6: #0e7490;
+    --chip-7: #4d7c0f;
     --bg-page: #FAFAF8;
     --bg-card: #F5F4F0;
     --bg-input: #EDECEA;
@@ -743,3 +752,18 @@ h2 {
 .person-row:active { transform: scale(0.98); transition-duration: 0.1s; }
 .person-row .p-exempt { display: none; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #FEF2F2; color: #DC2626; }
 .person-row:not(:has(:checked)) .p-exempt { display: inline; }
+
+/* Per-expense split breakdown chips (group detail) */
+.split-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 2px; border-radius: 20px; background: var(--bg-input); font-size: 11px; max-width: 100%; }
+.split-chip__avatar { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.split-chip__name { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12ch; }
+.split-chip__amount { font-weight: 600; white-space: nowrap; }
+/* 8 cycling avatar colours, defined as --chip-0..7 in :root */
+.split-chip__avatar--0 { background: var(--chip-0); }
+.split-chip__avatar--1 { background: var(--chip-1); }
+.split-chip__avatar--2 { background: var(--chip-2); }
+.split-chip__avatar--3 { background: var(--chip-3); }
+.split-chip__avatar--4 { background: var(--chip-4); }
+.split-chip__avatar--5 { background: var(--chip-5); }
+.split-chip__avatar--6 { background: var(--chip-6); }
+.split-chip__avatar--7 { background: var(--chip-7); }

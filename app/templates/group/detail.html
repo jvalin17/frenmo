@@ -277,9 +277,16 @@
                 var form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/settlements/new/' + card.dataset.groupId;
-                form.innerHTML = '<input type="hidden" name="from_user" value="' + card.dataset.debtorId + '">'
-                    + '<input type="hidden" name="to_user" value="' + card.dataset.creditorId + '">'
-                    + '<input type="hidden" name="amount" value="' + card.dataset.amount + '">';
+                var hiddenInput = function(name, value) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = value;
+                    return input;
+                };
+                form.appendChild(hiddenInput('from_user', card.dataset.debtorId));
+                form.appendChild(hiddenInput('to_user', card.dataset.creditorId));
+                form.appendChild(hiddenInput('amount', card.dataset.amount));
                 document.body.appendChild(form);
                 setTimeout(function() { form.submit(); }, 600);
             } else {
@@ -394,15 +401,14 @@ function toggleSection(id) {
     <!-- Split breakdown: avatar chips -->
     {% set splits = expense_splits.get(expense.id, []) %}
     {% set owed_splits = splits|selectattr("owed_amount", "gt", 0)|list %}
-    {% set avatar_colors = ["#6366f1", "#ec4899", "#14b8a6", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#84cc16"] %}
     {% if splits|length > 1 %}
     <div class="flex flex-wrap gap-1.5 mt-1.5 ml-10">
         {% for s in owed_splits %}
         {% set name = member_names.get(s.user_id, '?') %}
-        <div style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 2px; border-radius: 20px; background: var(--bg-input); font-size: 11px;">
-            <div style="width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; background: {{ avatar_colors[loop.index0 % avatar_colors|length] }};">{{ name[0]|upper }}</div>
-            <span style="color: var(--text-secondary);">{{ name }}</span>
-            <span style="font-weight: 600;">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}</span>
+        <div class="split-chip">
+            <span class="split-chip__avatar split-chip__avatar--{{ loop.index0 % 8 }}">{{ name[0]|upper }}</span>
+            <span class="split-chip__name">{{ name }}</span>
+            <span class="split-chip__amount">{{ sym.get(expense.currency, "$") }}{{ "%.2f"|format(s.owed_amount / 100) }}</span>
         </div>
         {% endfor %}
     </div>

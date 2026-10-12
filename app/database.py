@@ -31,6 +31,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
+# (table, index) pairs dropped from the ORM models; migrate_schema removes them from existing DBs
+DROPPED_INDEXES = [("expense_splits", "ix_expense_splits_expense")]
+
+
 def migrate_schema(connection) -> None:
     """Add any missing columns to existing tables.
 
@@ -39,7 +43,9 @@ def migrate_schema(connection) -> None:
     repeatedly — skips columns that already exist.
     """
     import logging
-    from sqlalchemy import inspect as sa_inspect, text
+
+    from sqlalchemy import inspect as sa_inspect
+    from sqlalchemy import text
 
     logger = logging.getLogger(__name__)
     inspector = sa_inspect(connection)
@@ -59,9 +65,19 @@ def migrate_schema(connection) -> None:
                         else str(default_argument)
                     )
                     default_clause = f" DEFAULT {default_val}"
-                stmt = f"ALTER TABLE {table_name} ADD COLUMN {column.name} {col_type}{default_clause}"
+                stmt = (
+                    f"ALTER TABLE {table_name} ADD COLUMN {column.name} {col_type}{default_clause}"
+                )
                 logger.info("Auto-migration: %s", stmt)
                 connection.execute(text(stmt))
+
+    # Indexes removed from the models that older databases may still carry
+    for table_name, index_name in DROPPED_INDEXES:
+        if inspector.has_table(table_name) and any(
+            ix["name"] == index_name for ix in inspector.get_indexes(table_name)
+        ):
+            logger.info("Auto-migration: DROP INDEX %s", index_name)
+            connection.execute(text(f"DROP INDEX IF EXISTS {index_name}"))
 
 
 async def create_tables() -> None:
