@@ -7,7 +7,7 @@ from sqlalchemy import select
 from app.models.friendship import Friendship
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.friendship import ensure_friendship, get_friend_list
+from app.services.friendship import ensure_friendship, ensure_group_friendships, get_friend_list
 
 
 @pytest.fixture
@@ -72,3 +72,35 @@ class TestEnsureFriendship:
         alice, _, _ = three_users
         result = await ensure_friendship(db_session, alice.id, alice.id)
         assert result is False
+
+
+class TestEnsureGroupFriendships:
+    """Lazy repair: ensure all members in a group are friends."""
+
+    @pytest.mark.asyncio
+    async def test_ensure_group_friendships_creates_missing(self, db_session, group_with_two):
+        """Pre-existing group members with no friendship get auto-friended."""
+        alice, bob, _, group = group_with_two
+
+        # No friendships exist yet
+        friends_before = await get_friend_list(db_session, alice.id)
+        assert len(friends_before) == 0
+
+        # Lazy repair
+        await ensure_group_friendships(db_session, group.id)
+
+        friends_after = await get_friend_list(db_session, alice.id)
+        assert len(friends_after) == 1
+        assert friends_after[0].id == bob.id
+
+    @pytest.mark.asyncio
+    async def test_ensure_group_friendships_idempotent(self, db_session, group_with_two):
+        """Running twice doesn't create duplicates."""
+        _, _, _, group = group_with_two
+        await ensure_group_friendships(db_session, group.id)
+        await ensure_group_friendships(db_session, group.id)
+
+        from sqlalchemy import select, func
+        from app.models.friendship import Friendship
+        count = (await db_session.execute(select(func.count()).select_from(Friendship))).scalar()
+        assert count == 1  # only one friendship for 2 members

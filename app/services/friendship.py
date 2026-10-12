@@ -164,6 +164,23 @@ async def ensure_friendship(
     return True
 
 
+async def ensure_group_friendships(db: AsyncSession, group_id: int) -> int:
+    """Ensure all members in a group are friends. Returns count of new friendships."""
+    from app.models.group import GroupMember
+
+    members_result = await db.execute(
+        select(GroupMember.user_id).where(GroupMember.group_id == group_id)
+    )
+    member_ids = [row[0] for row in members_result.all()]
+
+    created = 0
+    for i, user_id in enumerate(member_ids):
+        for friend_id in member_ids[i + 1:]:
+            if await ensure_friendship(db, user_id, friend_id):
+                created += 1
+    return created
+
+
 async def remove_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
     """Remove an accepted friendship (either direction)."""
     result = await db.execute(

@@ -139,6 +139,11 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     from app.services.expense import repair_missing_splits
 
     await repair_missing_splits(db, group_id)
+
+    # Lazy repair: ensure all group members are friends
+    from app.services.friendship import ensure_group_friendships
+
+    await ensure_group_friendships(db, group_id)
     await db.commit()
 
     # Get balances
