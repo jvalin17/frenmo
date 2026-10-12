@@ -85,12 +85,29 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     # Get expenses (non-deleted)
     from app.models.expense import Expense
 
+    # Load expenses (excluding settlements) for the expense list
     expenses_result = await db.execute(
         select(Expense)
-        .where(Expense.group_id == group_id, Expense.deleted_at.is_(None))
+        .where(
+            Expense.group_id == group_id,
+            Expense.deleted_at.is_(None),
+            Expense.expense_type != "settlement",
+        )
         .order_by(Expense.created_at.desc())
     )
     expenses = expenses_result.scalars().all()
+
+    # Load settlements separately for Settle Up history
+    settlements_result = await db.execute(
+        select(Expense)
+        .where(
+            Expense.group_id == group_id,
+            Expense.deleted_at.is_(None),
+            Expense.expense_type == "settlement",
+        )
+        .order_by(Expense.created_at.desc())
+    )
+    settlement_history = settlements_result.scalars().all()
 
     # Get splits for all expenses (single query, no N+1)
     from app.models.expense import ExpenseSplit
@@ -175,6 +192,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "expense_splits": expense_splits,
             "expenses_by_date": expenses_by_date,
             "no_date_expenses": no_date_expenses,
+            "settlement_history": settlement_history,
         },
     )
 

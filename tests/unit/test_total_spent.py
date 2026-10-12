@@ -72,3 +72,33 @@ class TestTotalSpentExcludesSettlements:
         # Expense count should exclude settlements too
         expense_count = sum(1 for e in all_expenses if e.expense_type == "expense")
         assert expense_count == 1  # not 2
+
+    @pytest.mark.asyncio
+    async def test_expense_list_excludes_settlements(self, db_session, group_with_settlement):
+        """Expense list query should not return settlements."""
+        group = group_with_settlement
+        result = await db_session.execute(
+            select(Expense).where(
+                Expense.group_id == group.id,
+                Expense.deleted_at.is_(None),
+                Expense.expense_type != "settlement",
+            )
+        )
+        visible_expenses = result.scalars().all()
+        assert len(visible_expenses) == 1
+        assert visible_expenses[0].expense_type == "expense"
+
+    @pytest.mark.asyncio
+    async def test_settlements_queryable_separately(self, db_session, group_with_settlement):
+        """Settlements should be queryable for the Settle Up history."""
+        group = group_with_settlement
+        result = await db_session.execute(
+            select(Expense).where(
+                Expense.group_id == group.id,
+                Expense.deleted_at.is_(None),
+                Expense.expense_type == "settlement",
+            )
+        )
+        settlements = result.scalars().all()
+        assert len(settlements) == 1
+        assert settlements[0].amount == 3000

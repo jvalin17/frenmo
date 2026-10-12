@@ -298,6 +298,32 @@
 </script>
 {% endif %}
 
+<!-- Settlement History -->
+{% if settlement_history %}
+<div class="rounded-2xl p-4 mb-4" style="background: var(--bg-card); border: 1px solid var(--border);">
+    <h3 class="font-semibold text-xs uppercase mb-2" style="color: var(--text-secondary); letter-spacing: 0.05em;">Payment History</h3>
+    {% for settle in settlement_history %}
+    <div class="flex justify-between items-center py-2" style="border-top: 1px solid var(--border-light);">
+        <div class="flex items-center gap-2">
+            <span class="text-sm">🤝</span>
+            <div>
+                <span class="text-xs font-medium" style="color: var(--text-primary);">{{ member_names.get(settle.paid_by, '?') }} paid</span>
+                <span class="text-xs" style="color: var(--text-muted);">· {{ settle.created_at.strftime('%b %d, %Y') if settle.created_at else '' }}</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-bold" style="color: var(--accent);">{{ sym.get(group.currency, "$") }}{{ "%.2f"|format(settle.amount / 100) }}</span>
+            {% if settle.created_by == user.id %}
+            <form method="POST" action="/expenses/{{ settle.id }}/delete" onsubmit="return confirm('Undo this payment?')">
+                <button type="submit" class="text-xs px-2 py-0.5 rounded" style="color: #DC2626; background: #FEF2F2; border: none; cursor: pointer;">Undo</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <!-- Total Spent (excludes settlements) -->
 {% set real_expenses = expenses|selectattr('expense_type', 'equalto', 'expense')|list %}
 {% set total_spent = real_expenses|map(attribute='amount')|sum %}
