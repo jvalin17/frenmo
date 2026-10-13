@@ -3,10 +3,12 @@ import uuid
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import login_required
+from app.models.group import Group, GroupMember
 from app.services.expense import create_expense_with_splits
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,16 @@ async def record_settlement(
     amount: str = Form(...),
     db: AsyncSession = Depends(get_db),
 ):
+    group = await db.get(Group, group_id)
+    membership = await db.execute(
+        select(GroupMember.id).where(
+            GroupMember.group_id == group_id,
+            GroupMember.user_id == request.state.user_id,
+        )
+    )
+    if group is None or membership.first() is None:
+        return RedirectResponse(url="/", status_code=303)
+
     try:
         amount_paise = round(float(amount) * 100)
     except ValueError:
@@ -44,6 +56,7 @@ async def record_settlement(
         member_ids=[to_user],
         member_values={to_user: amount_paise / 100},
         expense_type="settlement",
+        currency=group.currency,
         idempotency_key=str(uuid.uuid4()),
     )
 

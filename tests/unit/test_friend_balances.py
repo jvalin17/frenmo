@@ -2,7 +2,6 @@
 import uuid
 
 import pytest
-from sqlalchemy import select
 
 from app.models.expense import Expense, ExpenseSplit
 from app.models.group import Group, GroupMember
@@ -34,8 +33,12 @@ async def friend_balance_setup(db_session):
                        split_type="equal", paid_by=marco.id, created_by=marco.id, currency="USD")
     db_session.add(expense1)
     await db_session.flush()
-    db_session.add(ExpenseSplit(expense_id=expense1.id, user_id=marco.id, paid_amount=10000, owed_amount=5000))
-    db_session.add(ExpenseSplit(expense_id=expense1.id, user_id=sana.id, paid_amount=0, owed_amount=5000))
+    db_session.add(
+        ExpenseSplit(expense_id=expense1.id, user_id=marco.id, paid_amount=10000, owed_amount=5000)
+    )
+    db_session.add(
+        ExpenseSplit(expense_id=expense1.id, user_id=sana.id, paid_amount=0, owed_amount=5000)
+    )
 
     # Group 2: Groceries — Marco paid $60, split equally
     groceries = Group(name="Groceries", created_by=marco.id, currency="USD",
@@ -50,8 +53,12 @@ async def friend_balance_setup(db_session):
                        split_type="equal", paid_by=marco.id, created_by=marco.id, currency="USD")
     db_session.add(expense2)
     await db_session.flush()
-    db_session.add(ExpenseSplit(expense_id=expense2.id, user_id=marco.id, paid_amount=6000, owed_amount=3000))
-    db_session.add(ExpenseSplit(expense_id=expense2.id, user_id=sana.id, paid_amount=0, owed_amount=3000))
+    db_session.add(
+        ExpenseSplit(expense_id=expense2.id, user_id=marco.id, paid_amount=6000, owed_amount=3000)
+    )
+    db_session.add(
+        ExpenseSplit(expense_id=expense2.id, user_id=sana.id, paid_amount=0, owed_amount=3000)
+    )
 
     # Settlement: Sana paid Marco $20 in Oregon Trip
     settlement = Expense(group_id=trip.id, description="Settlement", amount=2000,
@@ -59,8 +66,12 @@ async def friend_balance_setup(db_session):
                          expense_type="settlement", currency="USD")
     db_session.add(settlement)
     await db_session.flush()
-    db_session.add(ExpenseSplit(expense_id=settlement.id, user_id=sana.id, paid_amount=2000, owed_amount=0))
-    db_session.add(ExpenseSplit(expense_id=settlement.id, user_id=marco.id, paid_amount=0, owed_amount=2000))
+    db_session.add(
+        ExpenseSplit(expense_id=settlement.id, user_id=sana.id, paid_amount=2000, owed_amount=0)
+    )
+    db_session.add(
+        ExpenseSplit(expense_id=settlement.id, user_id=marco.id, paid_amount=0, owed_amount=2000)
+    )
 
     await db_session.commit()
     return marco, sana, trip, groceries
@@ -75,7 +86,7 @@ class TestGetFriendBalanceDetail:
         detail = await get_friend_balance_detail(db_session, marco.id, sana.id)
 
         # From Marco's perspective: Sana owes him
-        assert detail["net_balance"] == 6000  # $60 total
+        assert detail["net_balances"] == {"USD": 6000}  # $60 total, single currency
 
     @pytest.mark.asyncio
     async def test_get_friend_balance_detail_per_group(self, db_session, friend_balance_setup):

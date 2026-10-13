@@ -9,6 +9,7 @@ from app.database import get_db
 from app.middleware.auth import login_required
 from app.models.group import GroupMember
 from app.models.user import User
+from app.services.currency import CURRENCY_SYMBOLS
 from app.services.friendship import (
     accept_friend_request,
     get_friend_list,
@@ -28,10 +29,7 @@ templates = Jinja2Templates(directory="app/templates")
 def mask_email(email: str) -> str:
     """Mask email for privacy: j***n@gmail.com"""
     local, domain = email.split("@")
-    if len(local) <= 2:
-        masked_local = local[0] + "***"
-    else:
-        masked_local = local[0] + "***" + local[-1]
+    masked_local = local[0] + "***" if len(local) <= 2 else local[0] + "***" + local[-1]
     return f"{masked_local}@{domain}"
 
 
@@ -86,6 +84,7 @@ async def friends_page(request: Request, q: str = "", db: AsyncSession = Depends
             "search_results": search_results,
             "query": q,
             "mask_email": mask_email,
+            "sym": CURRENCY_SYMBOLS,
         },
     )
 
@@ -102,7 +101,9 @@ async def send_request(request: Request, target_user_id: int, db: AsyncSession =
 @login_required
 async def accept_request(request: Request, friendship_id: int, db: AsyncSession = Depends(get_db)):
     await accept_friend_request(db, friendship_id=friendship_id, user_id=request.state.user_id)
-    logger.info("Friend request accepted: friendship=%d by user=%d", friendship_id, request.state.user_id)
+    logger.info(
+        "Friend request accepted: friendship=%d by user=%d", friendship_id, request.state.user_id
+    )
     return RedirectResponse(url="/friends", status_code=303)
 
 
@@ -110,7 +111,9 @@ async def accept_request(request: Request, friendship_id: int, db: AsyncSession 
 @login_required
 async def reject_request(request: Request, friendship_id: int, db: AsyncSession = Depends(get_db)):
     await reject_friend_request(db, friendship_id=friendship_id, user_id=request.state.user_id)
-    logger.info("Friend request rejected: friendship=%d by user=%d", friendship_id, request.state.user_id)
+    logger.info(
+        "Friend request rejected: friendship=%d by user=%d", friendship_id, request.state.user_id
+    )
     return RedirectResponse(url="/friends", status_code=303)
 
 

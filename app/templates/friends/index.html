@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Friends — Frenmo{% endblock %}
 {% block content %}
+{% macro money(cents, currency) %}{{ sym.get(currency, currency ~ ' ') }}{{ "%.2f"|format(cents / 100) }}{% endmacro %}
 <h2 class="text-2xl font-bold mb-4">Friends</h2>
 
 <!-- Search -->
@@ -67,7 +68,8 @@
     {% if friends %}
     {% for friend in friends %}
     {% set detail = friend_balances.get(friend.id, {}) %}
-    {% set net = detail.get('net_balance', 0) %}
+    {% set nets = detail.get('net_balances', {}) %}
+    {% set owed_nets = nets.items()|rejectattr(1, 'eq', 0)|list %}
     <div class="rounded-2xl mb-3 overflow-hidden" style="border: 1px solid var(--border);">
         <!-- Friend header — click to expand -->
         <div onclick="toggleSection('friend-{{ friend.id }}')" class="flex items-center justify-between p-3 cursor-pointer" style="background: var(--bg-card);">
@@ -81,13 +83,15 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                {% for currency, net in owed_nets %}
                 {% if net > 0 %}
-                <span class="bal-pill bal-pill--credit">owes you ${{ "%.2f"|format(net / 100) }}</span>
-                {% elif net < 0 %}
-                <span class="bal-pill bal-pill--debit">you owe ${{ "%.2f"|format((-net) / 100) }}</span>
+                <span class="bal-pill bal-pill--credit">owes you {{ money(net, currency) }}</span>
+                {% else %}
+                <span class="bal-pill bal-pill--debit">you owe {{ money(-net, currency) }}</span>
+                {% endif %}
                 {% else %}
                 <span class="bal-pill bal-pill--zero">✓ settled</span>
-                {% endif %}
+                {% endfor %}
                 <span id="arrow-friend-{{ friend.id }}" class="text-xs" style="color: var(--text-secondary);">▶</span>
             </div>
         </div>
@@ -101,9 +105,9 @@
             <div class="flex justify-between items-center py-1.5">
                 <span class="text-xs font-medium" style="color: var(--text-secondary);">{{ group_detail.group_name }}</span>
                 {% if group_detail.balance > 0 %}
-                <span class="text-xs font-semibold" style="color: var(--accent);">owes you ${{ "%.2f"|format(group_detail.balance / 100) }}</span>
+                <span class="text-xs font-semibold" style="color: var(--accent);">owes you {{ money(group_detail.balance, group_detail.currency) }}</span>
                 {% elif group_detail.balance < 0 %}
-                <span class="text-xs font-semibold" style="color: var(--text-secondary);">you owe ${{ "%.2f"|format((-group_detail.balance) / 100) }}</span>
+                <span class="text-xs font-semibold" style="color: var(--text-secondary);">you owe {{ money(-group_detail.balance, group_detail.currency) }}</span>
                 {% endif %}
             </div>
             {% endfor %}
@@ -121,7 +125,7 @@
                     <span class="text-xs" style="color: var(--text-muted);">· {{ settlement.group_name }}</span>
                 </div>
                 <div class="text-right">
-                    <span class="text-xs font-semibold" style="color: var(--text-primary);">${{ "%.2f"|format(settlement.amount / 100) }}</span>
+                    <span class="text-xs font-semibold" style="color: var(--text-primary);">{{ money(settlement.amount, settlement.currency) }}</span>
                     {% if settlement.created_at %}
                     <span class="text-xs" style="color: var(--text-muted);">· {{ settlement.created_at.strftime('%b %d') }}</span>
                     {% endif %}

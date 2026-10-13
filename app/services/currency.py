@@ -13,6 +13,18 @@ CACHE_TTL_SECONDS = 43200  # 12 hours
 # Free API — no key needed
 RATES_API_URL = "https://open.er-api.com/v6/latest/USD"
 
+# Display symbols for the currencies offered in the group/expense forms
+CURRENCY_SYMBOLS: dict[str, str] = {
+    "INR": "₹",
+    "USD": "$",
+    "EUR": "€",
+    "GBP": "£",
+    "AED": "د.إ",
+    "JPY": "¥",
+    "CAD": "C$",
+    "AUD": "A$",
+}
+
 
 def convert_amount(
     amount_cents: int,

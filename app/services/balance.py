@@ -117,10 +117,13 @@ async def get_friend_balance_detail(
 ) -> dict:
     """Per-friend balance with group breakdown and settlement history.
 
+    Balances are never summed across currencies: each group's balance is
+    kept in that group's currency and the net is reported per currency.
+
     Returns {
-        net_balance: int (positive = friend owes you),
-        groups: [{group_id, group_name, balance}],
-        settlements: [{amount, paid_by, created_at, group_name}],
+        net_balances: {currency: int} (positive = friend owes you),
+        groups: [{group_id, group_name, balance, currency}],
+        settlements: [{amount, currency, paid_by, created_at, group_name}],
     }
     """
     from app.models.group import Group, GroupMember
@@ -132,8 +135,9 @@ async def get_friend_balance_detail(
         select(Group).where(Group.id.in_(user_groups.intersect(friend_groups)))
     )
     shared_groups = shared_group_ids.scalars().all()
+    groups_by_id = {g.id: g for g in shared_groups}
 
-    net_balance = 0
+    net_balances: dict[str, int] = {}
     group_details = []
 
     for group in shared_groups:
@@ -153,8 +157,9 @@ async def get_friend_balance_detail(
                 "group_id": group.id,
                 "group_name": group.name,
                 "balance": group_balance,
+                "currency": group.currency,
             })
-            net_balance += group_balance
+            net_balances[group.currency] = net_balances.get(group.currency, 0) + group_balance
 
     # Settlement history between the two users across all shared groups
     settlement_result = await db.execute(
@@ -179,18 +184,19 @@ async def get_friend_balance_detail(
             )
             involved_users = {row[0] for row in split_result.all()}
             if user_id in involved_users and friend_id in involved_users:
-                group_name = next(
-                    (g.name for g in shared_groups if g.id == expense.group_id), "?"
-                )
+                # Settlements are recorded in the group's currency; the query above
+                # only returns rows from shared_groups, so the lookup always hits.
+                group = groups_by_id[expense.group_id]
                 settlements.append({
                     "amount": expense.amount,
+                    "currency": group.currency,
                     "paid_by": expense.paid_by,
                     "created_at": expense.created_at,
-                    "group_name": group_name,
+                    "group_name": group.name,
                 })
 
     return {
-        "net_balance": net_balance,
+        "net_balances": net_balances,
         "groups": group_details,
         "settlements": settlements,
     }
