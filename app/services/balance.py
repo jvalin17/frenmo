@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,31 +77,38 @@ def simplify_debts(balances: dict[int, int]) -> list[tuple[int, int, int]]:
 
 async def get_overall_balances(
     db: AsyncSession, user_id: int
-) -> dict[int, int]:
-    """Cross-group balances for a user.
+) -> dict[int, dict[str, int]]:
+    """Cross-group balances for a user, kept per currency.
 
-    Returns {other_user_id: net_amount} where:
+    Amounts are never summed across currencies: each expense counts in its
+    group's currency (one currency per group).
+
+    Returns {other_user_id: {currency: net_amount}} where:
       positive = other person owes you
       negative = you owe the other person
     """
+    from app.models.group import Group
+
     # Get all expenses involving this user (across all groups)
     result = await db.execute(
         select(
             ExpenseSplit.user_id,
+            Group.currency,
             func.sum(ExpenseSplit.paid_amount).label("amount_paid"),
             func.sum(ExpenseSplit.owed_amount).label("amount_owed"),
         )
         .join(Expense, ExpenseSplit.expense_id == Expense.id)
+        .join(Group, Expense.group_id == Group.id)
         .where(
             Expense.deleted_at.is_(None),
             Expense.id.in_(
                 select(ExpenseSplit.expense_id).where(ExpenseSplit.user_id == user_id)
             ),
         )
-        .group_by(ExpenseSplit.user_id)
+        .group_by(ExpenseSplit.user_id, Group.currency)
     )
 
-    all_balances = {}
+    all_balances: dict[int, dict[str, int]] = {}
     for row in result.all():
         # other_net: positive means they paid more than they owe (they're a creditor)
         # Negate to get current user's perspective:
@@ -108,8 +117,49 @@ async def get_overall_balances(
         other_net = (row.amount_paid or 0) - (row.amount_owed or 0)
         from_user_perspective = -other_net
         if from_user_perspective != 0 and row.user_id != user_id:
-            all_balances[row.user_id] = from_user_perspective
+            all_balances.setdefault(row.user_id, {})[row.currency] = from_user_perspective
     return all_balances
+
+
+@dataclass(frozen=True)
+class CurrencyTotal:
+    """Dashboard hero totals for one currency, in integer minor units."""
+
+    currency: str
+    owed: int  # owed to you
+    owe: int   # you owe
+
+    @property
+    def net(self) -> int:
+        return self.owed - self.owe
+
+
+def summarize_by_currency(overall: dict[int, dict[str, int]]) -> list[CurrencyTotal]:
+    """Fold per-person, per-currency nets into one total per currency, sorted by code."""
+    owed: dict[str, int] = {}
+    owe: dict[str, int] = {}
+    for per_currency in overall.values():
+        for currency, net in per_currency.items():
+            if net > 0:
+                owed[currency] = owed.get(currency, 0) + net
+            elif net < 0:
+                owe[currency] = owe.get(currency, 0) - net
+    return [
+        CurrencyTotal(currency, owed.get(currency, 0), owe.get(currency, 0))
+        for currency in sorted(owed.keys() | owe.keys())
+    ]
+
+
+def hero_state(totals: list[CurrencyTotal]) -> str:
+    """positive | negative | mixed | settled, from the sign of each currency's net."""
+    signs = {(t.net > 0) - (t.net < 0) for t in totals} - {0}
+    if signs == {1}:
+        return "positive"
+    if signs == {-1}:
+        return "negative"
+    if signs:
+        return "mixed"
+    return "settled"
 
 
 async def get_friend_balance_detail(

@@ -32,6 +32,13 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 # (table, index) pairs dropped from the ORM models; migrate_schema removes them from existing DBs
+# Columns added by ADD COLUMN on older databases carry NULL for existing rows;
+# backfill them with the model default so code can rely on a value.
+BACKFILL_DEFAULTS = [
+    ("groups", "currency", "USD"),
+    ("users", "default_currency", "USD"),
+]
+
 DROPPED_INDEXES = [("expense_splits", "ix_expense_splits_expense")]
 
 
@@ -45,7 +52,7 @@ def migrate_schema(connection) -> None:
     import logging
 
     from sqlalchemy import inspect as sa_inspect
-    from sqlalchemy import text
+    from sqlalchemy import text, update
 
     logger = logging.getLogger(__name__)
     inspector = sa_inspect(connection)
@@ -70,6 +77,20 @@ def migrate_schema(connection) -> None:
                 )
                 logger.info("Auto-migration: %s", stmt)
                 connection.execute(text(stmt))
+
+    # Rows that predate a column's ADD COLUMN migration are NULL there
+    for table_name, column_name, default_value in BACKFILL_DEFAULTS:
+        if inspector.has_table(table_name):
+            table = Base.metadata.tables[table_name]
+            column = table.c[column_name]
+            result = connection.execute(
+                update(table).where(column.is_(None)).values({column_name: default_value})
+            )
+            if result.rowcount:
+                logger.info(
+                    "Auto-migration: backfilled %d NULL %s.%s with %r",
+                    result.rowcount, table_name, column_name, default_value,
+                )
 
     # Indexes removed from the models that older databases may still carry
     for table_name, index_name in DROPPED_INDEXES:

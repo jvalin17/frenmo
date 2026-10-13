@@ -63,7 +63,7 @@ class TestOverallBalanceDirection:
         balances = await get_overall_balances(db_session, alice.id)
         # Positive = other person owes you
         assert bob.id in balances
-        assert balances[bob.id] > 0, (
+        assert balances[bob.id]["USD"] > 0, (
             f"Expected positive (Bob owes Alice), got {balances[bob.id]}"
         )
 
@@ -74,7 +74,7 @@ class TestOverallBalanceDirection:
         balances = await get_overall_balances(db_session, bob.id)
         # Negative = you owe the other person
         assert alice.id in balances
-        assert balances[alice.id] < 0, (
+        assert balances[alice.id]["USD"] < 0, (
             f"Expected negative (Bob owes Alice), got {balances[alice.id]}"
         )
 
@@ -84,7 +84,7 @@ class TestOverallBalanceDirection:
         alice, bob, _ = group_with_expense
 
         alice_view = await get_overall_balances(db_session, alice.id)
-        assert alice_view[bob.id] == 2500  # Bob owes Alice 2500 paise
+        assert alice_view[bob.id] == {"USD": 2500}  # Bob owes Alice $25, in the group currency
 
         bob_view = await get_overall_balances(db_session, bob.id)
-        assert bob_view[alice.id] == -2500  # Bob owes Alice 2500 paise
+        assert bob_view[alice.id] == {"USD": -2500}

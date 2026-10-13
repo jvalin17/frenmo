@@ -2,23 +2,25 @@
 {% block title %}Dashboard — Frenmo{% endblock %}
 {% block content %}
 
-<!-- Hero Balance -->
-{% set total_owed_to_you = overall_balances.values()|select("gt", 0)|sum %}
-{% set total_you_owe = overall_balances.values()|select("lt", 0)|sum %}
-{% set net_total = total_owed_to_you + total_you_owe %}
+<!-- Hero Balance — one line per currency, never summed across currencies -->
+{% macro money(cents, currency) %}{{ sym.get(currency, currency ~ ' ') }}{{ "%.2f"|format(cents / 100) }}{% endmacro %}
 
 <!-- Hero Card — theme-aware gradient via CSS component class, no inline styles -->
-<div class="hero-card {% if net_total > 0 %}hero-card--positive{% elif net_total < 0 %}hero-card--negative{% else %}hero-card--settled{% endif %} mb-6">
-    <p class="text-sm font-medium" style="color: var(--text-secondary);">{% if net_total > 0 %}You are owed{% elif net_total < 0 %}You owe{% else %}All settled up{% endif %}</p>
+<div class="hero-card {% if hero_state != 'mixed' %}hero-card--{{ hero_state }}{% endif %} mb-6">
+    <p class="text-sm font-medium" style="color: var(--text-secondary);">{% if hero_state == "positive" %}You are owed{% elif hero_state == "negative" %}You owe{% elif hero_state == "mixed" %}Your balances{% else %}All settled up{% endif %}</p>
     <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-primary); margin: 0.25rem 0;">
-        {% if net_total > 0 %}${{ "%.2f"|format(net_total / 100) }}
-        {% elif net_total < 0 %}${{ "%.2f"|format((-net_total) / 100) }}
-        {% else %}$0.00{% endif %}
+        {% for t in hero_totals if t.net != 0 %}
+        <div>{% if hero_state == "mixed" %}{% if t.net > 0 %}<span style="color: #16A34A; font-size: 1.25rem;">▲</span>{% else %}<span style="color: #DC2626; font-size: 1.25rem;">▼</span>{% endif %} {% endif %}{{ money(t.net if t.net > 0 else -t.net, t.currency) }}</div>
+        {% else %}
+        <div>{{ money(0, user.default_currency) }}</div>
+        {% endfor %}
     </div>
+    {% for t in hero_totals %}
     <div class="flex gap-6 mt-3">
-        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #16A34A;">▲</span> ${{ "%.2f"|format(total_owed_to_you / 100) }} owed</span>
-        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #DC2626;">▼</span> ${{ "%.2f"|format((-total_you_owe) / 100) }} owe</span>
+        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #16A34A;">▲</span> {{ money(t.owed, t.currency) }} owed</span>
+        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #DC2626;">▼</span> {{ money(t.owe, t.currency) }} owe</span>
     </div>
+    {% endfor %}
 </div>
 
 <!-- Quick Actions -->
@@ -42,7 +44,7 @@
 <div class="card card-orange mb-4">
     <div class="card-body py-3">
         <h3 class="font-semibold text-sm uppercase mb-2">People</h3>
-        {% for other_id, net in overall_balances.items() %}
+        {% for other_id, per_currency in overall_balances.items() %}
         <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: var(--border);">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
@@ -50,11 +52,15 @@
                 </div>
                 <span class="text-sm font-medium truncate max-w-[120px]">{{ balance_names.get(other_id, '?') }}</span>
             </div>
+            <div class="flex flex-wrap justify-end gap-1">
+            {% for currency, net in per_currency.items()|sort %}
             {% if net > 0 %}
-            <span class="bal-pill bal-pill--credit">owes you ${{ "%.2f"|format(net / 100) }}</span>
+            <span class="bal-pill bal-pill--credit">owes you {{ money(net, currency) }}</span>
             {% elif net < 0 %}
-            <span class="bal-pill bal-pill--debit">you owe ${{ "%.2f"|format((-net) / 100) }}</span>
+            <span class="bal-pill bal-pill--debit">you owe {{ money(-net, currency) }}</span>
             {% endif %}
+            {% endfor %}
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -79,9 +85,9 @@
                 </div>
             </div>
             {% if net > 0 %}
-            <span class="bal-pill bal-pill--credit">gets back ${{ "%.2f"|format(net / 100) }}</span>
+            <span class="bal-pill bal-pill--credit">gets back {{ money(net, group.currency) }}</span>
             {% elif net < 0 %}
-            <span class="bal-pill bal-pill--debit">owes ${{ "%.2f"|format((-net) / 100) }}</span>
+            <span class="bal-pill bal-pill--debit">owes {{ money(-net, group.currency) }}</span>
             {% else %}
             <span class="bal-pill bal-pill--zero">✓ settled</span>
             {% endif %}

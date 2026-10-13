@@ -8,7 +8,13 @@ from app.database import get_db
 from app.middleware.auth import login_required
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.balance import get_group_balances, get_overall_balances
+from app.services.balance import (
+    get_group_balances,
+    get_overall_balances,
+    hero_state,
+    summarize_by_currency,
+)
+from app.services.currency import CURRENCY_SYMBOLS
 
 router = APIRouter(tags=["dashboard"])
 templates = Jinja2Templates(directory="app/templates")
@@ -28,8 +34,10 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     groups = result.scalars().all()
 
-    # Overall balances across all groups
+    # Overall balances across all groups, kept per currency
     overall = await get_overall_balances(db, user_id)
+    hero_totals = summarize_by_currency(overall)
+    hero_status = hero_state(hero_totals)
 
     # Resolve user names for balances
     balance_names = {}
@@ -52,6 +60,9 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "user": user,
             "groups": groups,
             "overall_balances": overall,
+            "hero_totals": hero_totals,
+            "hero_state": hero_status,
+            "sym": CURRENCY_SYMBOLS,
             "balance_names": balance_names,
             "group_balances": group_balances,
         },
