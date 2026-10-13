@@ -1,4 +1,7 @@
+from itertools import combinations
+
 from sqlalchemy import and_, func, or_, select
+from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.friendship import Friendship
@@ -165,20 +168,51 @@ async def ensure_friendship(
 
 
 async def ensure_group_friendships(db: AsyncSession, group_id: int) -> int:
-    """Ensure all members in a group are friends. Returns count of new friendships."""
+    """Ensure all members in a group are friends. Returns count of new friendships.
+
+    Runs on every group page load, so it uses a fixed number of statements:
+    one for the members, one for the friendship rows already present between
+    them (either direction, any status), and one batched INSERT for the rest.
+    The count is the number of pairs inserted by this call; pairs a concurrent
+    repair inserted first are skipped by the database and still counted here.
+    """
     from app.models.group import GroupMember
 
     members_result = await db.execute(
-        select(GroupMember.user_id).where(GroupMember.group_id == group_id)
+        select(GroupMember.user_id)
+        .where(GroupMember.group_id == group_id)
+        .order_by(GroupMember.user_id)  # canonical (lower, higher) pair direction
     )
     member_ids = [row[0] for row in members_result.all()]
+    if len(member_ids) < 2:
+        return 0
 
-    created = 0
-    for i, user_id in enumerate(member_ids):
-        for friend_id in member_ids[i + 1:]:
-            if await ensure_friendship(db, user_id, friend_id):
-                created += 1
-    return created
+    existing_result = await db.execute(
+        select(Friendship.user_id, Friendship.friend_id).where(
+            Friendship.user_id.in_(member_ids),
+            Friendship.friend_id.in_(member_ids),
+        )
+    )
+    linked = {frozenset(pair) for pair in existing_result.all()}
+
+    missing = [
+        {"user_id": user_id, "friend_id": friend_id, "status": "accepted"}
+        for user_id, friend_id in combinations(member_ids, 2)
+        if frozenset((user_id, friend_id)) not in linked
+    ]
+    if missing:
+        # One batched INSERT rather than one statement per pair. A concurrent
+        # page load may have inserted the same pairs; ON CONFLICT DO NOTHING
+        # skips those instead of failing the whole request.
+        dialect_name = db.get_bind().dialect.name
+        await db.execute(missing_friendships_insert(dialect_name), missing)
+    return len(missing)
+
+
+def missing_friendships_insert(dialect_name: str):
+    """INSERT ... ON CONFLICT DO NOTHING for the friendships table on the given dialect."""
+    insert_for = postgresql.insert if dialect_name == "postgresql" else sqlite.insert
+    return insert_for(Friendship).on_conflict_do_nothing()
 
 
 async def remove_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
