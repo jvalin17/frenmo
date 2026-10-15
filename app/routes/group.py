@@ -159,6 +159,11 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
 
     # Map user IDs to names — include users on splits who are no longer members
     member_names = {m.id: m.name for m in members}
+    # A pair group is shown from the viewer's side: "You & <the other person>"
+    page_title = group.name
+    if is_direct(group):
+        others = [m.name for m in members if m.id != user_id]
+        page_title = f"You & {others[0] if others else '?'}"
     split_user_ids = {s.user_id for splits in expense_splits.values() for s in splits}
     missing_ids = split_user_ids - set(member_names)
     if missing_ids:
@@ -168,7 +173,7 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
     # Get friends not already in this group (for "add from friends")
     from app.services.friendship import get_friend_list
 
-    all_friends = await get_friend_list(db, user_id)
+    all_friends = [] if is_direct(group) else await get_friend_list(db, user_id)
     member_ids = {m.id for m in members}
     available_friends = [f for f in all_friends if f.id not in member_ids]
 
@@ -208,6 +213,8 @@ async def group_detail(request: Request, group_id: int, db: AsyncSession = Depen
             "expenses_by_date": expenses_by_date,
             "no_date_expenses": no_date_expenses,
             "settlement_history": settlement_history,
+            "is_direct": is_direct(group),
+            "page_title": page_title,
         },
     )
 
