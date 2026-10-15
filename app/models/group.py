@@ -1,7 +1,7 @@
 import secrets
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, ForeignKey, String, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -20,7 +20,12 @@ class Group(Base):
     currency: Mapped[str] = mapped_column(String(3), default="USD")
     kid_friendly: Mapped[bool] = mapped_column(default=False, server_default="false")
     default_split_ways: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    # Hidden per-pair "direct" groups carry "<lower user id>:<higher user id>";
+    # ordinary groups leave it NULL. Unique, so two friends get exactly one pair group.
+    pair_key: Mapped[str | None] = mapped_column(String(41), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    __table_args__ = (Index("ux_groups_pair_key", "pair_key", unique=True),)
 
 
 class GroupMember(Base):

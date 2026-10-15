@@ -13,6 +13,8 @@ class Friendship(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     status: Mapped[str] = mapped_column(String(10), nullable=False, default="pending")  # pending, accepted
+    # Friends page: fold this pair's balances across groups per currency (shared by both users)
+    simplify: Mapped[bool] = mapped_column(default=True, server_default="true")
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     __table_args__ = (

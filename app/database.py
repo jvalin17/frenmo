@@ -41,6 +41,10 @@ BACKFILL_DEFAULTS = [
 
 DROPPED_INDEXES = [("expense_splits", "ix_expense_splits_expense")]
 
+# Indexes added to existing tables after their creation; create_all only covers new tables.
+# (table, index name, columns, unique)
+ADDED_INDEXES = [("groups", "ux_groups_pair_key", ("pair_key",), True)]
+
 
 def migrate_schema(connection) -> None:
     """Add any missing columns to existing tables.
@@ -91,6 +95,19 @@ def migrate_schema(connection) -> None:
                     "Auto-migration: backfilled %d NULL %s.%s with %r",
                     result.rowcount, table_name, column_name, default_value,
                 )
+
+    # Indexes added to tables that already existed when the database was created
+    for table_name, index_name, columns, unique in ADDED_INDEXES:
+        if inspector.has_table(table_name) and not any(
+            ix["name"] == index_name for ix in inspector.get_indexes(table_name)
+        ):
+            unique_sql = "UNIQUE " if unique else ""
+            stmt = (
+                f"CREATE {unique_sql}INDEX IF NOT EXISTS {index_name} "
+                f"ON {table_name} ({', '.join(columns)})"
+            )
+            logger.info("Auto-migration: %s", stmt)
+            connection.execute(text(stmt))
 
     # Indexes removed from the models that older databases may still carry
     for table_name, index_name in DROPPED_INDEXES:

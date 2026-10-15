@@ -49,9 +49,10 @@ def simplify_debts(balances: dict[int, int]) -> list[tuple[int, int, int]]:
         elif net < 0:
             debtors.append([user_id, -net])
 
-    # Sort by amount descending for greedy matching
-    creditors.sort(key=lambda x: -x[1])
-    debtors.sort(key=lambda x: -x[1])
+    # Sort by amount descending for greedy matching; ties break on user id so the
+    # result does not depend on dict (= database row) order between page loads.
+    creditors.sort(key=lambda x: (-x[1], x[0]))
+    debtors.sort(key=lambda x: (-x[1], x[0]))
 
     settlements = []
     creditor_index = 0
