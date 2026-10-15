@@ -1,107 +1,98 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Frenmo{% endblock %}
 {% block content %}
-
-<!-- Hero Balance — one line per currency, never summed across currencies -->
 {% macro money(cents, currency) %}{{ sym.get(currency, currency ~ ' ') }}{{ "%.2f"|format(cents / 100) }}{% endmacro %}
+<style>
+.rail { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 16px 12px; margin: 0 -16px; scrollbar-width: none; }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; flex: 0 0 auto; }
+.qcard { width: 164px; min-height: 210px; border-radius: 18px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; transition: transform 150ms ease; }
+.qcard:hover { transform: translateY(-2px); }
+.qcard:focus-visible, .gcard:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.qcard--owe { border-color: rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.06); }
+.qcard__btn { height: 36px; border-radius: 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.gcard { width: 200px; min-height: 120px; border-radius: 18px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .qcard { transition: none; } .qcard:hover { transform: none; } }
+</style>
 
-<!-- Hero Card — theme-aware gradient via CSS component class, no inline styles -->
+<!-- Hero: one state sentence, one pill per currency, never summed across currencies -->
 <div class="hero-card {% if hero_state != 'mixed' %}hero-card--{{ hero_state }}{% endif %} mb-6">
-    <p class="text-sm font-medium" style="color: var(--text-secondary);">{% if hero_state == "positive" %}You are owed{% elif hero_state == "negative" %}You owe{% elif hero_state == "mixed" %}Your balances{% else %}All settled up{% endif %}</p>
-    <div style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.03em; color: var(--text-primary); margin: 0.25rem 0;">
+    <p class="text-sm font-medium" style="color: var(--text-secondary);">Hello, {{ user.name }}</p>
+    <p class="text-2xl font-bold" style="color: var(--text-primary); letter-spacing: -0.02em; margin: 0.25rem 0 0.5rem;">{% if hero_state == "positive" %}You are owed{% elif hero_state == "negative" %}You owe{% elif hero_state == "mixed" %}Your balances{% else %}All settled up{% endif %}</p>
+    <div class="flex flex-wrap gap-2">
         {% for t in hero_totals if t.net != 0 %}
-        <div>{% if hero_state == "mixed" %}{% if t.net > 0 %}<span style="color: #16A34A; font-size: 1.25rem;">▲</span>{% else %}<span style="color: #DC2626; font-size: 1.25rem;">▼</span>{% endif %} {% endif %}{{ money(t.net if t.net > 0 else -t.net, t.currency) }}</div>
-        {% else %}
-        <div>{{ money(0, user.default_currency) }}</div>
+        <span class="bal-pill {% if t.net > 0 %}bal-pill--credit{% else %}bal-pill--debit{% endif %}" style="font-size: 0.9rem;">{% if t.net > 0 %}+{{ money(t.net, t.currency) }}{% else %}−{{ money(-t.net, t.currency) }}{% endif %}</span>
         {% endfor %}
     </div>
-    {% for t in hero_totals %}
-    <div class="flex gap-6 mt-3">
-        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #16A34A;">▲</span> {{ money(t.owed, t.currency) }} owed</span>
-        <span class="text-sm font-medium" style="color: var(--text-primary);"><span style="color: #DC2626;">▼</span> {{ money(t.owe, t.currency) }} owe</span>
+    <p class="text-xs mt-2" style="color: var(--text-muted);">{{ queue|length }} {% if queue|length == 1 %}thing{% else %}things{% endif %} to settle · {{ hero_totals|length }} {% if hero_totals|length == 1 %}currency{% else %}currencies{% endif %}</p>
+</div>
+
+<!-- Balances queue: one card per person, people you owe first -->
+<div class="mb-6">
+    <div class="flex justify-between items-baseline mb-2">
+        <h3 class="font-semibold text-sm uppercase" style="color: var(--text-secondary); letter-spacing: 0.05em;">Balances</h3>
+        <a href="/friends" class="text-xs font-semibold" style="color: var(--accent); text-decoration: none;">Friends</a>
     </div>
-    {% endfor %}
-</div>
-
-<!-- Quick Actions -->
-<div class="flex justify-center gap-6 mb-6">
-    <a href="/groups/new" class="quick-action">
-        <div class="icon-circle">➕</div>
-        <span class="icon-label">New Group</span>
-    </a>
-    <a href="/friends" class="quick-action">
-        <div class="icon-circle">👥</div>
-        <span class="icon-label">Friends</span>
-    </a>
-    <a href="/friends?q=" class="quick-action">
-        <div class="icon-circle">🔍</div>
-        <span class="icon-label">Search</span>
-    </a>
-</div>
-
-<!-- People You Owe / Owe You -->
-{% if overall_balances %}
-<div class="card card-orange mb-4">
-    <div class="card-body py-3">
-        <h3 class="font-semibold text-sm uppercase mb-2">People</h3>
-        {% for other_id, per_currency in overall_balances.items() %}
-        <div class="flex justify-between items-center py-2 border-b last:border-b-0" style="border-color: var(--border);">
+    <div class="rail" data-rail="balances">
+        {% for card in queue %}
+        <a href="/friends/#friend-{{ card.id }}" class="qcard {% if card.pay %}qcard--owe{% endif %}">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background: var(--accent);">
-                    {{ balance_names.get(other_id, '?')[0]|upper }}
-                </div>
-                <span class="text-sm font-medium truncate max-w-[120px]">{{ balance_names.get(other_id, '?') }}</span>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style="background: var(--accent);">{{ card.name[0]|upper }}</div>
+                <span class="text-sm font-semibold truncate" style="color: var(--text-primary);">{{ card.name }}</span>
             </div>
-            <div class="flex flex-wrap justify-end gap-1">
-            {% for currency, net in per_currency.items()|sort %}
-            {% if net > 0 %}
-            <span class="bal-pill bal-pill--credit">owes you {{ money(net, currency) }}</span>
-            {% elif net < 0 %}
-            <span class="bal-pill bal-pill--debit">you owe {{ money(-net, currency) }}</span>
-            {% endif %}
-            {% endfor %}
+            <div class="flex flex-col gap-1">
+                {% for currency, net in card.lines %}
+                {% if net < 0 %}
+                <span class="text-sm font-semibold" style="color: var(--text-primary);">you owe {{ money(-net, currency) }}</span>
+                {% else %}
+                <span class="text-sm font-semibold" style="color: var(--accent);">owes you {{ money(net, currency) }}</span>
+                {% endif %}
+                {% endfor %}
             </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-<!-- Groups -->
-<div class="card card-blue mb-4">
-    <div class="card-body py-3">
-        <h3 class="font-semibold text-sm uppercase mb-2">Your Groups</h3>
-        {% if groups %}
-        {% for group in groups %}
-        {% set net = group_balances.get(group.id, 0) %}
-        <a href="/groups/{{ group.id }}" class="flex justify-between items-center py-3 border-b last:border-b-0 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors" style="border-color: var(--border);">
-            <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background: var(--bg-input);">
-                    {% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}
-                </div>
-                <div class="min-w-0">
-                    <p class="font-semibold text-sm truncate" style="color: var(--text-primary);">{{ group.name }}</p>
-                    <p class="text-xs" style="color: var(--text-muted);">{{ group.type }}</p>
-                </div>
-            </div>
-            {% if net > 0 %}
-            <span class="bal-pill bal-pill--credit">gets back {{ money(net, group.currency) }}</span>
-            {% elif net < 0 %}
-            <span class="bal-pill bal-pill--debit">owes {{ money(-net, group.currency) }}</span>
+            {% if card.pay %}
+            <span class="qcard__btn" style="background: var(--accent); color: #FFFFFF;">Pay {{ money(card.pay[1], card.pay[0]) }}</span>
             {% else %}
-            <span class="bal-pill bal-pill--zero">✓ settled</span>
+            <span class="qcard__btn" style="border: 1px solid var(--accent); color: var(--accent);">Remind</span>
             {% endif %}
         </a>
         {% endfor %}
-        {% else %}
-        <div class="text-center py-8">
-            <div class="text-4xl mb-3">💸</div>
-            <p style="color: var(--text-secondary);" class="mb-2">No groups yet</p>
-            <p style="color: var(--text-muted);" class="text-sm">Create a group to start splitting expenses with friends</p>
+        <div class="qcard" style="justify-content: center; align-items: center; text-align: center; border-style: dashed;">
+            <span class="text-2xl" aria-hidden="true">✓</span>
+            <span class="text-xs font-semibold" style="color: var(--text-secondary);">That's everyone</span>
+            <span class="text-xs" style="color: var(--text-muted);">{% if settled_count %}Settled with {{ settled_count }} other{{ 's' if settled_count != 1 }}{% else %}No other friends yet{% endif %}</span>
         </div>
-        {% endif %}
     </div>
 </div>
 
-<a href="/groups/new" class="btn btn-primary btn-block">Create Group</a>
+<!-- Groups rail: pair groups never appear here -->
+<div class="mb-6">
+    <div class="flex justify-between items-baseline mb-2">
+        <h3 class="font-semibold text-sm uppercase" style="color: var(--text-secondary); letter-spacing: 0.05em;">Your Groups</h3>
+    </div>
+    <div class="rail" data-rail="groups">
+        {% for group in groups %}
+        {% set net = group_balances.get(group.id, 0) %}
+        <a href="/groups/{{ group.id }}" class="gcard">
+            <div class="flex justify-between items-center gap-2">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0" style="background: var(--bg-input);">{% if group.type == 'trip' %}✈️{% elif group.type == 'home' %}🏠{% elif group.type == 'couple' %}💑{% else %}👥{% endif %}</div>
+                {% if net > 0 %}
+                <span class="bal-pill bal-pill--credit">gets back {{ money(net, group.currency) }}</span>
+                {% elif net < 0 %}
+                <span class="bal-pill bal-pill--debit">owes {{ money(-net, group.currency) }}</span>
+                {% else %}
+                <span class="bal-pill bal-pill--zero">✓ settled</span>
+                {% endif %}
+            </div>
+            <div class="min-w-0">
+                <p class="font-semibold text-sm truncate" style="color: var(--text-primary);">{{ group.name }}</p>
+                <p class="text-xs" style="color: var(--text-muted);">{{ group.type }} · {{ group.currency }}</p>
+            </div>
+        </a>
+        {% endfor %}
+        <a href="/groups/new" class="gcard" style="justify-content: center; align-items: center; gap: 6px; border-style: dashed;">
+            <span class="text-2xl" style="color: var(--accent);" aria-hidden="true">＋</span>
+            <span class="text-xs font-bold" style="color: var(--accent);">New group</span>
+        </a>
+    </div>
+</div>
 {% endblock %}

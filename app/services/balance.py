@@ -144,6 +144,18 @@ async def get_overall_balances(
     return people
 
 
+def order_people(people: dict[int, dict[str, int]], names: dict[int, str]) -> list[int]:
+    """Dashboard queue order: people you owe anything to first, then people who
+    owe you; each block alphabetical by name."""
+    return sorted(
+        people,
+        key=lambda other_id: (
+            0 if any(net < 0 for net in people[other_id].values()) else 1,
+            names.get(other_id, "").lower(),
+        ),
+    )
+
+
 @dataclass(frozen=True)
 class CurrencyTotal:
     """Dashboard hero totals for one currency, in integer minor units."""

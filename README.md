@@ -16,6 +16,8 @@ Free expense splitting app. Split costs with friends, simplify debts, settle up 
 - **Groups** — Create groups (trip, home, couple) with their own currency, invite via shareable link. Editable name, currency, and per-member shares.
 - **Date-Grouped Expenses** — Expenses grouped by date with collapsible sections (newest first). Each expense shows who paid as a pill badge. Keyboard accessible.
 - **Friends** — Search by email, send/accept/reject requests, add friends to groups directly
+- **Direct Expenses** — Add an expense or record a payment with one friend straight from the Friends page, no group setup. Each pair gets a hidden two-person group behind the scenes, so balances, settlements and history work exactly like groups. Per-friend "Simplify" nets balances across all shared groups per currency (never across currencies); "Settle all" records one settlement per group in a single transaction.
+- **Balances Queue** — Dashboard shows one swipeable card per person (people you owe first) with every currency you share, plus per-currency totals and a groups rail.
 - **Debt Simplification** — Greedy algorithm minimizes transactions needed to settle up
 - **Spending Charts** — Category pie chart, monthly bar chart, per-member spending with progress bars. Theme-aware colors via CSS variables.
 - **Comments** — Threaded comments on each expense
