@@ -8,12 +8,7 @@ from app.database import get_db
 from app.middleware.auth import login_required
 from app.models.group import Group, GroupMember
 from app.models.user import User
-from app.services.balance import (
-    get_group_balances,
-    get_overall_balances,
-    hero_state,
-    summarize_by_currency,
-)
+from app.services.balance import get_user_balances, hero_state, summarize_by_currency
 from app.services.currency import CURRENCY_SYMBOLS
 
 router = APIRouter(tags=["dashboard"])
@@ -34,8 +29,8 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
     )
     groups = result.scalars().all()
 
-    # Overall balances across all groups, kept per currency
-    overall = await get_overall_balances(db, user_id)
+    # People balances (per currency) and the user's net in each group, one pass per group
+    overall, group_balances = await get_user_balances(db, user_id, groups)
     hero_totals = summarize_by_currency(overall)
     hero_status = hero_state(hero_totals)
 
@@ -45,13 +40,6 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
         other_user = await db.get(User, other_id)
         if other_user:
             balance_names[other_id] = other_user.name
-
-    # Per-group balances for current user
-    group_balances = {}
-    for group in groups:
-        balances = await get_group_balances(db, group.id)
-        user_net = balances.get(user_id, 0)
-        group_balances[group.id] = user_net
 
     return templates.TemplateResponse(
         request,

@@ -75,50 +75,72 @@ def simplify_debts(balances: dict[int, int]) -> list[tuple[int, int, int]]:
     return settlements
 
 
+def bilateral_debts(
+    simplified: list[tuple[int, int, int]], user_id: int
+) -> dict[int, int]:
+    """Net amount between user_id and each counterparty in a simplified debt list.
+
+    Returns {other_user_id: net} with positive = they owe you, negative = you
+    owe them. Transfers between two other people are ignored.
+    """
+    nets: dict[int, int] = {}
+    for debtor_id, creditor_id, amount in simplified:
+        if creditor_id == user_id:
+            nets[debtor_id] = nets.get(debtor_id, 0) + amount
+        elif debtor_id == user_id:
+            nets[creditor_id] = nets.get(creditor_id, 0) - amount
+    return {other_id: net for other_id, net in nets.items() if net != 0}
+
+
+async def get_user_balances(
+    db: AsyncSession, user_id: int, groups
+) -> tuple[dict[int, dict[str, int]], dict[int, int]]:
+    """Personal balances for user_id across the given groups, one pass per group.
+
+    The canonical per-group calculation is get_group_balances + simplify_debts:
+    it is what the group page's Settle Up list shows and what settlements are
+    recorded against, so the dashboard and friends page derive their people
+    balances from it too. Amounts are never summed across currencies.
+
+    Returns (people, per_group):
+      people:    {other_user_id: {currency: net}}, positive = they owe you
+      per_group: {group_id: your net in that group}
+    """
+    people: dict[int, dict[str, int]] = {}
+    per_group: dict[int, int] = {}
+    for group in groups:
+        balances = await get_group_balances(db, group.id)
+        per_group[group.id] = balances.get(user_id, 0)
+        for other_id, net in bilateral_debts(simplify_debts(balances), user_id).items():
+            by_currency = people.setdefault(other_id, {})
+            by_currency[group.currency] = by_currency.get(group.currency, 0) + net
+
+    cleaned: dict[int, dict[str, int]] = {}
+    for other_id, by_currency in people.items():
+        nonzero = {currency: net for currency, net in by_currency.items() if net != 0}
+        if nonzero:
+            cleaned[other_id] = nonzero
+    return cleaned, per_group
+
+
 async def get_overall_balances(
     db: AsyncSession, user_id: int
 ) -> dict[int, dict[str, int]]:
-    """Cross-group balances for a user, kept per currency.
-
-    Amounts are never summed across currencies: each expense counts in its
-    group's currency (one currency per group).
+    """Cross-group personal balances for a user, kept per currency.
 
     Returns {other_user_id: {currency: net_amount}} where:
       positive = other person owes you
       negative = you owe the other person
     """
-    from app.models.group import Group
+    from app.models.group import Group, GroupMember
 
-    # Get all expenses involving this user (across all groups)
     result = await db.execute(
-        select(
-            ExpenseSplit.user_id,
-            Group.currency,
-            func.sum(ExpenseSplit.paid_amount).label("amount_paid"),
-            func.sum(ExpenseSplit.owed_amount).label("amount_owed"),
-        )
-        .join(Expense, ExpenseSplit.expense_id == Expense.id)
-        .join(Group, Expense.group_id == Group.id)
-        .where(
-            Expense.deleted_at.is_(None),
-            Expense.id.in_(
-                select(ExpenseSplit.expense_id).where(ExpenseSplit.user_id == user_id)
-            ),
-        )
-        .group_by(ExpenseSplit.user_id, Group.currency)
+        select(Group)
+        .join(GroupMember, Group.id == GroupMember.group_id)
+        .where(GroupMember.user_id == user_id)
     )
-
-    all_balances: dict[int, dict[str, int]] = {}
-    for row in result.all():
-        # other_net: positive means they paid more than they owe (they're a creditor)
-        # Negate to get current user's perspective:
-        #   other is creditor → you owe them (negative)
-        #   other is debtor → they owe you (positive)
-        other_net = (row.amount_paid or 0) - (row.amount_owed or 0)
-        from_user_perspective = -other_net
-        if from_user_perspective != 0 and row.user_id != user_id:
-            all_balances.setdefault(row.user_id, {})[row.currency] = from_user_perspective
-    return all_balances
+    people, _ = await get_user_balances(db, user_id, result.scalars().all())
+    return people
 
 
 @dataclass(frozen=True)
@@ -192,15 +214,7 @@ async def get_friend_balance_detail(
 
     for group in shared_groups:
         balances = await get_group_balances(db, group.id)
-        simplified = simplify_debts(balances)
-
-        # Find bilateral balance from simplified debts
-        group_balance = 0
-        for debtor_id, creditor_id, amount in simplified:
-            if debtor_id == friend_id and creditor_id == user_id:
-                group_balance += amount  # friend owes me
-            elif debtor_id == user_id and creditor_id == friend_id:
-                group_balance -= amount  # I owe friend
+        group_balance = bilateral_debts(simplify_debts(balances), user_id).get(friend_id, 0)
 
         if group_balance != 0:
             group_details.append({
