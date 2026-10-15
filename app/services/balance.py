@@ -210,6 +210,7 @@ async def shared_group_balances(
         rows.append({
             "group_id": group.id,
             "group_name": group.name,
+            "type": group.type,  # "direct" marks the hidden pair group
             "currency": group.currency,
             "balance": bilateral_debts(simplify_debts(balances), user_id).get(friend_id, 0),
         })
@@ -237,7 +238,7 @@ async def get_friend_balance_detail(
 
     Returns {
         net_balances: {currency: int} (positive = friend owes you),
-        groups: [{group_id, group_name, balance, currency}] (nonzero only),
+        groups: [{group_id, group_name, type, balance, currency}] (nonzero only),
         settlements: [{amount, currency, paid_by, created_at, group_name}],
     }
     """

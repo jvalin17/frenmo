@@ -4,6 +4,10 @@
 {% macro money(cents, currency) %}{{ sym.get(currency, currency ~ ' ') }}{{ "%.2f"|format(cents / 100) }}{% endmacro %}
 <h2 class="text-2xl font-bold mb-4">Friends</h2>
 
+{% if error_message %}
+<div class="rounded-2xl mb-4 p-3 text-sm" role="alert" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA;">{{ error_message }}</div>
+{% endif %}
+
 <!-- Search -->
 <div class="card card-blue mb-4">
     <div class="card-body py-3">
@@ -97,18 +101,67 @@
         </div>
 
         <!-- Expandable detail -->
-        <div id="friend-{{ friend.id }}" style="display: none; border-top: 1px solid var(--border-light);" class="p-3" style="background: var(--bg-hover);">
-            <!-- Group breakdown -->
-            {% if detail.get('groups') %}
-            <p class="text-xs font-semibold uppercase mb-2" style="color: var(--text-muted); letter-spacing: 0.05em;">By Group</p>
-            {% for group_detail in detail.get('groups', []) %}
-            <div class="flex justify-between items-center py-1.5">
-                <span class="text-xs font-medium" style="color: var(--text-secondary);">{{ group_detail.group_name }}</span>
-                {% if group_detail.balance > 0 %}
-                <span class="text-xs font-semibold" style="color: var(--accent);">owes you {{ money(group_detail.balance, group_detail.currency) }}</span>
-                {% elif group_detail.balance < 0 %}
-                <span class="text-xs font-semibold" style="color: var(--text-secondary);">you owe {{ money(-group_detail.balance, group_detail.currency) }}</span>
+        {% set simplify = simplify_flags.get(friend.id, True) %}
+        {% set direct_id = direct_group_ids.get(friend.id) %}
+        <div id="friend-{{ friend.id }}" style="display: none; border-top: 1px solid var(--border-light); background: var(--bg-hover);" class="p-3">
+            <!-- Actions: add a one-to-one expense; open the pair group's history -->
+            <div class="flex gap-2 mb-3">
+                <form method="POST" action="/friends/{{ friend.id }}/direct" class="flex-1">
+                    <button type="submit" class="w-full text-sm font-semibold rounded-xl" style="height: 44px; background: var(--accent); color: #fff; border: none; cursor: pointer;">＋ Add expense</button>
+                </form>
+                {% if direct_id %}
+                <a href="/groups/{{ direct_id }}" class="flex-1 flex items-center justify-center text-sm font-semibold rounded-xl" style="height: 44px; border: 1px solid var(--border); color: var(--text-primary); background: var(--bg-card); text-decoration: none;">Direct history</a>
                 {% endif %}
+            </div>
+
+            <!-- Simplify: one net per currency across every shared group (never across currencies) -->
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs font-semibold uppercase" style="color: var(--text-muted); letter-spacing: 0.05em;">Balance</p>
+                <form method="POST" action="/friends/{{ friend.id }}/simplify">
+                    <button type="submit" class="text-xs font-semibold px-3 rounded-full" style="height: 32px; background: {% if simplify %}rgba(var(--accent-rgb), 0.12){% else %}var(--bg-input){% endif %}; color: {% if simplify %}var(--accent){% else %}var(--text-secondary){% endif %}; border: 1px solid {% if simplify %}rgba(var(--accent-rgb), 0.25){% else %}var(--border){% endif %}; cursor: pointer;">Simplify is {% if simplify %}on{% else %}off{% endif %}</button>
+                </form>
+            </div>
+            {% if simplify and owed_nets %}
+            {% for currency, net in owed_nets %}
+            <div class="flex justify-between items-center py-2" style="border-top: 1px solid var(--border-light);">
+                <span class="text-sm font-semibold" style="color: {% if net > 0 %}var(--accent){% else %}var(--text-primary){% endif %};">
+                    {% if net > 0 %}{{ friend.name }} owes you {{ money(net, currency) }}{% else %}You owe {{ friend.name }} {{ money(-net, currency) }}{% endif %}
+                </span>
+                <a href="/friends/{{ friend.id }}/settle-all?currency={{ currency }}" class="text-xs font-semibold px-3 rounded-lg flex items-center" style="height: 36px; background: var(--accent); color: #fff; text-decoration: none;">Settle all {{ money(net if net > 0 else -net, currency) }}</a>
+            </div>
+            {% endfor %}
+            {% elif simplify %}
+            <p class="text-xs py-2" style="color: var(--text-muted);">Nothing outstanding.</p>
+            {% endif %}
+
+            <!-- Group breakdown: settle where the debt is -->
+            {% if detail.get('groups') %}
+            <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: var(--text-muted); letter-spacing: 0.05em;">By Group · settle where the debt is</p>
+            {% for group_detail in detail.get('groups', []) %}
+            <div class="flex justify-between items-center py-2 gap-2" style="border-top: 1px solid var(--border-light);">
+                <div class="min-w-0">
+                    <p class="text-xs font-medium truncate" style="color: var(--text-primary);">
+                        {% if group_detail.type == 'direct' %}Direct <span class="text-xs px-2 rounded-full" style="background: var(--bg-input); color: var(--text-muted);">just you two</span>{% else %}{{ group_detail.group_name }}{% endif %}
+                    </p>
+                    {% if group_detail.balance > 0 %}
+                    <p class="text-xs font-semibold" style="color: var(--accent);">owes you {{ money(group_detail.balance, group_detail.currency) }}</p>
+                    {% else %}
+                    <p class="text-xs font-semibold" style="color: var(--text-secondary);">you owe {{ money(-group_detail.balance, group_detail.currency) }}</p>
+                    {% endif %}
+                </div>
+                <form method="POST" action="/settlements/new/{{ group_detail.group_id }}" class="shrink-0">
+                    {% if group_detail.balance > 0 %}
+                    <input type="hidden" name="from_user" value="{{ friend.id }}">
+                    <input type="hidden" name="to_user" value="{{ user.id }}">
+                    <input type="hidden" name="amount" value="{{ "%.2f"|format(group_detail.balance / 100) }}">
+                    <button type="submit" class="text-xs font-semibold px-3 rounded-lg" style="height: 36px; background: var(--bg-card); color: var(--accent); border: 1px solid rgba(var(--accent-rgb), 0.4); cursor: pointer;">Record {{ money(group_detail.balance, group_detail.currency) }} received</button>
+                    {% else %}
+                    <input type="hidden" name="from_user" value="{{ user.id }}">
+                    <input type="hidden" name="to_user" value="{{ friend.id }}">
+                    <input type="hidden" name="amount" value="{{ "%.2f"|format(-group_detail.balance / 100) }}">
+                    <button type="submit" class="text-xs font-semibold px-3 rounded-lg" style="height: 36px; background: var(--accent); color: #fff; border: none; cursor: pointer;">Pay {{ money(-group_detail.balance, group_detail.currency) }}</button>
+                    {% endif %}
+                </form>
             </div>
             {% endfor %}
             {% endif %}
@@ -135,7 +188,7 @@
             {% endif %}
 
             {% if not detail.get('groups') and not detail.get('settlements') %}
-            <p class="text-xs" style="color: var(--text-muted);">No shared expenses yet.</p>
+            <p class="text-xs mt-2" style="color: var(--text-muted);">No shared expenses yet. Add one above.</p>
             {% endif %}
 
             <!-- Remove friend -->

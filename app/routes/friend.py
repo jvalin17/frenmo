@@ -11,7 +11,13 @@ from app.middleware.auth import login_required
 from app.models.group import Group, GroupMember
 from app.models.user import User
 from app.services.currency import CURRENCY_SYMBOLS
-from app.services.direct import find_or_create_direct_group, is_direct, pair_group_is_settled
+from app.services.direct import (
+    find_or_create_direct_group,
+    is_direct,
+    lookup_direct_group,
+    pair_group_is_settled,
+    pair_key_for,
+)
 from app.services.friendship import (
     accept_friend_request,
     get_friend_list,
@@ -47,12 +53,28 @@ async def friends_page(request: Request, q: str = "", db: AsyncSession = Depends
     friends = await get_friend_list(db, request.state.user_id)
     pending = await get_pending_requests(db, request.state.user_id)
 
-    # Load balance details for each friend
+    # Load balance details, the pair's simplify flag and pair group (if any) for each friend
     friend_balances = {}
+    simplify_flags = {}
+    direct_group_ids = {}
     for friend in friends:
         friend_balances[friend.id] = await get_friend_balance_detail(
             db, request.state.user_id, friend.id
         )
+        simplify_flags[friend.id] = await get_pair_simplify(db, request.state.user_id, friend.id)
+        pair_group = await lookup_direct_group(db, pair_key_for(request.state.user_id, friend.id))
+        if pair_group is not None:
+            direct_group_ids[friend.id] = pair_group.id
+
+    # One-line message after a refused action (no flash/session store in this app)
+    error_message = None
+    if request.query_params.get("error") == "settle_first":
+        names = {f.id: f.name for f in friends}
+        try:
+            blocked = names.get(int(request.query_params.get("friend", "")), "this friend")
+        except ValueError:
+            blocked = "this friend"
+        error_message = f"Settle up with {blocked} first, then you can remove them."
 
     # Resolve sender names for pending requests
     pending_with_names = []
@@ -85,6 +107,9 @@ async def friends_page(request: Request, q: str = "", db: AsyncSession = Depends
             "user": user,
             "friends": friends,
             "friend_balances": friend_balances,
+            "simplify_flags": simplify_flags,
+            "direct_group_ids": direct_group_ids,
+            "error_message": error_message,
             "pending": pending_with_names,
             "search_results": search_results,
             "query": q,
