@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Settle all with {{ friend.name }} — Frenmo{% endblock %}
+{% block content %}
+{% macro money(cents, currency) %}{{ sym.get(currency, currency ~ ' ') }}{{ "%.2f"|format(cents / 100) }}{% endmacro %}
+<a href="/friends" class="text-sm" style="color: var(--text-secondary); text-decoration: none;">‹ Back to friends</a>
+<h2 class="text-2xl font-bold mt-2 mb-1">Settle all with {{ friend.name }}</h2>
+<p class="text-sm mb-4" style="color: var(--text-secondary);">{{ currency }} · one payment per group, recorded where each debt is</p>
+
+{% if entries %}
+<div class="rounded-2xl mb-4 overflow-hidden" style="border: 1px solid var(--border); background: var(--bg-card);">
+    {% for e in entries %}
+    <div class="flex justify-between items-center p-3" style="border-top: 1px solid var(--border-light);">
+        <div>
+            <p class="text-sm font-semibold" style="color: var(--text-primary);">{{ e.debtor }} → {{ e.creditor }}</p>
+            <p class="text-xs" style="color: var(--text-muted);">{{ e.group_name }}</p>
+        </div>
+        <span class="text-sm font-bold" style="color: var(--text-primary);">{{ money(e.amount, currency) }}</span>
+    </div>
+    {% endfor %}
+    <div class="flex justify-between items-center p-3" style="border-top: 1px solid var(--border); background: var(--bg-hover);">
+        <span class="text-sm font-semibold" style="color: var(--text-primary);">
+            {% if net > 0 %}{{ friend.name }} pays you{% else %}You pay {{ friend.name }}{% endif %}
+        </span>
+        <span class="text-lg font-bold" style="color: var(--accent);">{{ money(net if net > 0 else -net, currency) }}</span>
+    </div>
+</div>
+<form method="POST" action="/friends/{{ friend.id }}/settle-all">
+    <input type="hidden" name="currency" value="{{ currency }}">
+    <input type="hidden" name="batch_id" value="{{ batch_id }}">
+    <button type="submit" class="btn btn-primary btn-block">Record {{ entries|length }} payment{{ 's' if entries|length != 1 }}</button>
+</form>
+{% else %}
+<div class="card mb-4"><div class="card-body">
+    <p class="text-sm py-4 text-center" style="color: var(--text-muted);">Nothing to settle with {{ friend.name }} in {{ currency or 'this currency' }}.</p>
+</div></div>
+{% endif %}
+{% endblock %}

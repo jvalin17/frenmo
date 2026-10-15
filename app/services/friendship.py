@@ -215,6 +215,46 @@ def missing_friendships_insert(dialect_name: str):
     return insert_for(Friendship).on_conflict_do_nothing()
 
 
+async def get_pair_simplify(db: AsyncSession, user_id: int, friend_id: int) -> bool:
+    """Whether this pair folds balances across groups on the friends page.
+
+    One accepted row exists per pair, so both users read the same value.
+    Defaults to True when there is no accepted friendship.
+    """
+    result = await db.execute(
+        select(Friendship.simplify).where(
+            or_(
+                and_(Friendship.user_id == user_id, Friendship.friend_id == friend_id),
+                and_(Friendship.user_id == friend_id, Friendship.friend_id == user_id),
+            ),
+            Friendship.status == "accepted",
+        )
+    )
+    value = result.scalar_one_or_none()
+    return True if value is None else bool(value)
+
+
+async def set_pair_simplify(
+    db: AsyncSession, user_id: int, friend_id: int, value: bool
+) -> bool:
+    """Set the pair's simplify flag. Returns False when they are not accepted friends."""
+    result = await db.execute(
+        select(Friendship).where(
+            or_(
+                and_(Friendship.user_id == user_id, Friendship.friend_id == friend_id),
+                and_(Friendship.user_id == friend_id, Friendship.friend_id == user_id),
+            ),
+            Friendship.status == "accepted",
+        )
+    )
+    friendship = result.scalar_one_or_none()
+    if friendship is None:
+        return False
+    friendship.simplify = value
+    await db.flush()
+    return True
+
+
 async def remove_friend(db: AsyncSession, user_id: int, friend_id: int) -> bool:
     """Remove an accepted friendship (either direction)."""
     result = await db.execute(

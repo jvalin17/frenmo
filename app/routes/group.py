@@ -11,6 +11,7 @@ from app.database import get_db
 from app.middleware.auth import login_required
 from app.models.group import Group, GroupMember
 from app.models.user import User
+from app.services.direct import is_direct
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/groups", tags=["groups"])
@@ -234,6 +235,13 @@ async def update_group_settings(
     new_name = form_data.get("name", "").strip()
     new_currency = form_data.get("currency", group.currency)
 
+    if is_direct(group):
+        # Pair group: currency is the only setting; name, shares, kids, split ways are fixed
+        group.currency = new_currency
+        await db.commit()
+        logger.info("Pair group currency updated: group=%d by user=%d", group_id, user_id)
+        return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
+
     if new_name:
         group.name = new_name
     group.currency = new_currency
@@ -341,7 +349,7 @@ async def group_charts(request: Request, group_id: int, db: AsyncSession = Depen
 async def invite_page(request: Request, group_id: int, db: AsyncSession = Depends(get_db)):
     user = await db.get(User, request.state.user_id)
     group = await db.get(Group, group_id)
-    if group is None:
+    if group is None or is_direct(group):  # pair groups have no invite link
         return RedirectResponse(url="/", status_code=303)
 
     invite_url = f"{request.base_url}groups/join/{group.invite_token}"
@@ -356,7 +364,7 @@ async def join_group_confirm(request: Request, token: str, db: AsyncSession = De
     """Show confirmation page before joining a group via invite link."""
     result = await db.execute(select(Group).where(Group.invite_token == token))
     group = result.scalar_one_or_none()
-    if group is None:
+    if group is None or is_direct(group):
         return RedirectResponse(url="/", status_code=303)
 
     # If already a member, just redirect to group
@@ -380,7 +388,7 @@ async def join_group(request: Request, token: str, db: AsyncSession = Depends(ge
     """Actually join the group after user confirms."""
     result = await db.execute(select(Group).where(Group.invite_token == token))
     group = result.scalar_one_or_none()
-    if group is None:
+    if group is None or is_direct(group):  # a pair group never gains members
         return RedirectResponse(url="/", status_code=303)
 
     # Check if already a member

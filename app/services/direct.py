@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.group import Group, GroupMember
 from app.models.user import User
+from app.services.balance import get_group_balances
 from app.services.friendship import is_friend
 
 DIRECT_TYPE = "direct"
@@ -73,3 +74,16 @@ async def find_or_create_direct_group(
     )
     await db.flush()
     return group
+
+
+async def pair_group_is_settled(db: AsyncSession, user_id: int, friend_id: int) -> bool:
+    """True when the two users have no pair group or its balance is zero.
+
+    A pair group has exactly two members, so either member's net being zero
+    means the pair is settled in that group's currency.
+    """
+    group = await lookup_direct_group(db, pair_key_for(user_id, friend_id))
+    if group is None:
+        return True
+    balances = await get_group_balances(db, group.id)
+    return balances.get(user_id, 0) == 0 and balances.get(friend_id, 0) == 0

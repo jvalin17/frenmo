@@ -1,25 +1,30 @@
 import logging
+import uuid
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.middleware.auth import login_required
-from app.models.group import GroupMember
+from app.models.group import Group, GroupMember
 from app.models.user import User
 from app.services.currency import CURRENCY_SYMBOLS
+from app.services.direct import find_or_create_direct_group, is_direct, pair_group_is_settled
 from app.services.friendship import (
     accept_friend_request,
     get_friend_list,
+    get_pair_simplify,
     get_pending_requests,
     is_friend,
     reject_friend_request,
     remove_friend,
     search_users_by_email,
     send_friend_request,
+    set_pair_simplify,
 )
+from app.services.settlement import net_for, settle_all, settle_all_plan
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/friends", tags=["friends"])
@@ -120,6 +125,11 @@ async def reject_request(request: Request, friendship_id: int, db: AsyncSession 
 @router.post("/remove/{friend_id}")
 @login_required
 async def remove(request: Request, friend_id: int, db: AsyncSession = Depends(get_db)):
+    # Like leaving a group: only at zero balance in the pair group (requirements F5)
+    if not await pair_group_is_settled(db, request.state.user_id, friend_id):
+        return RedirectResponse(
+            url=f"/friends?error=settle_first&friend={friend_id}", status_code=303
+        )
     await remove_friend(db, user_id=request.state.user_id, friend_id=friend_id)
     logger.info("Friend removed: user=%d friend=%d", request.state.user_id, friend_id)
     return RedirectResponse(url="/friends", status_code=303)
@@ -141,6 +151,10 @@ async def add_friend_to_group(
     )
     if membership.scalar_one_or_none() is None:
         return RedirectResponse(url="/", status_code=303)
+
+    # A pair group never gains members (AD-6)
+    if is_direct(await db.get(Group, group_id)):
+        return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
 
     # Verify the target is actually an accepted friend
     if not await is_friend(db, request.state.user_id, friend_id):
@@ -181,3 +195,92 @@ async def add_friend_to_group(
         )
 
     return RedirectResponse(url=f"/groups/{group_id}", status_code=303)
+
+
+# ---------------------------------------------------------------------------
+# Direct (one-to-one) expenses: requirements/direct-expenses.md F2, AD-6
+# ---------------------------------------------------------------------------
+
+
+@router.post("/{friend_id}/direct")
+@login_required
+async def direct_expense(request: Request, friend_id: int, db: AsyncSession = Depends(get_db)):
+    """Open the normal expense form inside the hidden pair group, creating it on first use."""
+    group = await find_or_create_direct_group(db, request.state.user_id, friend_id)
+    if group is None:
+        return RedirectResponse(url="/friends", status_code=303)
+    await db.commit()
+    return RedirectResponse(url=f"/expenses/new/{group.id}", status_code=303)
+
+
+@router.get("/{friend_id}/settle-all", response_class=HTMLResponse)
+@login_required
+async def settle_all_confirm(
+    request: Request, friend_id: int, currency: str = "", db: AsyncSession = Depends(get_db)
+):
+    """Show exactly which per-group settlements 'Settle all' would record."""
+    user_id = request.state.user_id
+    user = await db.get(User, user_id)
+    friend = await db.get(User, friend_id)
+    if friend is None or not await is_friend(db, user_id, friend_id):
+        return RedirectResponse(url="/friends", status_code=303)
+
+    currency = currency.strip().upper()[:3]
+    entries = await settle_all_plan(db, user_id, friend_id, currency) if currency else []
+    names = {user_id: "You", friend_id: friend.name}
+    return templates.TemplateResponse(
+        request,
+        "friends/settle_all.html",
+        {
+            "user": user,
+            "friend": friend,
+            "currency": currency,
+            "entries": [
+                {
+                    "group_name": e.group_name,
+                    "debtor": names[e.debtor_id],
+                    "creditor": names[e.creditor_id],
+                    "amount": e.amount,
+                }
+                for e in entries
+            ],
+            "net": net_for(entries, user_id),
+            "batch_id": uuid.uuid4().hex,
+            "sym": CURRENCY_SYMBOLS,
+        },
+    )
+
+
+@router.post("/{friend_id}/settle-all")
+@login_required
+async def settle_all_submit(
+    request: Request,
+    friend_id: int,
+    currency: str = Form(""),
+    batch_id: str = Form(""),
+    db: AsyncSession = Depends(get_db),
+):
+    """Record one settlement per group, all in one transaction."""
+    currency = currency.strip().upper()[:3]
+    batch_id = batch_id.strip()[:64]
+    if not currency or not batch_id:
+        return RedirectResponse(url="/friends", status_code=303)
+    written = await settle_all(db, request.state.user_id, friend_id, currency, batch_id=batch_id)
+    if written is None:
+        return RedirectResponse(url="/friends", status_code=303)
+    await db.commit()
+    logger.info(
+        "Settle all: user=%d friend=%d currency=%s settlements=%d batch=%s",
+        request.state.user_id, friend_id, currency, len(written), batch_id,
+    )
+    return RedirectResponse(url="/friends", status_code=303)
+
+
+@router.post("/{friend_id}/simplify")
+@login_required
+async def toggle_simplify(request: Request, friend_id: int, db: AsyncSession = Depends(get_db)):
+    """Flip the pair's simplify flag; both users see the same mode."""
+    current = await get_pair_simplify(db, request.state.user_id, friend_id)
+    if await set_pair_simplify(db, request.state.user_id, friend_id, not current):
+        await db.commit()
+    return RedirectResponse(url="/friends", status_code=303)
