@@ -185,6 +185,48 @@ def hero_state(totals: list[CurrencyTotal]) -> str:
     return "settled"
 
 
+async def shared_group_balances(
+    db: AsyncSession, user_id: int, friend_id: int
+) -> list[dict]:
+    """Bilateral balance with friend_id in every group both users belong to.
+
+    One row per shared group, zero balances included:
+    {group_id, group_name, currency, balance} with positive = friend owes you.
+    The canonical per-group calculation (get_group_balances + simplify_debts +
+    bilateral_debts) is the only arithmetic here; pair groups are ordinary rows.
+    """
+    from app.models.group import Group, GroupMember
+
+    user_groups = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
+    friend_groups = select(GroupMember.group_id).where(GroupMember.user_id == friend_id)
+    result = await db.execute(
+        select(Group)
+        .where(Group.id.in_(user_groups.intersect(friend_groups)))
+        .order_by(Group.id)
+    )
+    rows = []
+    for group in result.scalars().all():
+        balances = await get_group_balances(db, group.id)
+        rows.append({
+            "group_id": group.id,
+            "group_name": group.name,
+            "currency": group.currency,
+            "balance": bilateral_debts(simplify_debts(balances), user_id).get(friend_id, 0),
+        })
+    return rows
+
+
+def fold_per_currency(rows: list[dict]) -> dict[str, int]:
+    """Sum per-group bilateral rows into {currency: net}; zero nets are dropped.
+
+    Never sums across currencies (requirements D2a).
+    """
+    nets: dict[str, int] = {}
+    for row in rows:
+        nets[row["currency"]] = nets.get(row["currency"], 0) + row["balance"]
+    return {currency: net for currency, net in nets.items() if net != 0}
+
+
 async def get_friend_balance_detail(
     db: AsyncSession, user_id: int, friend_id: int
 ) -> dict:
@@ -195,36 +237,14 @@ async def get_friend_balance_detail(
 
     Returns {
         net_balances: {currency: int} (positive = friend owes you),
-        groups: [{group_id, group_name, balance, currency}],
+        groups: [{group_id, group_name, balance, currency}] (nonzero only),
         settlements: [{amount, currency, paid_by, created_at, group_name}],
     }
     """
-    from app.models.group import Group, GroupMember
-
-    # Find shared groups (both users are members)
-    user_groups = select(GroupMember.group_id).where(GroupMember.user_id == user_id)
-    friend_groups = select(GroupMember.group_id).where(GroupMember.user_id == friend_id)
-    shared_group_ids = await db.execute(
-        select(Group).where(Group.id.in_(user_groups.intersect(friend_groups)))
-    )
-    shared_groups = shared_group_ids.scalars().all()
-    groups_by_id = {g.id: g for g in shared_groups}
-
-    net_balances: dict[str, int] = {}
-    group_details = []
-
-    for group in shared_groups:
-        balances = await get_group_balances(db, group.id)
-        group_balance = bilateral_debts(simplify_debts(balances), user_id).get(friend_id, 0)
-
-        if group_balance != 0:
-            group_details.append({
-                "group_id": group.id,
-                "group_name": group.name,
-                "balance": group_balance,
-                "currency": group.currency,
-            })
-            net_balances[group.currency] = net_balances.get(group.currency, 0) + group_balance
+    rows = await shared_group_balances(db, user_id, friend_id)
+    groups_by_id = {row["group_id"]: row for row in rows}
+    group_details = [row for row in rows if row["balance"] != 0]
+    net_balances = fold_per_currency(rows)
 
     # Settlement history between the two users across all shared groups
     settlement_result = await db.execute(
@@ -232,7 +252,7 @@ async def get_friend_balance_detail(
         .where(
             Expense.expense_type == "settlement",
             Expense.deleted_at.is_(None),
-            Expense.group_id.in_([g.id for g in shared_groups]),
+            Expense.group_id.in_(list(groups_by_id)),
         )
         .order_by(Expense.created_at.desc())
     )
@@ -254,10 +274,10 @@ async def get_friend_balance_detail(
                 group = groups_by_id[expense.group_id]
                 settlements.append({
                     "amount": expense.amount,
-                    "currency": group.currency,
+                    "currency": group["currency"],
                     "paid_by": expense.paid_by,
                     "created_at": expense.created_at,
-                    "group_name": group.name,
+                    "group_name": group["group_name"],
                 })
 
     return {

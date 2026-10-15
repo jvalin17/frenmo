@@ -457,8 +457,13 @@ async def create_expense_with_splits(
     currency: str = "INR",
     split_ways: int | None = None,
     kid_friendly: bool = False,
+    commit: bool = True,
 ) -> Expense:
-    """Create expense + splits atomically."""
+    """Create expense + splits atomically.
+
+    With commit=False the rows are only flushed, so a caller can record several
+    expenses in one transaction (settle-all) and commit or roll back together.
+    """
     if idempotency_key:
         existing = await db.execute(
             select(Expense).where(Expense.idempotency_key == idempotency_key)
@@ -529,7 +534,10 @@ async def create_expense_with_splits(
             owed_amount=0,
         ))
 
-    await db.commit()
+    if commit:
+        await db.commit()
+    else:
+        await db.flush()
     await db.refresh(expense)
     return expense
 
